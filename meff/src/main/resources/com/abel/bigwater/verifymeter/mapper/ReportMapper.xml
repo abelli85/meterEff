@@ -1,0 +1,1729 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.verifymeter.mapper.ReportMapper">
+    <insert id="insertReport" parameterType="com.abel.bigwater.verifymeter.model.VcBatchCert"
+            useGeneratedKeys="true" keyProperty="reportId" keyColumn="report_aid">
+        INSERT INTO [dbo].[vc_batch_report]
+        ([batch_id]
+        ,[rpt_date]
+        ,[certId]
+        ,[rptType]
+        ,[certType]
+        ,[checkerList]
+        ,[reporter]
+        ,[rpt_auditor]
+        ,[audit_time]
+        ,[audit_pass]
+        ,[rpt_index]
+        ,[end_index]
+        ,[total_count]
+        ,[pass_count]
+        ,[fail_count]
+        ,[unverified_count]
+        ,[verifyAgain]
+        ,[rpt_printer]
+        ,[print_time]
+
+        ,[summary]
+        ,[passMeterList]
+        ,[rejectedMeterList]
+        ,[againMeterList])
+        VALUES
+        (#{batchId}
+        ,#{rptDate}
+        ,#{certId}
+        ,#{rptType}
+        ,#{certType}
+        ,#{checkerList}
+        ,#{reporter}
+        ,#{rptAuditor}
+        ,#{auditTime}
+        ,#{auditPass}
+        ,#{rptIndex}
+        ,#{endIndex}
+        ,#{totalCount}
+        ,#{passCount}
+        ,#{failCount}
+        ,#{unverifiedCount}
+        ,#{verifyAgain}
+        ,#{rptPrinter}
+        ,#{printTime}
+
+        ,#{summary}
+        ,#{passMeterList}
+        ,#{rejectedMeterList}
+        ,#{againMeterList})
+    </insert>
+
+    <update id="touchReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        UPDATE [dbo].[vc_batch_report]
+        SET total_count = (
+            SELECT COUNT(1)
+            FROM [dbo].[vc_report_verify_result]
+            WHERE batch_id = #{batchId}
+        )
+        , pass_count = (
+            SELECT COUNT(1)
+            FROM [dbo].[vc_report_verify_result]
+            WHERE batchId = #{batchId}
+            AND verifyResult IN ('PASS', '合格')
+        )
+        , fail_count = (
+            SELECT COUNT(1)
+            FROM [dbo].[vc_report_verify_result]
+            WHERE batchId = #{batchId}
+            AND verifyResult NOT IN ('PASS', '合格')
+        )
+        WHERE batch_id = #{batchId}
+    </update>
+
+    <select id="listBatchResult" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcBatchResult">
+        SELECT [batch_id] AS batchId
+        ,[start_date] AS startDate
+        ,[finish_date] AS finishDate
+        ,[total_count] AS totalCount
+        ,[pass_count] AS passCount
+        ,[fail_count] AS failCount
+        ,[unverified_count] AS unverifiedCount
+        ,[verify_stuff] AS verifyStuff
+        ,[audit_stuff] AS auditStuff
+        ,[audit_date] AS auditDate
+        ,[plan_start] AS planStart
+        ,[plan_end] AS planEnd
+        ,[planer] AS planer
+        FROM [dbo].[vc_batch_verify_result]
+        <where>
+            <if test="batchId != null">
+                [batch_id] LIKE #{batchId}
+            </if>
+
+            <if test="finishDate != null">
+                AND finish_date = #{finishDate}
+            </if>
+            <if test="finishDateStart != null">
+                AND finish_date &gt;= #{finishDateStart}
+            </if>
+            <if test="finishDateEnd != null">
+                AND finish_date &lt;= #{finishDateEnd}
+            </if>
+
+            <if test="reportDate != null">
+                AND report_date = #{reportDate}
+            </if>
+            <if test="reportDateStart != null">
+                AND report_date &gt;= #{reportDateStart}
+            </if>
+            <if test="reportDateEnd != null">
+                AND report_date &lt;= #{reportDateEnd}
+            </if>
+        </where>
+    </select>
+    <select id="fetchBatchResult" resultType="com.abel.bigwater.verifymeter.model.VcBatchResult">
+        SELECT [batch_id] AS batchId
+        ,[start_date] AS startDate
+        ,[finish_date] AS finishDate
+        ,[total_count] AS totalCount
+        ,[pass_count] AS passCount
+        ,[fail_count] AS failCount
+        ,[unverified_count] AS unverifiedCount
+        ,[verify_stuff] AS verifyStuff
+        ,[audit_stuff] AS auditStuff
+        ,[audit_date] AS auditDate
+        ,[plan_start] AS planStart
+        ,[plan_end] AS planEnd
+        ,[planer] AS planer
+        FROM [dbo].[vc_batch_verify_result]
+        WHERE [batch_id] LIKE #{batchId}
+    </select>
+
+    <select id="listBatchReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcBatchCert">
+        SELECT r.[report_aid] AS reportId
+        ,r.[batch_id] AS batchId
+        ,r.[rpt_date] AS rptDate
+        ,r.[certId]
+        ,r.[certType]
+        ,r.[rptType]
+        ,r.[checkerList]
+        ,r.[reporter]
+
+        ,b.[fact_id] AS factId
+        ,f.[fact_name] AS factName
+        ,b.[type_id] AS typeId
+        ,mt.[type_name] AS typeName
+        ,b.[modelSize]
+        ,b.[verify_type_id] AS verifyTypeId
+        ,b.[verifyReason]
+        ,b.[meterClass]
+        ,szvt.[value_name] AS verifyTypeName
+
+        ,b.[accurateGrade]
+        ,b.[meterMap]
+        ,b.[tempGrade]
+
+        ,b.[brand_id] AS brandId
+        ,szb.[value_name] AS brandName
+
+        ,r.[rpt_auditor] AS rptAuditor
+        ,r.[audit_time] AS auditTime
+        ,r.[audit_pass] AS auditPass
+
+        ,r.[rpt_index] AS rptIndex
+        ,r.[end_index] AS endIndex
+        ,r.[print_time] AS printTime
+        ,r.[rpt_printer] AS rptPrinter
+
+        ,u1.[user_name] AS reporterName
+        ,u2.[user_name] AS rptAuditorName
+        ,u3.[user_name] AS rptPrinterName
+
+        ,b.[batch_count] AS batchCount
+        ,r.[total_count] AS totalCount
+        ,r.[pass_count] AS passCount
+        ,r.[fail_count] AS failCount
+        ,r.[unverified_count] AS unverifiedCount
+        ,r.[verifyAgain]
+
+        ,r.[summary] AS summary
+        ,r.[passMeterList]
+        ,r.[rejectedMeterList]
+        ,r.[againMeterList]
+
+        ,b.[meter_size] AS meterSize
+        ,sz.[value_name] AS sizeName
+        ,b.[material] AS material
+        ,b.[weight] AS weight
+        ,b.[rangeRatio]
+        ,b.[q1]
+        ,b.[q2]
+        ,b.[q3]
+        ,b.[q4]
+        ,b.[qs1]
+        ,b.[qs2]
+        ,b.[qs3]
+        ,b.[qs4]
+        ,b.[qs5]
+        ,b.[qs6]
+        ,b.[qs7]
+        ,b.[qs8]
+        ,b.[qs9]
+        ,b.[qs10]
+        ,b.[batch_memo] AS memo
+        ,b.[batch_status] AS batchStatus
+        ,b.[firm_id] AS firmId
+        ,ff.[firm_name] AS firmName
+        FROM [dbo].[vc_batch_report] r
+        LEFT JOIN [dbo].[vc_meter_batch] b ON r.batch_id = b.batch_id
+        LEFT JOIN [dbo].[vc_meter_factory] f ON b.fact_id = f.fact_id
+        LEFT JOIN [dbo].[vc_meter_type] mt ON b.type_id = mt.type_id
+        LEFT JOIN [dbo].[bw_firm] ff ON b.firm_id = ff.firm_id
+        LEFT JOIN [dbo].[vc_code_value] sz ON b.meter_size = sz.value_id AND sz.code_id = 'SIZE'
+        LEFT JOIN [dbo].[vc_code_value] szvt ON b.verify_type_id = szvt.value_id AND szvt.code_id = 'VERIFY_TYPE'
+        LEFT JOIN [dbo].[vc_code_value] szb ON b.brand_id = szb.value_id AND szb.code_id = 'BRAND'
+        LEFT JOIN [dbo].[bw_user] u1 ON r.[reporter] = u1.[user_id]
+        LEFT JOIN [dbo].[bw_user] u2 ON r.[rpt_auditor] = u2.[user_id]
+        LEFT JOIN [dbo].[bw_user] u3 ON r.[rpt_printer] = u3.[user_id]
+
+        <where>
+            <if test="batchId != null">
+                r.[batch_id] LIKE #{batchId}
+            </if>
+            <choose>
+                <when test="certId != null">
+                    AND r.certId LIKE #{certId}
+                </when>
+                <otherwise>
+                    AND r.certId IS NULL
+                </otherwise>
+            </choose>
+            <if test="rptType != null">
+                AND r.[rptType] = #{rptType}
+            </if>
+
+            <if test="printTime != null">
+                AND r.printTime = #{printTime}
+            </if>
+            <if test="printTimeStart != null">
+                AND r.printTime &gt;= #{printTimeStart}
+            </if>
+            <if test="printTimeEnd != null">
+                AND r.printTime &lt;= #{printTimeEnd}
+            </if>
+
+            <if test="reportDate != null">
+                AND r.rpt_date = #{reportDate}
+            </if>
+            <if test="reportDateStart != null">
+                AND r.rpt_date &gt;= #{reportDateStart}
+            </if>
+            <if test="reportDateEnd != null">
+                AND r.rpt_date &lt;= #{reportDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="countBaseReportMeter" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="int">
+        SELECT
+        COUNT(1) totalCount
+        FROM [dbo].[vc_report_verify_result] r
+        <where>
+            <if test="batchId != null">
+                r.[batchId] LIKE #{batchId}
+            </if>
+            AND r.certId IS NULL
+        </where>
+    </select>
+
+    <select id="countReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="int">
+        SELECT COUNT(1)
+        FROM [dbo].[vc_batch_report] r
+        <where>
+            <choose>
+                <when test="reportDateStart != null and reportDateEnd != null">
+                    r.rpt_date BETWEEN #{reportDateStart} AND #{reportDateEnd}
+                </when>
+                <otherwise>
+                    r.rpt_date &gt;= #{reportDateStart}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="listBaseReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcBatchCert">
+        SELECT TOP 1000
+         r.[report_aid] AS reportId
+        ,r.[batch_id] AS batchId
+        ,r.[rpt_date] AS rptDate
+        ,r.[certId]
+        ,r.[rptType]
+        ,r.[certType]
+        ,r.[checkerList]
+        ,r.[reporter]
+
+        ,b.[fact_id] AS factId
+        ,f.[fact_name] AS factName
+        ,b.[type_id] AS typeId
+        ,mt.[type_name] AS typeName
+        ,b.[modelSize]
+        ,b.[verify_type_id] AS verifyTypeId
+        ,b.[verifyReason]
+        ,b.[meterClass]
+        ,szvt.[value_name] AS verifyTypeName
+
+        ,b.[accurateGrade]
+        ,b.[meterMap]
+        ,b.[tempGrade]
+
+        ,b.[brand_id] AS brandId
+        ,szb.[value_name] AS brandName
+
+        ,r.[rpt_auditor] AS rptAuditor
+        ,r.[audit_time] AS auditTime
+        ,r.[audit_pass] AS auditPass
+
+        ,r.[rpt_index] AS rptIndex
+        ,r.[end_index] AS endIndex
+        ,r.[print_time] AS printTime
+        ,r.[rpt_printer] AS rptPrinter
+
+        ,b.[batch_count] AS batchCount
+        ,b1.totalCount
+        ,v2.passCount
+        ,ISNULL(v1.verifiedCount, 0) - ISNULL(v2.passCount, 0) AS failCount
+        ,ISNULL(b1.totalCount, 0) - ISNULL(v1.verifiedCount, 0) AS unverifiedCount
+        ,vts.[verifyAgain]
+        ,r1.[baseReportCount]
+        ,r2.[reportedCount]
+
+        ,r.[summary] AS summary
+        ,r.[passMeterList]
+        ,r.[rejectedMeterList]
+        ,r.[againMeterList]
+
+        ,b.[meter_size] AS meterSize
+        ,sz.[value_name] AS sizeName
+        ,b.[material] AS material
+        ,b.[weight] AS weight
+        ,b.[rangeRatio]
+        ,b.[q1]
+        ,b.[q2]
+        ,b.[q3]
+        ,b.[q4]
+        ,b.[qs1]
+        ,b.[qs2]
+        ,b.[qs3]
+        ,b.[qs4]
+        ,b.[qs5]
+        ,b.[qs6]
+        ,b.[qs7]
+        ,b.[qs8]
+        ,b.[qs9]
+        ,b.[qs10]
+        ,b.[batch_memo] AS memo
+        ,b.[batch_status] AS batchStatus
+        ,b.[firm_id] AS firmId
+        ,ff.[firm_name] AS firmName
+        FROM [dbo].[vc_batch_report] r
+        JOIN [dbo].[vc_meter_batch] b ON (b.batch_status NOT IN ('FINISH', 'CANCEL', 'ABNORMAL', 'MIGRATED')
+        AND r.batch_id = b.batch_id)
+
+        LEFT JOIN (
+        SELECT batchId batchId
+        , COUNT(1) baseReportCount
+        FROM [dbo].[vc_report_verify_result]
+        <where>
+            <if test="batchId != null">
+                [batchId] LIKE #{batchId}
+            </if>
+        </where>
+        GROUP BY batchId
+        ) r1 ON r.[batch_id] = r1.[batchId]
+
+        LEFT JOIN (
+        SELECT batchId batchId
+        , COUNT(1) reportedCount
+        FROM [dbo].[vc_report_verify_result]
+        <where>
+            <if test="batchId != null">
+                [batchId] LIKE #{batchId}
+            </if>
+            AND certId IS NOT NULL
+        </where>
+        GROUP BY batchId
+        ) r2 ON r.[batch_id] = r2.[batchId]
+
+        LEFT JOIN (
+        SELECT batch_id batchId
+        , COUNT(1) totalCount
+        FROM [dbo].[vc_meter_list]
+        <where>
+            <if test="batchId != null">
+                [batch_id] LIKE #{batchId}
+            </if>
+        </where>
+        GROUP BY batch_id
+        ) b1 ON r.batch_id = b1.batchId
+
+        LEFT JOIN (
+        SELECT batchId
+        , COUNT(DISTINCT meterId) verifiedCount
+        FROM [dbo].[vc_meter_verify_result]
+        <where>
+            <if test="batchId != null">
+                [batchId] LIKE #{batchId}
+            </if>
+        </where>
+        GROUP BY batchId
+        ) v1 ON r.[batch_id] = v1.[batchId]
+
+        LEFT JOIN (
+        SELECT batchId
+        , COUNT(DISTINCT meterId) passCount
+        FROM [dbo].[vc_meter_verify_result]
+        <where>
+            <if test="batchId != null">
+                [batchId] LIKE #{batchId}
+            </if>
+            AND verifyResult IN ('PASS', '合格')
+        </where>
+        GROUP BY batchId
+        ) v2 ON r.[batch_id] = v2.[batchId]
+
+        LEFT JOIN (
+        SELECT batchId
+        , COUNT(meterId) AS verifyAgain
+        FROM [dbo].[view_meter_verify_times]
+        <where>
+            <if test="batchId != null">
+                [batchId] LIKE #{batchId}
+            </if>
+            AND verifyTimes > 1
+        </where>
+        GROUP BY batchId
+        ) vts ON r.batch_id = vts.batchId
+
+        LEFT JOIN [dbo].[vc_meter_factory] f ON b.fact_id = f.fact_id
+        LEFT JOIN [dbo].[vc_meter_type] mt ON b.type_id = mt.type_id
+        LEFT JOIN [dbo].[bw_firm] ff ON b.firm_id = ff.firm_id
+        LEFT JOIN [dbo].[vc_code_value] sz ON b.meter_size = sz.value_id AND sz.code_id = 'SIZE'
+        LEFT JOIN [dbo].[vc_code_value] szvt ON b.verify_type_id = szvt.value_id AND szvt.code_id = 'VERIFY_TYPE'
+        LEFT JOIN [dbo].[vc_code_value] szb ON b.brand_id = szb.value_id AND szb.code_id = 'BRAND'
+        <where>
+            <if test="batchId != null">
+                r.[batch_id] LIKE #{batchId}
+            </if>
+            <choose>
+                <when test="certId != null">
+                    AND r.certId LIKE #{certId}
+                </when>
+                <otherwise>
+                    AND r.certId IS NULL
+                </otherwise>
+            </choose>
+            <if test="rptType != null">
+                AND r.[rptType] = #{rptType}
+            </if>
+            <if test="certType != null">
+                AND r.[certType] = #{certType}
+            </if>
+
+            <if test="printTime != null">
+                AND r.printTime = #{printTime}
+            </if>
+            <if test="printTimeStart != null">
+                AND r.printTime &gt;= #{printTimeStart}
+            </if>
+            <if test="printTimeEnd != null">
+                AND r.printTime &lt;= #{printTimeEnd}
+            </if>
+
+            <if test="reportDate != null">
+                AND r.rpt_date = #{reportDate}
+            </if>
+            <if test="reportDateStart != null">
+                AND r.rpt_date &gt;= #{reportDateStart}
+            </if>
+            <if test="reportDateEnd != null">
+                AND r.rpt_date &lt;= #{reportDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="fetchBatchReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcBatchCert">
+        SELECT TOP 1
+         r.[report_aid] AS reportId
+        ,r.[batch_id] AS batchId
+        ,r.[rpt_date] AS rptDate
+        ,r.[certId]
+        ,r.[rptType]
+        ,r.[certType]
+        ,r.[checkerList]
+        ,r.[reporter]
+
+        ,r.[rpt_auditor] AS rptAuditor
+        ,r.[audit_time] AS auditTime
+        ,r.[audit_pass] AS auditPass
+
+        ,r.[rpt_index] AS rptIndex
+        ,r.[end_index] AS endIndex
+        ,r.[print_time] AS printTime
+        ,r.[rpt_printer] AS rptPrinter
+
+        ,u1.[user_name] AS reporterName
+        ,u2.[user_name] AS rptAuditorName
+        ,u3.[user_name] AS rptPrinterName
+
+        ,b.[batch_count] AS batchCount
+        ,r.[total_count] AS totalCount
+        ,r.[pass_count] AS passCount
+        ,r.[fail_count] AS failCount
+        ,r.[unverified_count] AS unverifiedCount
+        ,r.[verifyAgain]
+
+        ,r.[summary] AS summary
+        ,r.[passMeterList]
+        ,r.[rejectedMeterList]
+        ,r.[againMeterList]
+        FROM [dbo].[vc_batch_report] r
+        JOIN [dbo].[vc_meter_batch] b ON (r.batch_id = b.batch_id)
+        LEFT JOIN [dbo].[bw_user] u1 ON r.[reporter] = u1.[user_id]
+        LEFT JOIN [dbo].[bw_user] u2 ON r.[rpt_auditor] = u2.[user_id]
+        LEFT JOIN [dbo].[bw_user] u3 ON r.[rpt_printer] = u3.[user_id]
+        <where>
+            r.[batch_id] LIKE #{batchId}
+            <choose>
+                <when test="certId != null">
+                    AND r.certId LIKE #{certId}
+                </when>
+                <otherwise>
+                    AND r.certId IS NULL
+                </otherwise>
+            </choose>
+            <if test="rptType != null">
+                AND r.[rptType] = #{rptType}
+            </if>
+            <if test="certType != null">
+                AND r.[certType] = #{certType}
+            </if>
+        </where>
+        ORDER BY r.rpt_date DESC
+    </select>
+
+    <select id="fetchBatchReportByAid" resultType="com.abel.bigwater.verifymeter.model.VcBatchCert">
+        SELECT
+         r.[report_aid] AS reportId
+        ,r.[batch_id] AS batchId
+        ,r.[rpt_date] AS rptDate
+        ,r.[certId]
+        ,r.[rptType]
+        ,r.[certType]
+        ,r.[checkerList]
+        ,r.[reporter]
+
+        ,r.[rpt_auditor] AS rptAuditor
+        ,r.[audit_time] AS auditTime
+        ,r.[audit_pass] AS auditPass
+
+        ,r.[rpt_index] AS rptIndex
+        ,r.[end_index] AS endIndex
+        ,r.[print_time] AS printTime
+        ,r.[rpt_printer] AS rptPrinter
+
+        ,u1.[user_name] AS reporterName
+        ,u2.[user_name] AS rptAuditorName
+        ,u3.[user_name] AS rptPrinterName
+
+        ,b.[batch_count] AS batchCount
+        ,r.[total_count] AS totalCount
+        ,r.[pass_count] AS passCount
+        ,r.[fail_count] AS failCount
+        ,r.[unverified_count] AS unverifiedCount
+        ,r.[verifyAgain]
+
+        ,r.[summary] AS summary
+        ,r.[passMeterList]
+        ,r.[rejectedMeterList]
+        ,r.[againMeterList]
+        FROM [dbo].[vc_batch_report] r
+        JOIN [dbo].[vc_meter_batch] b ON (r.batch_id = b.batch_id)
+        LEFT JOIN [dbo].[bw_user] u1 ON r.[reporter] = u1.[user_id]
+        LEFT JOIN [dbo].[bw_user] u2 ON r.[rpt_auditor] = u2.[user_id]
+        LEFT JOIN [dbo].[bw_user] u3 ON r.[rpt_printer] = u3.[user_id]
+        WHERE r.[report_aid] = #{reportId}
+    </select>
+
+    <select id="listReportPrint" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportPrint">
+        SELECT
+          p.printId
+        , p.report_aid AS reportId
+        , p.batchId
+        , p.certId
+
+        ,r.[rpt_date] AS rptDate
+        ,r.[audit_time] AS auditTime
+
+        , p.printTime
+        , p.printer
+        , u.user_name AS printerName
+
+        ,r.[reporter]
+        ,r.[rpt_auditor] AS rptAuditor
+        ,u1.[user_name] AS reporterName
+        ,u2.[user_name] AS rptAuditorName
+
+        , p.rptIndex
+        , p.endIndex
+        , p.summary
+        FROM [dbo].[vc_report_print] p
+        LEFT JOIN [dbo].[vc_batch_report] r ON p.report_aid = r.report_aid
+        LEFT JOIN [dbo].[bw_user] u ON p.printer = u.user_id
+        LEFT JOIN [dbo].[bw_user] u1 ON r.[reporter] = u1.[user_id]
+        LEFT JOIN [dbo].[bw_user] u2 ON r.[rpt_auditor] = u2.[user_id]
+        <where>
+            <if test="printId != null">
+                p.[printId] = #{printId}
+            </if>
+            <if test="reportId != null">
+                AND p.[report_aid] = #{reportId}
+            </if>
+            <if test="batchId != null">
+                AND p.[batchId] LIKE #{batchId}
+            </if>
+            <if test="certId != null">
+                AND p.certId LIKE #{certId}
+            </if>
+
+            <if test="printTime != null">
+                AND p.printTime = #{printTime}
+            </if>
+            <if test="printTimeStart != null">
+                AND p.printTime &gt;= #{printTimeStart}
+            </if>
+            <if test="printTimeEnd != null">
+                AND p.printTime &lt;= #{printTimeEnd}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertReportPrint" parameterType="com.abel.bigwater.verifymeter.model.VcReportPrint"
+            keyColumn="printId" keyProperty="printId" useGeneratedKeys="true">
+        INSERT INTO [dbo].[vc_report_print](
+        report_aid
+        , batchId
+        , certId
+        , printTime
+        , printer
+        , rptIndex
+        , endIndex
+        , summary
+        )
+        VALUES(
+          #{reportId}
+        , #{batchId}
+        , #{certId}
+        , #{printTime}
+        , #{printer}
+        , #{rptIndex}
+        , #{endIndex}
+        , #{summary}
+        )
+    </insert>
+
+    <delete id="removeReport" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        DELETE
+        FROM [dbo].[vc_batch_report]
+        <where>
+            <choose>
+                <when test="reportId != null">
+                    [report_aid] = #{reportId}
+                </when>
+                <otherwise>
+                    [batch_id] LIKE #{batchId}
+                    <choose>
+                        <when test="certId != null">
+                            AND certId LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND certId IS NULL
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <insert id="insertReportVerify" parameterType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        INSERT INTO [dbo].[vc_report_verify_result]
+        ([verifyId]
+        ,[report_aid]
+        ,[meterId]
+        ,[batchId]
+        ,[certId]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck])
+        VALUES
+        (#{verifyId}
+        ,#{reportId}
+        ,#{meterId}
+        ,#{batchId}
+        ,#{certId}
+        ,#{verifyTimes}
+        ,#{tempId}
+        ,#{verifyDate}
+
+        ,#{stuffName}
+        ,#{verifyResult}
+        ,#{boardResult}
+
+        ,#{forceVerifyNo}
+        ,#{moduleNo}
+        ,#{clientName}
+        ,#{factoryName}
+        ,#{meterName}
+        ,#{meterType}
+        ,#{modelSize}
+        ,#{portType}
+        ,#{verifyRule}
+        ,#{standardInstrument}
+        ,#{standardParam}
+        ,#{indoorTemp}
+        ,#{moisture}
+        ,#{validDate}
+        ,#{convertResult}
+        ,#{pressResult}
+        ,#{instrumentNo}
+        ,#{accurateGrade}
+        ,#{pipeTemp}
+        ,#{pipePressure}
+        ,#{pulse}
+        ,#{density}
+        ,#{displayDiff}
+        ,#{convertDiff}
+        ,#{q4}
+        ,#{q3}
+        ,#{q3toq1}
+        ,#{q4toq3}
+        ,#{q2toq1}
+
+        ,#{qr1}
+        ,#{qr2}
+        ,#{qr3}
+        ,#{qr4}
+
+        ,#{maxFlow}
+        ,#{minFlow}
+        ,#{commonFlow}
+        ,#{convertLimit}
+        ,#{verifyAgain}
+        ,#{outerCheck})
+    </insert>
+
+    <insert id="copyReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        INSERT INTO [dbo].[vc_report_verify_result]
+        ([verifyId]
+        ,[report_aid]
+        ,[meterId]
+        ,[batchId]
+        ,[certId]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck])
+        SELECT
+         [verifyId]
+        ,#{reportId}
+        ,[meterId]
+        ,[batchId]
+        ,#{certId}
+        ,#{verifyTimes}
+        ,[tempId]
+        ,[verifyDate]
+
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck]
+        FROM [dbo].[vc_meter_verify_result]
+        <where>
+            [batchId] = #{batchId}
+
+            <choose>
+                <when test="verifyIdListFmt != null">
+                    AND verifyId IN (${verifyIdListFmt})
+                </when>
+                <when test="verifyId != null">
+                    AND [verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null">
+                    AND verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterIdListFmt != null">
+                    AND [meterId] IN (${meterIdListFmt})
+                </when>
+                <when test="meterId != null">
+                    AND [meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null">
+                    AND [meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+    </insert>
+
+    <update id="updateReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        UPDATE [dbo].[vc_report_verify_result]
+        <set>
+            [certId] = #{certId}
+            , [certType] = #{certType}
+            , [rptDate] = #{reportDate}
+        </set>
+        <where>
+            <choose>
+                <!-- base report-aid -->
+                <when test="reportId != null">
+                    [report_aid] = #{reportId}
+                </when>
+                <otherwise>
+                    [batchId] = #{batchId}
+                </otherwise>
+            </choose>
+            AND [certId] IS NULL
+            AND [rptDate] IS NULL
+
+            <choose>
+                <when test="verifyId != null or verifyIdList != null">
+                    <choose>
+                        <when test="verifyIdListFmt != null">
+                            AND verifyId IN (${verifyIdListFmt})
+                        </when>
+                        <when test="verifyIdList != null">
+                            AND verifyId IN
+                            <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                                #{vid}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            AND [verifyId] = #{verifyId}
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="meterIdListFmt != null">
+                            AND [meterId] IN (${meterIdListFmt})
+                        </when>
+                        <when test="meterIdList != null">
+                            AND [meterId] IN
+                            <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                                #{mid}
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            AND [meterId] = #{meterId}
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
+    <update id="resetReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        UPDATE [dbo].[vc_report_verify_result]
+        <set>
+            [certId] = NULL
+            , [certType] = NULL
+            , [rptDate] = NULL
+        </set>
+        <where>
+            [batchId] = #{batchId}
+            AND [certId] = #{certId}
+            <if test="certType != null">
+                AND [certType] = #{certType}
+            </if>
+            AND [rptDate] IS NOT NULL
+        </where>
+    </update>
+
+    <delete id="removeReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        DELETE FROM [dbo].[vc_report_verify_result]
+        <where>
+            [batchId] = #{batchId}
+
+            <choose>
+                <when test="verifyIdListFmt != null">
+                    AND p.verifyId IN (${verifyIdListFmt})
+                </when>
+                <when test="verifyId != null">
+                    AND [verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null">
+                    AND verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterIdListFmt != null">
+                    AND vm.meter_id IN (${meterIdListFmt})
+                </when>
+                <when test="meterId != null">
+                    AND [meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null">
+                    AND [meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+    </delete>
+
+    <select id="listReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT p.[verifyId]
+        ,p.[report_aid] AS reportId
+        ,p.[meterId]
+        ,p.[batchId]
+
+        ,b.[fact_id] AS factId
+        ,b.[type_id] AS typeId
+        ,vt.[type_name] AS typeName
+        ,vf.[fact_name] AS factName
+        ,b.[modelSize]
+        ,b.[batch_id] AS batchId
+        ,b.[meter_size] AS sizeId
+        ,sz.[value_name] AS sizeName
+
+        ,b.[verify_type_id] AS verifyTypeId
+        ,b.[verifyReason]
+        ,b.[rptType]
+        ,b.[meterClass]
+        ,szvt.[value_name] AS verifyTypeName
+
+        ,p.[accurateGrade]
+
+        ,b.[meterMap]
+        ,b.[tempGrade]
+
+        ,b.[make_date] AS makeDate
+        ,b.[buy_date] AS buyDate
+        ,b.[deliver_date] AS deliverDate
+
+        ,b.[brand_id] AS brandId
+        ,szb.[value_name] AS brandName
+        ,b.[firm_id] AS firmId
+        ,ff.[firm_name] AS firmName
+
+
+        ,p.[certId]
+        ,p.[certType]
+        ,p.[rptDate]
+
+        ,p.[verifyTimes]
+        ,p.[tempId]
+        ,p.[verifyDate]
+
+        ,rpt.[printTime]
+
+        ,p.[stuffName]
+        ,p.[verifyResult]
+        ,p.[boardResult]
+
+        ,p.[forceVerifyNo]
+        ,p.[moduleNo]
+        ,p.[clientName]
+        ,p.[factoryName]
+        ,p.[meterName]
+        ,p.[meterType]
+        ,p.[sizeId]
+        ,p.[modelSize]
+        ,p.[portType]
+        ,p.[verifyRule]
+        ,p.[standardInstrument]
+        ,p.[standardParam]
+        ,p.[indoorTemp]
+        ,p.[moisture]
+        ,p.[validDate]
+        ,p.[convertResult]
+        ,p.[pressResult]
+        ,p.[instrumentNo]
+        ,p.[accurateGrade]
+        ,p.[pipeTemp]
+        ,p.[pipePressure]
+        ,p.[pulse]
+        ,p.[density]
+        ,p.[displayDiff]
+        ,p.[convertDiff]
+        ,p.[q4]
+        ,p.[q3]
+        ,p.[q3toq1]
+        ,p.[q4toq3]
+        ,p.[q2toq1]
+
+        ,p.[qr1]
+        ,p.[qr2]
+        ,p.[qr3]
+        ,p.[qr4]
+
+        ,p.[maxFlow]
+        ,p.[minFlow]
+        ,p.[commonFlow]
+        ,p.[convertLimit]
+        ,p.[verifyAgain]
+        ,p.[outerCheck]
+        ,p.[dataSrc]
+        ,p.[itemId]
+        FROM [dbo].[vc_report_verify_result] p
+        JOIN [dbo].[vc_meter_batch] b ON p.batchId = b.batch_id
+        LEFT JOIN (
+        SELECT batch_id batchId
+        , certId
+        , certType
+        , rpt_date AS rptDate
+        , print_time AS printTime
+        FROM [dbo].[vc_batch_report]
+        <where>
+            <if test="batchId != null">
+                [batch_id] LIKE #{batchId}
+            </if>
+            <if test="certType != null">
+                AND [certType] = #{certType}
+            </if>
+        </where>
+        ) rpt ON (p.batchId = rpt.batchId AND p.certId = rpt.certId)
+        LEFT JOIN [dbo].[vc_meter_type] vt ON b.type_id = vt.type_id
+        LEFT JOIN [dbo].[vc_meter_factory] vf ON b.fact_id = vf.fact_id
+        LEFT JOIN [dbo].[bw_firm] ff ON b.firm_id = ff.firm_id
+        LEFT JOIN [dbo].[vc_code_value] sz ON b.meter_size = sz.value_id AND sz.code_id = 'SIZE'
+        LEFT JOIN [dbo].[vc_code_value] szvt ON b.verify_type_id = szvt.value_id AND szvt.code_id = 'VERIFY_TYPE'
+        LEFT JOIN [dbo].[vc_code_value] szb ON b.brand_id = szb.value_id AND szb.code_id = 'BRAND'
+        <where>
+            <choose>
+                <when test="reportId != null">
+                    p.[report_aid] = #{reportId}
+                </when>
+                <when test="certIdList != null and certIdList.size > 0">
+                    AND p.[certId] IN
+                    <foreach collection="certIdList" open="(" separator="," close=")" item="cid">
+                        #{cid}
+                    </foreach>
+                </when>
+                <when test="batchId != null">
+                    AND p.[batchId] = #{batchId}
+
+                    <choose>
+                        <when test="certId != null">
+                            AND p.[certId] LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND p.[certId] IS NULL
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="verifyId != null">
+                    AND p.[verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdListFmt != null">
+                    AND p.verifyId IN (${verifyIdListFmt})
+                </when>
+                <when test="verifyIdList != null and verifyIdList.size > 0">
+                    AND p.verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterIdListFmt != null">
+                    AND vm.meter_id IN (${meterIdListFmt})
+                </when>
+                <when test="meterId != null">
+                    AND p.[meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.[meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="certType != null">
+                AND rpt.[certType] = #{certType}
+            </if>
+        </where>
+        ORDER BY p.meterId
+    </select>
+
+    <select id="listRejectReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.WareParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT TOP 5000
+         p.[verifyId]
+        ,p.[report_aid] AS reportId
+        ,p.[meterId]
+        ,p.[batchId]
+
+        ,b.[fact_id] AS factId
+        ,b.[type_id] AS typeId
+        ,vt.[type_name] AS typeName
+        ,vf.[fact_name] AS factName
+        ,b.[modelSize]
+        ,b.[batch_id] AS batchId
+        ,b.[meter_size] AS sizeId
+        ,sz.[value_name] AS sizeName
+
+        ,b.[verify_type_id] AS verifyTypeId
+        ,b.[verifyReason]
+        ,b.[rptType]
+        ,b.[meterClass]
+        ,szvt.[value_name] AS verifyTypeName
+
+        ,p.[accurateGrade]
+
+        ,b.[meterMap]
+        ,b.[tempGrade]
+
+        ,b.[make_date] AS makeDate
+        ,b.[buy_date] AS buyDate
+        ,b.[deliver_date] AS deliverDate
+
+        ,b.[brand_id] AS brandId
+        ,szb.[value_name] AS brandName
+        ,b.[firm_id] AS firmId
+        ,ff.[firm_name] AS firmName
+
+        ,p.[certId]
+        ,p.[certType]
+        ,p.[rptDate]
+
+        ,p.[verifyTimes]
+        ,p.[tempId]
+        ,p.[verifyDate]
+
+        ,p.[stuffName]
+        ,p.[verifyResult]
+        ,p.[boardResult]
+
+        ,rm.[branchId]
+        ,rm.[branchName]
+        ,rm.[outBy]
+        ,rm.[outDate]
+        ,rm.[outMobile] AS mobile
+        ,rm.[outEmail] AS email
+
+        ,p.[forceVerifyNo]
+        ,p.[moduleNo]
+        ,p.[clientName]
+        ,p.[factoryName]
+        ,p.[meterName]
+        ,p.[meterType]
+        ,p.[sizeId]
+        ,p.[modelSize]
+        ,p.[portType]
+        ,p.[verifyRule]
+        ,p.[standardInstrument]
+        ,p.[standardParam]
+        ,p.[indoorTemp]
+        ,p.[moisture]
+        ,p.[validDate]
+        ,p.[convertResult]
+        ,p.[pressResult]
+        ,p.[instrumentNo]
+        ,p.[accurateGrade]
+        ,p.[pipeTemp]
+        ,p.[pipePressure]
+        ,p.[pulse]
+        ,p.[density]
+        ,p.[displayDiff]
+        ,p.[convertDiff]
+        ,p.[q4]
+        ,p.[q3]
+        ,p.[q3toq1]
+        ,p.[q4toq3]
+        ,p.[q2toq1]
+
+        ,p.[qr1]
+        ,p.[qr2]
+        ,p.[qr3]
+        ,p.[qr4]
+
+        ,p.[maxFlow]
+        ,p.[minFlow]
+        ,p.[commonFlow]
+        ,p.[convertLimit]
+        ,p.[verifyAgain]
+        ,p.[outerCheck]
+        ,p.[dataSrc]
+        ,p.[itemId]
+        FROM [dbo].[vc_report_verify_result] p
+        JOIN [dbo].[vc_meter_batch] b ON p.batchId = b.batch_id
+        LEFT JOIN [dbo].[vc_reject_meter] rm ON p.certId = rm.certId AND p.meterId = rm.meterId
+        LEFT JOIN [dbo].[vc_meter_type] vt ON b.type_id = vt.type_id
+        LEFT JOIN [dbo].[vc_meter_factory] vf ON b.fact_id = vf.fact_id
+        LEFT JOIN [dbo].[bw_firm] ff ON b.firm_id = ff.firm_id
+        LEFT JOIN [dbo].[vc_code_value] sz ON b.meter_size = sz.value_id AND sz.code_id = 'SIZE'
+        LEFT JOIN [dbo].[vc_code_value] szvt ON b.verify_type_id = szvt.value_id AND szvt.code_id = 'VERIFY_TYPE'
+        LEFT JOIN [dbo].[vc_code_value] szb ON b.brand_id = szb.value_id AND szb.code_id = 'BRAND'
+        <where>
+            <choose>
+                <when test="reportId != null">
+                    p.[report_aid] = #{reportId}
+                </when>
+                <when test="certIdList != null and certIdList.size > 0">
+                    AND p.[certId] IN
+                    <foreach collection="certIdList" open="(" separator="," close=")" item="cid">
+                        #{cid}
+                    </foreach>
+                </when>
+                <when test="batchId != null">
+                    AND p.[batchId] = #{batchId}
+
+                    <choose>
+                        <when test="certId != null">
+                            AND p.[certId] LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND p.[certId] IS NULL
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+            AND p.certType = 'NOTE'
+
+            <choose>
+                <when test="verifyId != null">
+                    AND p.[verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null and verifyIdList.size > 0">
+                    AND p.verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND p.[meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.[meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+        ORDER BY p.rptDate DESC
+    </select>
+
+    <insert id="copyRejectMeter" parameterType="com.abel.bigwater.verifymeter.webapi.WareParam">
+        INSERT INTO [dbo].[vc_reject_meter](
+           [verifyId]
+          ,[report_aid]
+          ,[meterId]
+          ,[batchId]
+          ,[certId]
+          ,[certType]
+          ,[rptDate]
+          ,[verifyTimes]
+          ,[verifyDate]
+          ,[stuffName]
+          ,[verifyResult]
+          ,[boardResult]
+          ,[branchId]
+          ,[branchName]
+          ,[outBy]
+          ,[outDate]
+          ,[outMobile]
+          ,[outEmail]
+        )
+        SELECT
+           [verifyId]
+          ,[report_aid] AS reportId
+          ,[meterId]
+          ,[batchId]
+          ,[certId]
+          ,[certType]
+          ,[rptDate]
+          ,[verifyTimes]
+          ,[verifyDate]
+          ,[stuffName]
+          ,[verifyResult]
+          ,[boardResult]
+          ,#{branchId}
+          ,#{branchName}
+          ,#{outBy}
+          ,GETDATE()
+          ,#{mobile}
+          ,#{email}
+      FROM [dbo].[vc_report_verify_result] rm
+        <where>
+            <choose>
+                <when test="reportId != null">
+                    rm.[report_aid] = #{reportId}
+                </when>
+                <when test="certIdList != null and certIdList.size > 0">
+                    AND rm.[certId] IN
+                    <foreach collection="certIdList" open="(" separator="," close=")" item="cid">
+                        #{cid}
+                    </foreach>
+                </when>
+                <when test="batchId != null">
+                    AND rm.[batchId] = #{batchId}
+                    AND rm.[certType] = 'NOTE'
+
+                    <choose>
+                        <when test="certId != null">
+                            AND rm.[certId] LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND rm.[certId] IS NULL
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="verifyId != null">
+                    AND rm.[verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null and verifyIdList.size > 0">
+                    AND rm.verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND rm.[meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rm.[meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+    </insert>
+
+    <select id="listRejectMeter" parameterType="com.abel.bigwater.verifymeter.webapi.WareParam"
+        resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT TOP (1000) [rejectId]
+              ,[verifyId]
+              ,[report_aid] AS reportId
+              ,[meterId]
+              ,[batchId]
+              ,[certId]
+              ,[certType]
+              ,[rptDate]
+              ,[verifyTimes]
+              ,[verifyDate]
+              ,[stuffName]
+              ,[verifyResult]
+              ,[boardResult]
+              ,[branchId]
+              ,[branchName]
+              ,[outBy]
+              ,[outDate]
+          FROM [dbo].[vc_reject_meter] rm
+        <where>
+            <choose>
+                <when test="rejectIdList != null and rejectIdList.size > 0">
+                    rm.[rejectId] IN
+                    <foreach collection="rejectIdList" item="rid" open="(" separator="," close=")">
+                        #{rid}
+                    </foreach>
+                </when>
+                <when test="rejectId != null">
+                    rm.[rejectId] = #{rejectId}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="reportId != null">
+                    rm.[report_aid] = #{reportId}
+                </when>
+                <when test="certIdList != null and certIdList.size > 0">
+                    AND rm.[certId] IN
+                    <foreach collection="certIdList" open="(" separator="," close=")" item="cid">
+                        #{cid}
+                    </foreach>
+                </when>
+                <when test="batchId != null">
+                    AND rm.[batchId] = #{batchId}
+
+                    <choose>
+                        <when test="certId != null">
+                            AND rm.[certId] LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND rm.[certId] IS NULL
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="verifyId != null">
+                    AND rm.[verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null and verifyIdList.size > 0">
+                    AND rm.verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND rm.[meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rm.[meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+        ORDER BY rm.rptDate DESC
+    </select>
+
+    <delete id="removeRejectMeter" parameterType="com.abel.bigwater.verifymeter.webapi.WareParam">
+        DELETE rm
+        FROM [dbo].[vc_reject_meter] rm
+        <where>
+            <choose>
+                <when test="rejectIdList != null and rejectIdList.size > 0">
+                    rm.[rejectId] IN
+                    <foreach collection="rejectIdList" item="rid" open="(" separator="," close=")">
+                        #{rid}
+                    </foreach>
+                </when>
+                <when test="rejectId != null">
+                    rm.[rejectId] = #{rejectId}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="reportId != null">
+                    AND rm.[report_aid] = #{reportId}
+                </when>
+                <when test="certIdList != null and certIdList.size > 0">
+                    AND rm.[certId] IN
+                    <foreach collection="certIdList" open="(" separator="," close=")" item="cid">
+                        #{cid}
+                    </foreach>
+                </when>
+                <when test="batchId != null">
+                    AND rm.[batchId] = #{batchId}
+
+                    <choose>
+                        <when test="certId != null">
+                            AND rm.[certId] LIKE #{certId}
+                        </when>
+                        <otherwise>
+                            AND rm.[certId] IS NULL
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="verifyId != null">
+                    AND rm.[verifyId] = #{verifyId}
+                </when>
+                <when test="verifyIdList != null and verifyIdList.size > 0">
+                    AND rm.verifyId IN
+                    <foreach collection="verifyIdList" item="vid" open="(" close=")" separator=",">
+                        #{vid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND rm.[meterId] LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rm.[meterId] IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+        </where>
+    </delete>
+
+    <select id="listReportPoint" resultType="com.abel.bigwater.verifymeter.model.VcReportPoint">
+SELECT [pointId]
+      ,[report_aid] AS reportId
+      ,[pointIdx]
+      ,[tempId]
+      ,[pointFlow]
+      ,[pointDev]
+      ,[highLimit]
+      ,[lowLimit]
+      ,[exceed]
+      ,[meterId]
+      ,[verifyDate]
+      ,[stuffName]
+      ,[boardResult]
+      ,[pointName]
+      ,[startReading]
+      ,[endReading]
+      ,[totalVolume]
+      ,[verifyDura]
+      ,[avgFlow]
+      ,[waterTemp]
+      ,[startMass]
+      ,[endMass]
+      ,[standardMass]
+      ,[density]
+      ,[standardVolume]
+      ,[standardDura]
+      ,[standardFlow]
+      ,[instrumentNo]
+      ,[batchId]
+      ,[boardMemo]
+      ,[itemId]
+  FROM [dbo].[vc_report_verify_point]
+        WHERE [report_aid] = #{reportId}
+        ORDER BY [meterId],[pointIdx]
+    </select>
+
+    <update id="createReport" statementType="CALLABLE"
+            parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam">
+        <![CDATA[
+
+                {
+                call createReport (
+                    #{batchId, mode=IN, jdbcType=VARCHAR},
+                    #{stuff, mode=IN, jdbcType=VARCHAR},
+                    #{result, mode=OUT, jdbcType=INTEGER}
+                ) }
+
+        ]]>
+    </update>
+
+    <update id="updateReport" parameterType="com.abel.bigwater.verifymeter.model.VcBatchCert">
+        UPDATE [dbo].[vc_batch_report]
+        <set>
+            <if test="rptAuditor != null">
+                [rpt_auditor] = #{rptAuditor}
+                ,[audit_pass] = #{auditPass}
+                ,[audit_time] = #{auditTime}
+            </if>
+            <if test="rptIndex != null">
+                ,[rpt_index] = #{rptIndex}
+                ,[end_index] = #{endIndex}
+                ,[rpt_printer] = #{rptPrinter}
+                ,[print_time] = #{printTime}
+            </if>
+        </set>
+        WHERE [report_aid] = #{reportId}
+    </update>
+</mapper>

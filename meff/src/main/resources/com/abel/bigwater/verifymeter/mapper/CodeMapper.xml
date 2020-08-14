@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.verifymeter.mapper.CodeMapper">
+
+    <select id="listFactory" resultType="com.abel.bigwater.verifymeter.model.VcFactory">
+        SELECT [fact_id]      AS id
+             , [fact_name]    AS name
+             , [fact_addr]    AS addr
+             , [fact_contact] AS contact
+             , [fact_phone]   AS phone
+             , [fact_phone2]  AS phone2
+             , [fact_fax]     AS fax
+             , [fact_email]   AS email
+             , [fact_memo]    AS memo
+             , [preinit]
+             , [create_by]    AS createBy
+             , [create_date]  AS createDate
+             , [update_by]    AS updateBy
+             , [update_date]  AS updateDate
+        FROM [dbo].[vc_meter_factory]
+    </select>
+
+    <insert id="insertFactory" parameterType="com.abel.bigwater.verifymeter.model.VcFactory">
+        INSERT INTO [dbo].[vc_meter_factory]
+        ( [fact_id]
+        , [fact_name]
+        , [fact_addr]
+        , [fact_contact]
+        , [fact_phone]
+        , [fact_phone2]
+        , [fact_fax]
+        , [fact_email]
+        , [fact_memo]
+        , [preinit]
+        , [create_by]
+        , [create_date]
+        , [update_by]
+        , [update_date])
+        VALUES ( #{id}
+               , #{name}
+               , #{addr}
+               , #{contact}
+               , #{phone}
+               , #{phone2}
+               , #{fax}
+               , #{email}
+               , #{memo}
+               , 0
+               , #{createBy}
+               , GETDATE()
+               , #{updateBy}
+               , GETDATE())
+    </insert>
+
+    <delete id="deleteFactory" parameterType="com.abel.bigwater.verifymeter.model.VcFactory">
+        DELETE
+        FROM [dbo].[vc_meter_factory]
+        WHERE [fact_id] = #{id}
+          AND [preinit] = 0
+    </delete>
+
+    <select id="listCode" resultType="com.abel.bigwater.verifymeter.model.VcCode">
+        SELECT [code_id]   AS id
+             , [code_name] AS name
+             , [code_memo] AS memo
+             , [is_sys]    AS preInit
+        FROM [dbo].[vc_code]
+    </select>
+
+    <select id="listValue" parameterType="com.abel.bigwater.verifymeter.model.VcCode"
+            resultType="com.abel.bigwater.verifymeter.model.VcCodeValue">
+        SELECT [code_id] AS codeId
+        ,[value_id] AS valueId
+        ,[value_name] AS name
+        ,[value_order] AS valueOrder
+        ,[value_type] AS valueType
+        ,[is_sys] AS preInit
+        ,[disabled]
+        FROM [dbo].[vc_code_value]
+        <where>
+            <if test="id != null">
+                code_id = #{id}
+            </if>
+        </where>
+        ORDER BY value_order
+    </select>
+
+    <insert id="createValue" parameterType="com.abel.bigwater.verifymeter.model.VcCodeValue">
+        INSERT INTO [dbo].[vc_code_value]
+        ( [code_id]
+        , [value_id]
+        , [value_name]
+        , [value_order]
+        , [value_type]
+        , [is_sys])
+        VALUES ( #{codeId}
+               , #{valueId}
+               , #{name}
+               , #{valueOrder}
+               , #{valueType}
+               , 0)
+    </insert>
+
+    <update id="updateValue" parameterType="com.abel.bigwater.verifymeter.model.VcCodeValue">
+        UPDATE [dbo].[vc_code_value]
+        SET [value_name]  = #{name}
+          , [value_order] = #{valueOrder}
+          , [value_type]  = #{valueType}
+        WHERE [code_id] = #{codeId}
+          AND [value_id] = #{valueId}
+          AND is_sys = 0
+    </update>
+
+    <update id="disableValue" parameterType="com.abel.bigwater.verifymeter.model.VcCodeValue">
+        UPDATE [dbo].[vc_code_value]
+        SET [disabled]  = #{disabled}
+        WHERE [code_id] = #{codeId}
+          AND [value_id] = #{valueId}
+    </update>
+
+    <delete id="deleteValue" parameterType="com.abel.bigwater.verifymeter.model.VcCodeValue">
+        DELETE [dbo].[vc_code_value]
+        WHERE [code_id] = #{codeId}
+          AND [value_id] = #{valueId}
+          AND is_sys = 0
+    </delete>
+
+    <select id="listMeterType" resultType="com.abel.bigwater.verifymeter.model.VcMeterType">
+        SELECT [type_id]   AS id
+             , [type_name] AS name
+             , [type_memo] AS memo
+             , [preinit]
+        FROM [dbo].[vc_meter_type]
+    </select>
+
+    <insert id="insertMeterType" parameterType="com.abel.bigwater.verifymeter.model.VcMeterType">
+        INSERT INTO [dbo].[vc_meter_type]
+        ( [type_id]
+        , [type_name]
+        , [type_memo]
+        , [preinit])
+        VALUES ( #{id}
+               , #{name}
+               , #{memo}
+               , 0)
+    </insert>
+
+    <delete id="deleteMeterType" parameterType="com.abel.bigwater.verifymeter.model.VcMeterType">
+        DELETE
+        FROM [dbo].[vc_meter_type]
+        WHERE [type_id] = #{id}
+          AND [preinit] = 0
+    </delete>
+
+    <select id="listFactoryModel" parameterType="com.abel.bigwater.verifymeter.model.VcFactory"
+            resultType="com.abel.bigwater.verifymeter.model.VcFactoryModel">
+        SELECT [fact_id] AS factId
+        ,[type_id] AS typeId
+        ,[modelSize]
+        ,[model_list] AS modelList
+        ,[preinit]
+        FROM [dbo].[vc_factory_meter_model]
+        <where>
+            <if test="id != null">
+                fact_id = #{id}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertFactoryModel" parameterType="com.abel.bigwater.verifymeter.model.VcFactoryModel">
+        INSERT INTO [dbo].[vc_factory_meter_model]
+        ( [fact_id]
+        , [type_id]
+        , [modelSize]
+        , [model_list]
+        , [preinit])
+        VALUES ( #{factId}
+               , #{typeId}
+               , #{modelSize}
+               , #{modelList}
+               , 0)
+    </insert>
+
+    <delete id="deleteFactoryModel" parameterType="com.abel.bigwater.verifymeter.model.VcFactoryModel">
+        DELETE
+        FROM [dbo].[vc_factory_meter_model]
+        WHERE [fact_id] = #{factId}
+          AND [type_id] = #{typeId}
+          AND [modelSize] = #{modelSize}
+          AND [preinit] = 0
+    </delete>
+
+    <select id="listVerifyTemp" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp"
+            resultType="com.abel.bigwater.verifymeter.model.VcTempPoint">
+        SELECT vt.[template_id] AS tempId
+        ,vt.type_list AS typeList
+        ,vt.temp_desc AS [tempDesc]
+        ,vt.is_sys AS preInit
+        ,vt.[create_by] AS createBy
+        ,vt.[create_date] AS createDate
+        ,vt.[update_by] AS updateBy
+        ,vt.[update_date] AS updateDate
+
+        ,tp.[point_idx] AS pointIdx
+        ,tp.[point_flow] AS pointFlow
+        ,tp.[high_limit] AS highLimit
+        ,tp.[low_limit] AS lowLimit
+        ,tp.[point_desc] AS pointDesc
+        FROM [dbo].[vc_template_point] tp JOIN vc_verify_template vt ON tp.template_id = vt.template_id
+        <where>
+            <if test="tempId != null">
+                vt.[template_id] LIKE #{tempId}
+            </if>
+            <if test="typeList != null">
+                AND vt.type_list LIKE #{typeList}
+            </if>
+        </where>
+    </select>
+
+    <select id="listVerifyTempRow" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp"
+            resultType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        SELECT * FROM (
+        SELECT vt.[template_id] AS tempId
+        ,vt.type_list AS typeList
+        ,vt.is_sys AS preInit
+        ,'q' + CAST(tp.[point_idx] AS VARCHAR) AS pointIdx
+        ,tp.[point_flow] AS pointFlow
+        FROM [dbo].[vc_template_point] tp JOIN vc_verify_template vt ON tp.template_id = vt.template_id
+        <where>
+            <if test="tempId != null">
+                vt.[template_id] LIKE #{tempId}
+            </if>
+            <if test="typeList != null">
+                AND vt.type_list LIKE #{typeList}
+            </if>
+        </where>
+        ) t
+
+        PIVOT(MAX(pointFlow) FOR pointIdx IN (
+        [q1], [q2], [q3], [q4], [q5], [q6], [q7], [q8], [q9]
+        ) ) pvt
+    </select>
+
+    <select id="fetchVerifyTemp" resultType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        SELECT [template_id] AS tempId
+             , [type_list]   AS typeList
+             , [point_count] AS pointCount
+             , [temp_desc]   AS [desc]
+             , [is_sys]      AS preInit
+             , [create_by]   AS createBy
+             , [create_date] AS createDate
+             , [update_by]   AS updateBy
+             , [update_date] AS updateDate
+        FROM [dbo].[vc_verify_template]
+        WHERE [template_id] LIKE #{tempId}
+    </select>
+
+    <insert id="insertVerifyTemp" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        INSERT INTO [dbo].[vc_verify_template]
+        ( [template_id]
+        , [type_list]
+        , [point_count]
+        , [temp_desc]
+        , [is_sys]
+        , [create_by]
+        , [create_date]
+        , [update_by]
+        , [update_date])
+        VALUES ( #{tempId}
+               , #{typeList}
+               , #{pointCount}
+               , #{desc}
+               , 0
+               , #{createBy}
+               , #{createDate}
+               , #{updateBy}
+               , #{updateDate})
+    </insert>
+
+    <update id="updateVerifyTemp" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        UPDATE [dbo].[vc_verify_template]
+        SET [type_list]   = #{typeList}
+          , [point_count] = #{pointCount}
+          , [temp_desc]   = #{desc}
+          , [update_by]   = #{updateBy}
+          , [update_date] = #{updateDate}
+        WHERE [template_id] = #{tempId}
+    </update>
+
+    <insert id="insertTempPoint" parameterType="com.abel.bigwater.verifymeter.model.VcTempPoint">
+        INSERT INTO [dbo].[vc_template_point]
+        ( [template_id]
+        , [point_idx]
+        , [point_flow]
+        , [high_limit]
+        , [low_limit]
+        , [point_desc])
+        VALUES ( #{tempId}
+               , #{pointIdx}
+               , #{pointFlow}
+               , #{highLimit}
+               , #{lowLimit}
+               , #{pointDesc})
+    </insert>
+
+    <delete id="deleteTempPoint" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        DELETE tp
+        FROM [dbo].[vc_template_point] tp,
+             [dbo].[vc_verify_template] vt
+        WHERE vt.[template_id] = tp.[template_id]
+          AND vt.[template_id] LIKE #{tempId}
+          AND vt.is_sys = 0
+    </delete>
+
+    <delete id="deleteVerifyTemp" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyTemp">
+        DELETE
+        FROM [dbo].[vc_verify_template]
+        WHERE [template_id] LIKE #{tempId}
+          AND is_sys = 0
+    </delete>
+
+    <insert id="insertWorkdayHoliday" parameterType="com.abel.bigwater.verifymeter.model.VcWorkdayHoliday"
+            keyColumn="wid" keyProperty="wid" useGeneratedKeys="true">
+        INSERT INTO [dbo].[vc_workday_holiday]
+        ( [startDate]
+        , [endDate]
+        , [yr]
+        , [holiday]
+        , [weekend]
+        , [workday]
+        , [ruleType]
+        , [createBy]
+        , [createDate])
+        VALUES ( #{startDate}
+               , #{endDate}
+               , #{yr}
+               , #{holiday}
+               , #{weekend}
+               , #{workday}
+               , #{ruleType}
+               , #{createBy}
+               , GETDATE())
+    </insert>
+
+    <delete id="deleteWorkdayHoliday" parameterType="com.abel.bigwater.verifymeter.model.VcWorkdayHoliday">
+        DELETE
+        FROM [dbo].[vc_workday_holiday]
+        WHERE wid = #{wid}
+    </delete>
+
+    <select id="selectWorkdayHoliday" parameterType="com.abel.bigwater.verifymeter.model.VcWorkdayHoliday"
+            resultType="com.abel.bigwater.verifymeter.model.VcWorkdayHoliday">
+        SELECT [wid]
+        ,[startDate]
+        ,[endDate]
+        ,[yr]
+        ,[holiday]
+        ,[weekend]
+        ,[workday]
+        ,[ruleType]
+        ,[createBy]
+        ,[createDate]
+        ,[updateBy]
+        ,[updateDate]
+        FROM [dbo].[vc_workday_holiday]
+        <where>
+            <if test="wid != null">
+                wid = #{wid}
+            </if>
+            <if test="startDate != null">
+                AND startDate = #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND endDate = #{endDate}
+            </if>
+            <if test="yr != null">
+                AND yr = #{yr}
+            </if>
+            <if test="ruleType != null">
+                AND ruleType = #{ruleType}
+            </if>
+        </where>
+    </select>
+
+    <select id="listPlatform" parameterType="com.abel.bigwater.verifymeter.webapi.CodeParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcVerifyPlatform">
+        /****** Script for SelectTopNRows command from SSMS ******/
+        SELECT TOP 1000 [platId]
+        ,[platName]
+        ,[userNo]
+        ,[platModel]
+        ,[platRoom]
+        ,[manuNo]
+        ,[platRange]
+        ,[platGrade]
+        ,[platCert]
+        ,[validDate]
+        ,[rangeLow]
+        ,[rangeHigh]
+        ,[gradeRate]
+        ,[status]
+        ,[preinit]
+        ,[firmId]
+        ,[createBy]
+        ,[createDate]
+        ,[updateBy]
+        ,[updateDate]
+        ,[autoSync]
+        FROM [dbo].[vc_verify_platform]
+        <where>
+            <if test="platId != null">
+                [platId] = #{platId}
+            </if>
+            <if test="autoSync != null">
+                AND [autoSync] = #{autoSync}
+            </if>
+
+            <choose>
+                <when test="userNo != null">
+                    AND [userNo] = #{userNo}
+                </when>
+                <when test="userNoList != null and userNoList.size > 0">
+                    AND [userNo] IN
+                    <foreach collection="userNoList" item="m1" open="(" close=")" separator=",">
+                        #{m1}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="manuNo != null">
+                    AND [manuNo] = #{manuNo}
+                </when>
+                <when test="manuNoList != null and manuNoList.size > 0">
+                    AND [manuNo] IN
+                     <foreach collection="manuNoList" separator="," open="(" close=")" item="m1">
+                         #{m1}
+                     </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND [firmId] LIKE #{firmId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertPlatform" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyPlatform"
+            keyProperty="platId" keyColumn="platId" useGeneratedKeys="true">
+        INSERT INTO [dbo].[vc_verify_platform]
+        ([platName]
+        ,[userNo]
+        ,[platModel]
+        ,[platRoom]
+        ,[manuNo]
+        ,[platRange]
+        ,[platGrade]
+        ,[platCert]
+        ,[validDate]
+        ,[rangeLow]
+        ,[rangeHigh]
+        ,[gradeRate]
+        ,[status]
+        ,[preinit]
+        ,[firmId]
+        ,[createBy]
+        ,[createDate]
+        ,[updateBy]
+        ,[updateDate]
+        ,[autoSync]
+        ,[disabled])
+        VALUES
+        (#{platName}
+        ,#{userNo}
+        ,#{platModel}
+        ,#{platRoom}
+        ,#{manuNo}
+        ,#{platRange}
+        ,#{platGrade}
+        ,#{platCert}
+        ,#{validDate}
+        ,#{rangeLow}
+        ,#{rangeHigh}
+        ,#{gradeRate}
+        ,#{status}
+        ,#{preinit}
+        ,#{firmId}
+        ,#{createBy}
+        ,#{createDate}
+        ,#{updateBy}
+        ,#{updateDate}
+        ,#{autoSync}
+        ,#{disabled}
+        )
+    </insert>
+
+    <update id="updatePlatform" parameterType="com.abel.bigwater.verifymeter.model.VcVerifyPlatform">
+        UPDATE [dbo].[vc_verify_platform]
+            SET
+             [platName] = #{platName}
+            ,[userNo] = #{userNo}
+            ,[platModel] = #{platModel}
+            ,[platRoom] = #{platRoom}
+            ,[manuNo] = #{manuNo}
+            ,[platRange] = #{platRange}
+            ,[platGrade] = #{platGrade}
+            ,[platCert] = #{platCert}
+            ,[validDate] = #{validDate}
+            ,[rangeLow] = #{rangeLow}
+            ,[rangeHigh] = #{rangeHigh}
+            ,[gradeRate] = #{gradeRate}
+            ,[status] = #{status}
+
+            ,[updateBy] = #{updateBy}
+            ,[updateDate] = GETDATE()
+
+            ,[autoSync] = #{autoSync}
+            ,[disabled] = #{disabled}
+        WHERE
+            [platId] = #{platId}
+            AND [preinit] = 0
+            AND [firmId] = #{firmId}
+    </update>
+
+    <delete id="deletePlatform" parameterType="com.abel.bigwater.verifymeter.webapi.CodeParam">
+        DELETE FROM [dbo].[vc_verify_platform]
+        WHERE [platId] = #{platId}
+          AND [firmId] = #{firmId}
+        AND preinit = 0
+    </delete>
+</mapper>

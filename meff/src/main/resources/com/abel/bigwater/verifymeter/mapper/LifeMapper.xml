@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.verifymeter.mapper.LifeMapper">
+    <select id="listLifePiece" parameterType="com.abel.bigwater.verifymeter.webapi.MeterBatchParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcLifePiece">
+        SELECT * FROM (
+        SELECT h.[meter_id] AS meterId
+        ,h.[this_date] AS thisDate
+        ,h.[last_date] AS lastDate
+        ,h.[user_name] AS userName
+        ,h.[user_code] AS userCode
+        ,h.[meter_code] AS meterCode
+        ,h.[this_reading] AS thisReading
+        ,h.[last_reading] AS lastReading
+        ,h.[run_reading] AS runReading
+        ,h.[meter_loc].STAsText() AS meterLoc
+        ,h.[meter_addr] AS meterAddr
+        ,h.[firm_id] AS firmId
+
+        ,NULL AS factId
+        ,NULL AS typeId
+        ,NULL AS batchId
+        ,NULL AS size
+        ,NULL AS weight
+        ,NULL AS material
+        ,NULL AS makeDate
+        ,NULL AS buyDate
+        ,NULL AS installDate
+        ,NULL AS retireDate
+        ,NULL AS status
+        ,NULL AS matchType
+        ,h.[create_by]     AS createBy
+        ,h.[create_date]   AS createDate
+        ,h.[update_by]     AS updateBy
+        ,h.[update_date]   AS updateDate
+
+        , NULL AS tempId
+        , NULL AS verifyDate
+        , NULL AS verifyResult
+        , NULL AS pointDev
+        , NULL AS pointIdx
+        FROM [dbo].[vc_meter_history] h
+        <where>
+            <if test="meterId != null">
+                meter_id LIKE #{meterId}
+            </if>
+            <if test="meterIdList != null">
+                AND meter_id IN
+                <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                    #{mid}
+                </foreach>
+            </if>
+            <if test="firmId != null">
+                AND firm_id LIKE #{firmId}
+            </if>
+        </where>
+
+        UNION
+
+        SELECT ml.[meter_id] AS meterId
+        ,NULL AS thisDate
+        ,NULL AS lastDate
+        ,NULL AS userName
+        ,NULL AS userCode
+        ,NULL AS meterCode
+        ,NULL AS thisReading
+        ,NULL AS lastReading
+        ,NULL AS runReading
+        ,NULL AS meterLoc
+        ,NULL AS meterAddr
+        ,ml.[firm_id] AS firmId
+
+        ,ml.[fact_id] AS factId
+        ,ml.[type_id] AS typeId
+        ,ml.[batch_id] AS batchId
+        ,ml.[meter_size] AS size
+        ,ml.[meter_weight] AS weight
+        ,ml.[meter_material] AS material
+        ,ml.[make_date] AS makeDate
+        ,ml.[buy_date] AS buyDate
+        ,ml.[install_date] AS installDate
+        ,ml.[retire_date] AS retireDate
+        ,ml.[meter_status] AS status
+        ,ml.[match_type] AS matchType
+        ,ml.[create_by]     AS createBy
+        ,ml.[create_date]   AS createDate
+        ,ml.[update_by]     AS updateBy
+        ,ml.[update_date]   AS updateDate
+
+        , v.tempId
+        , v.verifyDate
+        , v.verifyResult
+        , p.pointDev
+        , 'qr' + CONVERT(VARCHAR(1), p.pointIdx) AS pointIdx
+        FROM [dbo].[vc_meter_list] ml
+        LEFT JOIN [dbo].[vc_meter_batch] mb ON ml.batch_id = mb.batch_id
+        LEFT JOIN [dbo].[vc_meter_verify_point] p ON ml.[meter_id] = p.meterId
+        LEFT JOIN vc_meter_verify_result v ON v.meterId = p.meterId
+        <where>
+            <if test="meterId != null">
+                ml.meter_id LIKE #{meterId}
+            </if>
+            <if test="meterIdList != null">
+                AND ml.meter_id IN
+                <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                    #{mid}
+                </foreach>
+            </if>
+            <if test="firmId != null">
+                AND ml.firm_id LIKE #{firmId}
+            </if>
+            <if test="batchId != null">
+                AND mb.batch_id LIKE #{batchId}
+            </if>
+            <if test="verifyDate != null">
+                AND v.verifyDate = #{verifyDate}
+            </if>
+            <if test="verifyDateStart != null">
+                AND v.verifyDate &gt;= #{verifyDateStart}
+            </if>
+            <if test="verifyDateEnd != null">
+                AND v.verifyDate &lt;= #{verifyDateEnd}
+            </if>
+        </where>
+        ) t
+
+        PIVOT(SUM(pointDev) FOR pointIdx IN (
+        [qr1], [qr2], [qr3], [qr4], [qr5], [qr6], [qr7], [qr8], [qr9]
+        ) ) pvt
+    </select>
+
+    <insert id="insertEmployment" parameterType="com.abel.bigwater.verifymeter.model.VcLifePiece">
+        INSERT INTO [dbo].[vc_meter_history]
+        ( [meter_id]
+        , [batch_id]
+        , [this_date]
+        , [last_date]
+        , [user_name]
+        , [user_code]
+        , [meter_code]
+        , [this_reading]
+        , [last_reading]
+        , [run_reading]
+        , [meter_loc]
+        , [meter_addr]
+        , [firm_id]
+        , [create_by]
+        , [create_date]
+        , [update_by]
+        , [update_date])
+        VALUES ( #{meterId}
+               , #{batchId}
+               , #{thisDate}
+               , #{lastDate}
+               , #{userName}
+               , #{userCode}
+               , #{meterCode}
+               , #{thisReading}
+               , #{lastReading}
+               , #{runReading}
+               , geometry::STGeomFromText(#{meterLoc}, 0)
+               , #{meterAddr}
+               , #{firmId}
+               , #{createBy}
+               , #{createDate}
+               , #{updateBy}
+               , #{updateDate})
+    </insert>
+
+    <delete id="removeEmployment" parameterType="com.abel.bigwater.verifymeter.model.VcLifePiece">
+        DELETE FROM vc_meter_history
+        <where>
+            <if test="meterId != null">
+                meter_id LIKE #{meterId}
+            </if>
+            <if test="batchId != null">
+                AND batch_id LIKE #{batchId}
+            </if>
+            <if test="thisDate != null">
+                AND this_date = #{thisDate}
+            </if>
+            <if test="firmId != null">
+                AND firm_id LIKE #{firmId}
+            </if>
+            <if test="userCode != null">
+                AND user_code LIKE #{userCode}
+            </if>
+            <if test="meterCode != null">
+                AND meter_code LIKE #{meterCode}
+            </if>
+        </where>
+    </delete>
+</mapper>

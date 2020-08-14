@@ -1,0 +1,1586 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.verifymeter.mapper.RegMapper">
+    <select id="listReg" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcRegBatch">
+        SELECT
+              r.[regid]
+             ,r.[batchId]
+             ,r.[regType]
+
+             ,r.[createBy]
+             ,r.[createDate]
+             ,b.batch_count AS [totalCount]
+             ,bc.addedCount
+             ,v.verifyCount
+             ,p.reportCount
+
+             ,r.[meterCount]
+             ,r.[meterName]
+             ,r.[meterSize]
+             ,r.[modelSize]
+             ,r.[verifyRange]
+             ,r.[verifyDev]
+             ,r.[factId]
+             ,r.[factName]
+             ,r.[madeIn]
+             ,r.[buyDate]
+             ,r.[installPlace]
+             ,r.[meterStatus]
+             ,r.[meterUse]
+             ,r.[meterType]
+             ,r.[verifyType]
+             ,r.[branchId]
+             ,r.[typeId]
+             ,r.[certId]
+             ,r.[validDate]
+             ,r.[meterLabel]
+             ,r.[regMemo]
+             ,r.[updateBy]
+             ,r.[updateDate]
+        FROM [dbo].[vc_batch_reg] r
+        JOIN [dbo].[vc_meter_batch] b ON r.batchId = b.batch_id
+        LEFT JOIN (
+            SELECT batch_id AS batchId,
+            COUNT(1) AS addedCount
+            FROM [dbo].[vc_meter_list]
+            <where>
+                <if test="batchId != null">
+                    [batch_id] LIKE #{batchId}
+                </if>
+                AND ([meter_status] IS NULL OR [meter_status] NOT IN ('CANCEL', 'ABNORMAL', 'MIGRATED'))
+            </where>
+            GROUP BY batch_id
+        ) bc ON b.batch_id = bc.batchId
+            LEFT JOIN (
+            SELECT batchId,
+            COUNT(meterId) AS verifyCount
+            FROM [dbo].view_meter_verify_times
+            <where>
+                <if test="batchId != null">
+                    batchId LIKE #{batchId}
+                </if>
+            </where>
+            GROUP BY batchId
+        ) v ON b.batch_id = v.batchId
+        LEFT JOIN (
+            SELECT batchId,
+            COUNT(meterId) AS reportCount
+            FROM [dbo].vc_report_verify_result
+            <where>
+                <if test="batchId != null">
+                    batchId LIKE #{batchId}
+                </if>
+                AND certId IS NOT NULL
+            </where>
+            GROUP BY batchId
+        ) p ON b.batch_id = p.batchId
+        <where>
+            <if test="regid != null">
+                r.regid = #{regid}
+            </if>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+            <if test="regType != null">
+                AND r.regType LIKE #{regType}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.createDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.createDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <select id="listRegBatch" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcRegBatch">
+        SELECT
+        r.[batch_id] AS [batchId]
+
+        ,r.[create_by] AS [createBy]
+        ,r.[create_date] AS [createDate]
+        ,r.[batch_count] AS [totalCount]
+        ,bc.addedCount
+
+        ,rm.[meterCount]
+        ,v.verifyCount
+        ,vr.regVerifyCount
+        ,p.reportCount
+        ,pr.regReportCount
+
+        ,r.[meter_size] AS [meterSize]
+        ,r.[modelSize]
+        ,r.[fact_id] AS [factId]
+        ,fact.[fact_name] AS [factName]
+        ,r.[buy_date] AS [buyDate]
+        ,r.[batch_status] AS [meterStatus]
+        ,r.[type_id] AS [meterType]
+        ,r.[verify_type_id] AS [verifyType]
+        ,r.[type_id] AS [typeId]
+        ,r.[retire_date] AS [validDate]
+        ,r.[update_by] AS [updateBy]
+        ,r.[update_date] AS [updateDate]
+        FROM [dbo].[vc_meter_batch] r
+        LEFT JOIN [dbo].[vc_meter_factory] fact ON r.fact_id = fact.fact_id
+        LEFT JOIN (
+            SELECT batch_id AS batchId,
+            COUNT(1) AS addedCount
+            FROM [dbo].[vc_meter_list]
+            <where>
+                <if test="batchId != null">
+                    [batch_id] LIKE #{batchId}
+                </if>
+                AND ([meter_status] IS NULL OR [meter_status] NOT IN ('CANCEL', 'ABNORMAL', 'MIGRATED'))
+            </where>
+            GROUP BY batch_id
+        ) bc ON r.batch_id = bc.batchId
+        LEFT JOIN (
+            SELECT v1.batchId,
+            COUNT(v1.meterId) meterCount
+            FROM [dbo].vc_reg_verify_result v1
+            JOIN [dbo].vc_batch_reg br ON v1.batchId = br.batchId AND v1.regid = br.regid
+            <where>
+                <if test="batchId != null">
+                    v1.batchId LIKE #{batchId}
+                </if>
+                AND br.regType = 'METER_REG'
+            </where>
+            GROUP BY v1.batchId
+        ) rm ON r.batch_id = rm.batchId
+        LEFT JOIN (
+            SELECT batchId,
+                   COUNT(meterId) AS verifyCount
+            FROM [dbo].view_meter_verify_times
+            <where>
+                <if test="batchId != null">
+                    batchId LIKE #{batchId}
+                </if>
+            </where>
+            GROUP BY batchId
+        ) v ON r.batch_id = v.batchId
+        LEFT JOIN (
+            SELECT v1.batchId,
+                   COUNT(v1.meterId) regVerifyCount
+            FROM [dbo].vc_reg_verify_result v1
+            JOIN [dbo].vc_batch_reg br ON v1.batchId = br.batchId AND v1.regid = br.regid
+            <where>
+                <if test="batchId != null">
+                    v1.batchId LIKE #{batchId}
+                </if>
+                AND br.regType = 'VERIFY_REG'
+            </where>
+            GROUP BY v1.batchId
+        ) vr ON r.batch_id = vr.batchId
+        LEFT JOIN (
+            SELECT batchId,
+                   COUNT(meterId) AS reportCount
+            FROM [dbo].vc_report_verify_result
+            <where>
+                <if test="batchId != null">
+                    batchId LIKE #{batchId}
+                </if>
+                AND certId IS NOT NULL
+            </where>
+            GROUP BY batchId
+        ) p ON r.batch_id = p.batchId
+        LEFT JOIN (
+            SELECT v1.batchId,
+            COUNT(v1.meterId) regReportCount
+            FROM [dbo].vc_reg_verify_result v1
+            JOIN [dbo].vc_batch_reg br ON v1.batchId = br.batchId AND v1.regid = br.regid
+            <where>
+                <if test="batchId != null">
+                    v1.batchId LIKE #{batchId}
+                </if>
+                AND br.regType = 'REPORT_REG'
+            </where>
+            GROUP BY v1.batchId
+        ) pr ON r.batch_id = pr.batchId
+        <where>
+            <if test="batchId != null">
+                AND r.batch_id LIKE #{batchId}
+            </if>
+            AND r.batch_status NOT IN ('CANCEL', 'ABNORMAL', 'MIGRATED')
+
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.create_date BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.create_date &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.create_date &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <select id="listRegMeter" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcRegBatchMeter">
+        SELECT DISTINCT TOP 10000
+              r.[regid]
+             ,r.[meterId]
+             ,r.[batchId]
+             ,r.[regType]
+
+             ,r.[createDate]
+             ,r.[meterName]
+             ,r.[sizeId]
+             ,sz.value_name AS meterSize
+             ,r.[modelSize]
+
+             ,r.[verifyRange]
+             ,r.[verifyDev]
+             ,r.[factId]
+             ,r.[factName]
+             ,r.[madeIn]
+             ,r.[buyDate]
+             ,r.[installPlace]
+             ,r.[meterStatus]
+             ,r.[meterUse]
+             ,r.[meterType]
+             ,r.[verifyType]
+             ,r.[branchId]
+             ,r.[typeId]
+             ,r.[validDate]
+             ,r.[meterLabel]
+             ,r.[regMemo]
+             ,r.[updateBy]
+             ,r.[updateDate]
+
+             ,r.[verifyId]
+             ,r.[verifyDate]
+             ,r.[stuffName]
+             ,r.[boardResult]
+             ,r.[outerCheck]
+             ,r.[convertResult]
+             ,r.[pressResult]
+             ,r.[verifyAgain]
+             ,r.[verifyRule]
+             ,std.stdFirm
+
+             ,pr.[report_aid] AS reportId
+             ,r.[certId]
+             ,r.[certType]
+             ,r.[rptDate]
+
+             ,rpt.reporter
+             ,u1.user_name reporterName
+             ,rpt.rpt_auditor rptAuditor
+             ,u2.user_name rptAuditorName
+
+             ,br.[createBy] AS regUser
+        FROM [dbo].[vc_reg_verify_result] r
+        JOIN [dbo].[vc_batch_reg] br ON r.regid = br.regid
+        LEFT JOIN [dbo].vc_code_value sz ON sz.code_id = 'SIZE' AND r.sizeId = sz.value_id
+        LEFT JOIN [dbo].vc_meter_verify_result vr ON r.batchId = vr.batchId AND r.meterId = vr.meterId
+        LEFT JOIN [dbo].vc_report_verify_result pr ON r.batchId = pr.batchId AND r.meterId = pr.meterId
+        LEFT JOIN [dbo].vc_batch_report rpt ON r.batchId = rpt.batch_id
+        LEFT JOIN [dbo].bw_user u1 ON rpt.reporter = u1.user_id
+        LEFT JOIN [dbo].bw_user u2 ON rpt.rpt_auditor = u1.user_id
+        LEFT JOIN (
+            SELECT TOP 1
+            stdFirm
+            FROM [dbo].vc_std_auth
+        ) std ON 1=1
+        <where>
+            <if test="regid != null">
+                r.regid = #{regid}
+            </if>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+            <choose>
+                <when test="regType != null">
+                    AND r.regType LIKE #{regType}
+                </when>
+                <otherwise>
+                    AND r.regType = 'METER_REG'
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="meterId != null">
+                    AND r.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND r.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="meterSize != null">
+                AND r.meterSize = #{meterSize}
+            </if>
+            <if test="modelSize != null">
+                AND r.modelSize = #{modelSize}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.createDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.createDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <select id="listUnregMeter" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT DISTINCT TOP 15000
+        vm.[meter_id] AS meterId
+        ,vm.[fact_id] AS factId
+        ,vm.[type_id] AS typeId
+        ,vt.[type_name] AS typeName
+        ,vf.[fact_name] AS factName
+        ,vm.[modelSize]
+        ,vm.[batch_id] AS batchId
+        ,vm.[meter_size] AS meterSize
+        ,vm.[meter_weight] AS weight
+        ,vm.[meter_material] AS material
+        ,vm.[make_date] AS makeDate
+        ,vm.[buy_date] AS buyDate
+        ,vm.[verify_date] AS verifyDate
+        ,vm.[install_date] AS installDate
+        ,vm.[retire_date] AS retireDate
+        ,vm.[firm_id] AS firmId
+        ,ff.[firm_name] AS firmName
+        ,vm.[meter_status] AS status
+        ,vm.[create_by] AS createBy
+        ,vm.[create_date] AS createDate
+        ,vm.[update_by] AS updateBy
+        ,vm.[update_date] AS updateDate
+
+        , vr.verifyDate
+        , vr.validDate
+        , vr.stuffName
+        , vr.verifyRule
+        , vr.instrumentNo
+        , vr.verifyAgain
+        , vr.factoryName
+
+        , std.stdFirm
+
+        , vr.boardResult
+        , vr.outerCheck
+        , vr.pressResult
+        , vr.convertResult
+
+        FROM [dbo].[vc_meter_list] vm
+        LEFT JOIN [dbo].view_meter_verify_times vtm ON vm.batch_id = vtm.batchId AND vm.meter_id = vtm.meterId
+        LEFT JOIN [dbo].vc_meter_verify_result vr ON vtm.verifyId = vr.verifyId
+        LEFT JOIN [dbo].[vc_meter_type] vt ON vm.type_id = vt.type_id
+        LEFT JOIN [dbo].[vc_meter_factory] vf ON vm.fact_id = vf.fact_id
+        LEFT JOIN [dbo].[bw_firm] ff ON vm.firm_id = ff.firm_id
+        LEFT JOIN (
+            SELECT TOP 1
+            stdFirm
+            FROM [dbo].vc_std_auth
+        ) std ON 1=1
+        WHERE
+        vm.meter_id NOT IN (
+        SELECT meterId
+        FROM [dbo].[vc_reg_verify_result] rm
+        <where>
+            <if test="batchId != null">
+                rm.batchId LIKE #{batchId}
+            </if>
+            AND rm.regType = 'METER_REG'
+            <!--
+            <if test="regType != null">
+                AND rm.regType LIKE #{regType}
+            </if>
+            <choose>
+                <when test="unregMeterList != null and unregMeterList.size > 0">
+                    AND rm.meterId IN
+                    <foreach collection="unregMeterList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            -->
+        </where>
+        )
+        <if test="batchId != null">
+            AND vm.batch_id LIKE #{batchId}
+        </if>
+        <choose>
+            <when test="meterId != null">
+                AND vm.meter_id LIKE #{meterId}
+            </when>
+            <when test="meterIdList != null and meterIdList.size > 0">
+                AND vm.meter_id IN
+                <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                    #{mid}
+                </foreach>
+            </when>
+        </choose>
+
+        <if test="createDateStart != null and createDateEnd != null">
+            AND vm.create_date BETWEEN #{createDateStart} AND #{createDateEnd}
+        </if>
+        <if test="createDateStart != null and createDateEnd == null">
+            AND vm.create_date &gt;= #{createDateStart}
+        </if>
+        <if test="createDateStart == null and createDateEnd != null">
+            AND vm.create_date &lt;= #{createDateEnd}
+        </if>
+
+        <if test="updateDateStart != null and updateDateEnd != null">
+            AND vm.update_date BETWEEN #{updateDateStart} AND #{updateDateEnd}
+        </if>
+        <if test="updateDateStart != null and updateDateEnd == null">
+            AND vm.update_date &gt;= #{updateDateStart}
+        </if>
+        <if test="updateDateStart == null and updateDateEnd != null">
+            AND vm.update_date &lt;= #{updateDateEnd}
+        </if>
+    </select>
+
+    <select id="listRegVerify" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcRegBatchMeter">
+        SELECT DISTINCT TOP (10000)
+                          rv.[regid]
+                         ,rv.[meterId]
+                         ,rv.[report_aid] AS reportId
+                         ,rv.[verifyId]
+                         ,rv.[batchId]
+                         ,rv.[certId]
+                         ,rv.[rptDate]
+                         ,rv.[verifyTimes]
+                         ,rv.[tempId]
+                         ,rv.[verifyDate]
+                         ,rv.[stuffName]
+                         ,rv.[verifyResult]
+                         ,rv.[boardResult]
+                         ,rv.[forceVerifyNo]
+                         ,rv.[moduleNo]
+                         ,rv.[clientName]
+                         ,rv.[factoryName]
+                         ,rv.[meterName]
+                         ,rv.[meterType]
+                         ,rv.[sizeId]
+                         ,rv.[modelSize]
+                         ,rv.[portType]
+                         ,rv.[verifyRule]
+                         ,rv.[standardInstrument]
+                         ,rv.[standardParam]
+                         ,rv.[indoorTemp]
+                         ,rv.[moisture]
+                         ,rv.[validDate]
+                         ,rv.[convertResult]
+                         ,rv.[pressResult]
+                         ,rv.[instrumentNo]
+                         ,std.stdFirm
+
+                         ,rv.[accurateGrade]
+                         ,rv.[pipeTemp]
+                         ,rv.[pipePressure]
+                         ,rv.[pulse]
+                         ,rv.[density]
+                         ,rv.[displayDiff]
+                         ,rv.[convertDiff]
+                         ,rv.[q4]
+                         ,rv.[q3]
+                         ,rv.[q3toq1]
+                         ,rv.[q4toq3]
+                         ,rv.[q2toq1]
+                         ,rv.[qr1]
+                         ,rv.[qr2]
+                         ,rv.[qr3]
+                         ,rv.[qr4]
+                         ,rv.[maxFlow]
+                         ,rv.[minFlow]
+                         ,rv.[commonFlow]
+                         ,rv.[convertLimit]
+                         ,rv.[verifyAgain]
+                         ,rv.[outerCheck]
+                         ,rv.[dataSrc]
+                         ,rv.[itemId]
+                         ,rv.[certType]
+                         ,br.[createBy] AS regUser
+        FROM [dbo].[vc_reg_verify_result] rv
+        JOIN [dbo].[vc_batch_reg] br ON rv.regid = br.regid
+        LEFT JOIN (
+            SELECT TOP 1
+            stdFirm
+            FROM [dbo].vc_std_auth
+        ) std ON 1=1
+        <where>
+            <if test="regid != null">
+                br.regid = #{regid}
+            </if>
+            <if test="batchId != null">
+                AND br.batchId LIKE #{batchId}
+            </if>
+            <choose>
+                <when test="regType != null">
+                    AND br.regType LIKE #{regType}
+                </when>
+                <otherwise>
+                    AND br.regType LIKE 'REPORT_REG'
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="meterId != null">
+                    AND rv.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rv.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="meterSize != null">
+                AND rv.meterSize = #{meterSize}
+            </if>
+            <if test="modelSize != null">
+                AND rv.modelSize = #{modelSize}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND rv.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND rv.createDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND rv.createDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <select id="listUnregVerify" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT DISTINCT TOP (10000)
+        r.[verifyId]
+        -- ,r.[report_aid] AS reportId
+        ,r.[meterId]
+        ,r.[batchId]
+        -- ,r.[certId]
+        -- ,r.[rptDate]
+        -- ,r.[verifyTimes]
+        ,r.[tempId]
+        ,r.[verifyDate]
+        ,r.[stuffName]
+        ,r.[verifyResult]
+        ,r.[boardResult]
+        ,r.[forceVerifyNo]
+        ,r.[moduleNo]
+        ,r.[clientName]
+        ,r.[factoryName]
+        ,r.[meterName]
+        ,r.[meterType]
+        ,r.[sizeId]
+        ,r.[modelSize]
+        ,r.[portType]
+        ,r.[verifyRule]
+        ,r.[standardInstrument]
+        ,r.[standardParam]
+        ,r.[indoorTemp]
+        ,r.[moisture]
+        ,r.[validDate]
+        ,r.[convertResult]
+        ,r.[pressResult]
+        ,r.[instrumentNo]
+        ,std.stdFirm
+
+        ,r.[accurateGrade]
+        ,r.[pipeTemp]
+        ,r.[pipePressure]
+        ,r.[pulse]
+        ,r.[density]
+        ,r.[displayDiff]
+        ,r.[convertDiff]
+        ,r.[q4]
+        ,r.[q3]
+        ,r.[q3toq1]
+        ,r.[q4toq3]
+        ,r.[q2toq1]
+        ,r.[qr1]
+        ,r.[qr2]
+        ,r.[qr3]
+        ,r.[qr4]
+        ,r.[maxFlow]
+        ,r.[minFlow]
+        ,r.[commonFlow]
+        ,r.[convertLimit]
+        ,r.[verifyAgain]
+        ,r.[outerCheck]
+        ,r.[dataSrc]
+        ,r.[itemId]
+        -- ,r.[certType]
+
+        ,pr.certType
+        ,pr.certId
+        ,br.reporter
+        ,u1.user_name AS reportName
+
+        ,br.rpt_auditor AS rptAuditor
+        ,u2.user_name AS rptAuditorName
+
+        FROM [dbo].[vc_meter_verify_result] r
+        LEFT JOIN [dbo].[vc_report_verify_result] pr ON r.batchId = pr.batchId AND r.meterId = pr.meterId
+        LEFT JOIN [dbo].vc_batch_report br ON r.batchId = br.batch_id AND br.certId IS NULL
+        LEFT JOIN [dbo].bw_user u1 ON br.reporter = u1.user_id
+        LEFT JOIN [dbo].bw_user u2 ON br.rpt_auditor = u2.user_id
+        LEFT JOIN (
+            SELECT TOP 1
+            stdFirm
+            FROM [dbo].vc_std_auth
+        ) std ON 1=1
+        <where>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+
+            <choose>
+                <when test="meterId != null">
+                    AND r.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND r.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            AND r.meterId NOT IN (
+                SELECT rr.meterId FROM
+                [dbo].[vc_batch_reg] br
+                JOIN [dbo].[vc_reg_verify_result] rr ON br.regid = rr.regid AND br.batchId = rr.batchId
+                <where>
+                    <if test="batchId != null">
+                        br.batchId LIKE #{batchId}
+                    </if>
+                    AND br.regType LIKE 'VERIFY_REG'
+                </where>
+            )
+
+            <if test="meterSize != null">
+                AND r.sizeId = #{meterSize}
+            </if>
+            <if test="modelSize != null">
+                AND r.modelSize = #{modelSize}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.verifyDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.verifyDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.verifyDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <select id="listUnregReportVerify" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcReportVerify">
+        SELECT DISTINCT TOP (10000)
+                         r.[verifyId]
+                        ,r.[report_aid] AS reportId
+                        ,r.[meterId]
+                        ,r.[batchId]
+                        ,r.[certId]
+                        ,r.[rptDate]
+                        ,r.[verifyTimes]
+                        ,r.[tempId]
+                        ,r.[verifyDate]
+                        ,r.[stuffName]
+                        ,r.[verifyResult]
+                        ,r.[boardResult]
+                        ,r.[forceVerifyNo]
+                        ,r.[moduleNo]
+                        ,r.[clientName]
+                        ,r.[factoryName]
+                        ,r.[meterName]
+                        ,r.[meterType]
+                        ,r.[sizeId]
+                        ,r.[modelSize]
+                        ,r.[portType]
+                        ,r.[verifyRule]
+                        ,r.[standardInstrument]
+                        ,r.[standardParam]
+                        ,r.[indoorTemp]
+                        ,r.[moisture]
+                        ,r.[validDate]
+                        ,r.[convertResult]
+                        ,r.[pressResult]
+                        ,r.[instrumentNo]
+                        ,std.stdFirm
+
+                        ,r.[accurateGrade]
+                        ,r.[pipeTemp]
+                        ,r.[pipePressure]
+                        ,r.[pulse]
+                        ,r.[density]
+                        ,r.[displayDiff]
+                        ,r.[convertDiff]
+                        ,r.[q4]
+                        ,r.[q3]
+                        ,r.[q3toq1]
+                        ,r.[q4toq3]
+                        ,r.[q2toq1]
+                        ,r.[qr1]
+                        ,r.[qr2]
+                        ,r.[qr3]
+                        ,r.[qr4]
+                        ,r.[maxFlow]
+                        ,r.[minFlow]
+                        ,r.[commonFlow]
+                        ,r.[convertLimit]
+                        ,r.[verifyAgain]
+                        ,r.[outerCheck]
+                        ,r.[dataSrc]
+                        ,r.[itemId]
+                        ,r.[certType]
+        FROM [dbo].[vc_report_verify_result] r
+        LEFT JOIN (
+            SELECT TOP 1
+            stdFirm
+            FROM [dbo].vc_std_auth
+        ) std ON 1=1
+        <where>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+            AND r.[certId] IS NOT NULL
+
+            <choose>
+                <when test="meterId != null">
+                    AND r.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND r.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            AND r.meterId NOT IN (
+                SELECT rr.meterId FROM
+                [dbo].[vc_batch_reg] br
+                LEFT JOIN [dbo].[vc_reg_verify_result] rr ON br.regid = rr.regid AND br.batchId = rr.batchId
+                <where>
+                    <if test="batchId != null">
+                        AND br.batchId LIKE #{batchId}
+                    </if>
+                    AND br.regType LIKE 'REPORT_REG'
+                </where>
+            )
+
+            <if test="meterSize != null">
+                AND r.sizeId = #{meterSize}
+            </if>
+            <if test="modelSize != null">
+                AND r.modelSize = #{modelSize}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.rptDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.rptDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.rptDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </select>
+
+    <insert id="regBatch" parameterType="com.abel.bigwater.verifymeter.model.VcRegBatch"
+            keyColumn="regid" keyProperty="regid" useGeneratedKeys="true">
+        INSERT INTO [dbo].[vc_batch_reg]
+        ([batchId]
+        ,[regType]
+
+        ,[createBy]
+        ,[createDate]
+        ,[totalCount]
+        ,[meterCount]
+        ,[meterName]
+        ,[meterSize]
+        ,[modelSize]
+        ,[verifyRange]
+        ,[verifyDev]
+        ,[factId]
+        ,[factName]
+        ,[madeIn]
+        ,[buyDate]
+        ,[installPlace]
+        ,[meterStatus]
+        ,[meterUse]
+        ,[meterType]
+        ,[verifyType]
+        ,[branchId]
+        ,[typeId]
+        ,[certId]
+        ,[validDate]
+        ,[meterLabel]
+        ,[regMemo]
+        ,[updateBy]
+        ,[updateDate])
+        VALUES
+        (#{batchId}
+        ,#{regType}
+
+        ,#{createBy}
+        ,GETDATE()
+        ,#{totalCount}
+        ,#{meterCount}
+        ,#{meterName}
+        ,#{meterSize}
+        ,#{modelSize}
+        ,#{verifyRange}
+        ,#{verifyDev}
+        ,#{factId}
+        ,#{factName}
+        ,#{madeIn}
+        ,#{buyDate}
+        ,#{installPlace}
+        ,#{meterStatus}
+        ,#{meterUse}
+        ,#{meterType}
+        ,#{verifyType}
+        ,#{branchId}
+        ,#{typeId}
+        ,#{certId}
+        ,#{validDate}
+        ,#{meterLabel}
+        ,#{regMemo}
+        ,#{updateBy}
+        ,GETDATE())
+    </insert>
+
+    <insert id="regBatchMeter" parameterType="com.abel.bigwater.verifymeter.model.VcRegBatchMeter">
+        INSERT INTO [dbo].[vc_reg_verify_result]
+        ([regid]
+        ,[meterId]
+        ,[report_aid]
+        ,[verifyId]
+        ,[batchId]
+        ,[regType]
+        ,[createBy]
+        ,[createDate]
+        ,[fixtureName]
+        ,[verifyRange]
+        ,[verifyDev]
+        ,[factId]
+        ,[factName]
+        ,[madeIn]
+        ,[buyDate]
+        ,[installPlace]
+        ,[meterStatus]
+        ,[meterUse]
+        ,[fixtureType]
+        ,[verifyType]
+        ,[branchId]
+        ,[typeId]
+        ,[meterLabel]
+        ,[regMemo]
+        ,[updateBy]
+        ,[updateDate]
+
+        ,[certId]
+        ,[rptDate]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[sizeId]
+        ,[modelSize]
+        ,[portType]
+
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck]
+        ,[dataSrc]
+        ,[itemId]
+        ,[certType]
+        )
+        VALUES
+        (#{regid}
+        ,#{meterId}
+        ,#{report_aid}
+        ,#{verifyId}
+        ,#{batchId}
+        ,#{regType}
+        ,#{createBy}
+        ,#{createDate}
+        ,#{fixtureName}
+        ,#{verifyRange}
+        ,#{verifyDev}
+        ,#{factId}
+        ,#{factName}
+        ,#{madeIn}
+        ,#{buyDate}
+        ,#{installPlace}
+        ,#{meterStatus}
+        ,#{meterUse}
+        ,#{fixtureType}
+        ,#{verifyType}
+        ,#{branchId}
+        ,#{typeId}
+        ,#{meterLabel}
+        ,#{regMemo}
+        ,#{updateBy}
+        ,#{updateDate}
+
+        ,#{certId}
+        ,#{rptDate}
+        ,#{verifyTimes}
+        ,#{tempId}
+        ,#{verifyDate}
+        ,#{stuffName}
+        ,#{verifyResult}
+        ,#{boardResult}
+        ,#{forceVerifyNo}
+        ,#{moduleNo}
+        ,#{clientName}
+        ,#{factoryName}
+        ,#{meterName}
+        ,#{meterType}
+        ,#{sizeId}
+        ,#{modelSize}
+        ,#{portType}
+
+        ,#{verifyRule}
+        ,#{standardInstrument}
+        ,#{standardParam}
+        ,#{indoorTemp}
+        ,#{moisture}
+        ,#{validDate}
+        ,#{convertResult}
+        ,#{pressResult}
+        ,#{instrumentNo}
+        ,#{accurateGrade}
+        ,#{pipeTemp}
+        ,#{pipePressure}
+        ,#{pulse}
+        ,#{density}
+        ,#{displayDiff}
+        ,#{convertDiff}
+        ,#{q4}
+        ,#{q3}
+        ,#{q3toq1}
+        ,#{q4toq3}
+        ,#{q2toq1}
+        ,#{qr1}
+        ,#{qr2}
+        ,#{qr3}
+        ,#{qr4}
+        ,#{maxFlow}
+        ,#{minFlow}
+        ,#{commonFlow}
+        ,#{convertLimit}
+        ,#{verifyAgain}
+        ,#{outerCheck}
+        ,#{dataSrc}
+        ,#{itemId}
+        ,#{certType}
+        )
+    </insert>
+
+    <insert id="copyBatchMeterList" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam">
+        INSERT INTO [dbo].[vc_reg_verify_result]
+        ([regid]
+        ,[meterId]
+        ,[report_aid]
+        ,[verifyId]
+        ,[batchId]
+        ,[regType]
+
+        ,[createBy]
+        ,[createDate]
+        ,[sizeId]
+        ,[verifyRange]
+        ,[verifyDev]
+
+        ,[factId]
+        ,[factName]
+        ,[madeIn]
+        ,[buyDate]
+        ,[installPlace]
+        ,[meterStatus]
+        ,[meterUse]
+        ,[verifyType]
+        ,[branchId]
+        ,[typeId]
+        ,[meterLabel]
+
+        ,[validDate]
+        ,[certId]
+        ,[rptDate]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck]
+        ,[dataSrc]
+        ,[itemId]
+        ,[certType]
+
+        ,[regMemo]
+        ,[updateBy]
+        ,[updateDate])
+
+        SELECT DISTINCT
+         #{regid}
+        ,m.meter_id AS meterId
+
+        ,pr.[report_aid]
+        ,ISNULL(pr.[verifyId], vr.[verifyId])
+
+        ,m.batch_id AS batchId
+        ,#{regType} AS regType
+
+        ,#{createBy}
+        ,GETDATE()
+        ,ISNULL(m.meter_size, #{meterSize}) AS sizeId
+        ,#{verifyRange}
+        ,#{verifyDev}
+
+        ,vf.fact_id
+        ,vf.fact_name
+        ,#{madeIn}
+        ,m.buy_date buyDate
+        ,#{installPlace}
+        ,#{meterStatus}
+        ,#{meterUse}
+        ,mb.verify_type_id
+        ,mb.firm_id
+        ,mb.type_id
+        ,#{meterLabel}
+
+        ,ISNULL(pr.[validDate], vr.[validDate])
+        ,pr.[certId]
+        ,pr.[rptDate]
+        ,pr.[verifyTimes]
+        ,ISNULL(pr.[tempId], vr.[tempId])
+        ,ISNULL(pr.[verifyDate], vr.[verifyDate])
+        ,ISNULL(pr.[stuffName], vr.[stuffName])
+        ,ISNULL(pr.[verifyResult], vr.[verifyResult])
+        ,ISNULL(pr.[boardResult], vr.[boardResult])
+        ,ISNULL(pr.[forceVerifyNo], vr.[forceVerifyNo])
+        ,ISNULL(pr.[moduleNo], vr.[moduleNo])
+        ,ISNULL(pr.[clientName], vr.[clientName])
+        ,ISNULL(pr.[factoryName], vr.[factoryName])
+        ,ISNULL(pr.[meterName], vr.[meterName])
+        ,ISNULL(pr.[meterType], vr.[meterType])
+        ,ISNULL(pr.[modelSize], vr.[modelSize])
+        ,ISNULL(pr.[portType], vr.[portType])
+        ,ISNULL(pr.[verifyRule], vr.[verifyRule])
+        ,ISNULL(pr.[standardInstrument], vr.[standardInstrument])
+        ,ISNULL(pr.[standardParam], vr.[standardParam])
+        ,ISNULL(pr.[indoorTemp], vr.[indoorTemp])
+        ,ISNULL(pr.[moisture], vr.[moisture])
+        ,ISNULL(pr.[convertResult], vr.[convertResult])
+        ,ISNULL(pr.[pressResult], vr.[pressResult])
+        ,ISNULL(pr.[instrumentNo], vr.[instrumentNo])
+        ,ISNULL(pr.[accurateGrade], vr.[accurateGrade])
+        ,ISNULL(pr.[pipeTemp], vr.[pipeTemp])
+        ,ISNULL(pr.[pipePressure], vr.[pipePressure])
+        ,ISNULL(pr.[pulse], vr.[pulse])
+        ,ISNULL(pr.[density], vr.[density])
+        ,ISNULL(pr.[displayDiff], vr.[displayDiff])
+        ,ISNULL(pr.[convertDiff], vr.[convertDiff])
+
+        ,ISNULL(pr.[q4], vr.[q4])
+        ,ISNULL(pr.[q3], vr.[q3])
+        ,ISNULL(pr.[q3toq1], vr.[q3toq1])
+        ,ISNULL(pr.[q4toq3], vr.[q4toq3])
+        ,ISNULL(pr.[q2toq1], vr.[q2toq1])
+        ,ISNULL(pr.[qr1], vr.[qr1])
+        ,ISNULL(pr.[qr2], vr.[qr2])
+        ,ISNULL(pr.[qr3], vr.[qr3])
+        ,ISNULL(pr.[qr4], vr.[qr4])
+        ,ISNULL(pr.[maxFlow], vr.[maxFlow])
+        ,ISNULL(pr.[minFlow], vr.[minFlow])
+        ,ISNULL(pr.[commonFlow], vr.[commonFlow])
+        ,ISNULL(pr.[convertLimit], vr.[convertLimit])
+        ,ISNULL(pr.[verifyAgain], vr.[verifyAgain])
+        ,ISNULL(pr.[outerCheck], vr.[outerCheck])
+        ,ISNULL(pr.[dataSrc], vr.[dataSrc])
+        ,ISNULL(pr.[itemId], vr.[itemId])
+        ,pr.[certType]
+
+        ,#{regMemo}
+        ,#{updateBy}
+        ,GETDATE()
+        FROM [dbo].[vc_meter_list] m
+        JOIN [dbo].vc_meter_batch mb ON m.batch_id = mb.batch_id
+        LEFT JOIN [dbo].[vc_meter_type] vt ON m.type_id = vt.type_id
+        LEFT JOIN [dbo].[vc_meter_factory] vf ON m.fact_id = vf.fact_id
+        LEFT JOIN [dbo].[bw_firm] ff ON m.firm_id = ff.firm_id
+        LEFT JOIN [dbo].[view_meter_verify_times] vmvt ON m.batch_id = vmvt.batchId AND m.meter_id = vmvt.meterId
+        LEFT JOIN [dbo].vc_meter_verify_result vr ON m.batch_id = vr.batchId AND m.meter_id = vr.meterId AND vmvt.verifyId = vr.verifyId
+        LEFT JOIN [dbo].vc_report_verify_result pr ON m.batch_id = pr.batchId AND m.meter_id = pr.meterId AND vmvt.verifyId = vr.verifyId
+        LEFT JOIN [dbo].vc_batch_report br ON m.batch_id = br.batch_id
+        LEFT JOIN [dbo].bw_user u1 ON br.reporter = u1.user_id
+        LEFT JOIN [dbo].bw_user u2 ON br.rpt_auditor = u1.user_id
+        <where>
+            m.batch_id = #{batchId}
+
+            <choose>
+                <when test="regRest == true">
+                    AND m.meter_id NOT IN (
+                    SELECT meterId
+                    FROM [dbo].[vc_reg_verify_result] m1
+                    WHERE batchId LIKE #{batchId}
+                    AND regType = #{regType}
+                    )
+                </when>
+
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meter_id IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+
+                <when test="meterId != null">
+                    AND m.meter_id LIKE #{meterId}
+                </when>
+            </choose>
+        </where>
+    </insert>
+
+    <insert id="copyBatchVerifyList_Ob" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam">
+        INSERT INTO [dbo].[vc_reg_verify_result]
+        (
+        [regid]
+        ,[meterId]
+        ,[report_aid]
+        ,[verifyId]
+        ,[batchId]
+        ,[certId]
+        ,[rptDate]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[sizeId]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck]
+        ,[dataSrc]
+        ,[itemId]
+        ,[certType]
+        )
+        SELECT TOP (20000)
+        #{regid}
+        ,rr.[meterId]
+        ,-1 AS reportId
+        ,rr.[verifyId]
+        ,rr.[batchId]
+        ,NULL
+        ,NULL
+        ,NULL
+        ,rr.[tempId]
+        ,rr.[verifyDate]
+        ,rr.[stuffName]
+        ,rr.[verifyResult]
+        ,rr.[boardResult]
+        ,rr.[forceVerifyNo]
+        ,rr.[moduleNo]
+        ,rr.[clientName]
+        ,rr.[factoryName]
+        ,rr.[meterName]
+        ,rr.[meterType]
+        ,rr.[sizeId]
+        ,rr.[modelSize]
+        ,rr.[portType]
+        ,rr.[verifyRule]
+        ,rr.[standardInstrument]
+        ,rr.[standardParam]
+        ,rr.[indoorTemp]
+        ,rr.[moisture]
+        ,rr.[validDate]
+        ,rr.[convertResult]
+        ,rr.[pressResult]
+        ,rr.[instrumentNo]
+        ,rr.[accurateGrade]
+        ,rr.[pipeTemp]
+        ,rr.[pipePressure]
+        ,rr.[pulse]
+        ,rr.[density]
+        ,rr.[displayDiff]
+        ,rr.[convertDiff]
+        ,rr.[q4]
+        ,rr.[q3]
+        ,rr.[q3toq1]
+        ,rr.[q4toq3]
+        ,rr.[q2toq1]
+        ,rr.[qr1]
+        ,rr.[qr2]
+        ,rr.[qr3]
+        ,rr.[qr4]
+        ,rr.[maxFlow]
+        ,rr.[minFlow]
+        ,rr.[commonFlow]
+        ,rr.[convertLimit]
+        ,rr.[verifyAgain]
+        ,rr.[outerCheck]
+        ,rr.[dataSrc]
+        ,rr.[itemId]
+        ,NULL
+        FROM [dbo].[vc_meter_verify_result] rr
+        <where>
+            rr.batchId LIKE #{batchId}
+
+            <choose>
+                <when test="regRest == true">
+                    AND rr.meterId NOT IN (
+                    SELECT meterId
+                    FROM [dbo].[vc_reg_verify_result] m1
+                    JOIN [dbo].[vc_batch_reg] br ON (m1.batchId = br.batchId)
+                    <where>
+                        m1.batchId LIKE #{batchId}
+                        AND br.regType = 'VERIFY_REG'
+                    </where>
+                    )
+                </when>
+
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rr.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+
+                <when test="meterId != null">
+                    AND rr.meterId LIKE #{meterId}
+                </when>
+            </choose>
+        </where>
+    </insert>
+
+
+    <insert id="copyBatchReportList_Ob" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam">
+        INSERT INTO [dbo].[vc_reg_verify_result]
+        (
+        [regid]
+        ,[meterId]
+        ,[report_aid]
+        ,[verifyId]
+        ,[batchId]
+        ,[certId]
+        ,[rptDate]
+        ,[verifyTimes]
+        ,[tempId]
+        ,[verifyDate]
+        ,[stuffName]
+        ,[verifyResult]
+        ,[boardResult]
+        ,[forceVerifyNo]
+        ,[moduleNo]
+        ,[clientName]
+        ,[factoryName]
+        ,[meterName]
+        ,[meterType]
+        ,[sizeId]
+        ,[modelSize]
+        ,[portType]
+        ,[verifyRule]
+        ,[standardInstrument]
+        ,[standardParam]
+        ,[indoorTemp]
+        ,[moisture]
+        ,[validDate]
+        ,[convertResult]
+        ,[pressResult]
+        ,[instrumentNo]
+        ,[accurateGrade]
+        ,[pipeTemp]
+        ,[pipePressure]
+        ,[pulse]
+        ,[density]
+        ,[displayDiff]
+        ,[convertDiff]
+        ,[q4]
+        ,[q3]
+        ,[q3toq1]
+        ,[q4toq3]
+        ,[q2toq1]
+        ,[qr1]
+        ,[qr2]
+        ,[qr3]
+        ,[qr4]
+        ,[maxFlow]
+        ,[minFlow]
+        ,[commonFlow]
+        ,[convertLimit]
+        ,[verifyAgain]
+        ,[outerCheck]
+        ,[dataSrc]
+        ,[itemId]
+        ,[certType]
+        )
+        SELECT TOP (20000)
+         #{regid}
+        ,rr.[meterId]
+        ,rr.[report_aid]
+        ,rr.[verifyId]
+        ,rr.[batchId]
+        ,rr.[certId]
+        ,rr.[rptDate]
+        ,rr.[verifyTimes]
+        ,rr.[tempId]
+        ,rr.[verifyDate]
+        ,rr.[stuffName]
+        ,rr.[verifyResult]
+        ,rr.[boardResult]
+        ,rr.[forceVerifyNo]
+        ,rr.[moduleNo]
+        ,rr.[clientName]
+        ,rr.[factoryName]
+        ,rr.[meterName]
+        ,rr.[meterType]
+        ,rr.[sizeId]
+        ,rr.[modelSize]
+        ,rr.[portType]
+        ,rr.[verifyRule]
+        ,rr.[standardInstrument]
+        ,rr.[standardParam]
+        ,rr.[indoorTemp]
+        ,rr.[moisture]
+        ,rr.[validDate]
+        ,rr.[convertResult]
+        ,rr.[pressResult]
+        ,rr.[instrumentNo]
+        ,rr.[accurateGrade]
+        ,rr.[pipeTemp]
+        ,rr.[pipePressure]
+        ,rr.[pulse]
+        ,rr.[density]
+        ,rr.[displayDiff]
+        ,rr.[convertDiff]
+        ,rr.[q4]
+        ,rr.[q3]
+        ,rr.[q3toq1]
+        ,rr.[q4toq3]
+        ,rr.[q2toq1]
+        ,rr.[qr1]
+        ,rr.[qr2]
+        ,rr.[qr3]
+        ,rr.[qr4]
+        ,rr.[maxFlow]
+        ,rr.[minFlow]
+        ,rr.[commonFlow]
+        ,rr.[convertLimit]
+        ,rr.[verifyAgain]
+        ,rr.[outerCheck]
+        ,rr.[dataSrc]
+        ,rr.[itemId]
+        ,rr.[certType]
+        FROM [dbo].[vc_report_verify_result] rr
+        <where>
+            rr.batchId LIKE #{batchId}
+            AND rr.certId IS NOT NULL
+
+            <choose>
+                <when test="regRest == true">
+                    AND rr.meterId NOT IN (
+                    SELECT meterId
+                    FROM [dbo].[vc_reg_verify_result] m1
+                    JOIN [dbo].[vc_batch_reg] br ON (m1.batchId = br.batchId)
+                    <where>
+                        m1.batchId LIKE #{batchId}
+                        AND br.regType = 'REPORT_REG'
+                    </where>
+                    )
+                </when>
+
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND rr.meterId IN
+                    <foreach collection="meterIdList" open="(" close=")" separator="," item="mid">
+                        #{mid}
+                    </foreach>
+                </when>
+
+                <when test="meterId != null">
+                    AND rr.meterId LIKE #{meterId}
+                </when>
+            </choose>
+        </where>
+    </insert>
+
+    <delete id="removeRegVerify" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam">
+        DELETE r
+        FROM [dbo].[vc_reg_verify_result] r
+        LEFT JOIN [dbo].[vc_batch_reg] br ON r.regid = br.regid
+        <where>
+            <if test="regid != null">
+                r.regid = #{regid}
+            </if>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+            <choose>
+                <when test="regType != null">
+                    AND br.regType LIKE #{regType}
+                </when>
+                <otherwise>
+                    AND br.regType LIKE 'REPORT_REG'
+                </otherwise>
+            </choose>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.createDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.createDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="removeReg" parameterType="com.abel.bigwater.verifymeter.webapi.RegParam">
+        DELETE r
+        FROM [dbo].[vc_batch_reg] r
+        <where>
+            <if test="regid != null">
+                r.regid = #{regid}
+            </if>
+            <if test="batchId != null">
+                AND r.batchId LIKE #{batchId}
+            </if>
+            <if test="regType != null">
+                AND r.regType LIKE #{regType}
+            </if>
+            <if test="createDateStart != null and createDateEnd != null">
+                AND r.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+            </if>
+            <if test="createDateStart == null and createDateEnd != null">
+                AND r.createDate &lt;= #{createDateEnd}
+            </if>
+            <if test="createDateStart != null and createDateEnd == null">
+                AND r.createDate &gt;= #{createDateStart}
+            </if>
+        </where>
+    </delete>
+</mapper>

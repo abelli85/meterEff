@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.verifymeter.mapper.StatMapper">
+    <select id="listStuffScore" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcStuffStat">
+        SELECT
+         vs.[statType]
+        ,vs.[sizeId]
+--        ,vs.[modelSize]
+        ,ISNULL(fs.[verifyStuff], vs.[stuffId]) AS [stuffId]
+        ,vs.[stuffId] AS stuffName
+        ,vs.[workDate]
+        ,ISNULL(vs.[sizeName], vs.[sizeId]) AS sizeName
+        ,vs.[verifyCount]
+        ,vs.[passCount]
+        ,vs.[failCount]
+        ,vs.[workCount]
+        ,vs.[overCount]
+        ,vs.[holiday]
+        ,vs.[weekend]
+        ,vs.[workday]
+        ,vs.[ot1Total]
+        ,vs.[morningTotal]
+        ,vs.[ot2Total]
+        ,vs.[afternoonTotal]
+        ,vs.[ot3Total]
+        ,vs.[ot1Again]
+        ,vs.[morningAgain]
+        ,vs.[ot2Again]
+        ,vs.[afternoonAgain]
+        ,vs.[ot3Again]
+        ,vs.[createBy]
+        ,vs.[createDate]
+        ,vs.[updateBy]
+        ,vs.[updateDate]
+        ,fs.[firm_id] firmId
+        ,fm.[firm_name] AS firmName
+        FROM [dbo].[vc_stuff_score] vs
+        LEFT JOIN [dbo].[bw_user] fs ON vs.stuffId = fs.user_name
+        LEFT JOIN [dbo].[bw_firm] fm ON fs.firm_id = fm.firm_id
+        <where>
+            <choose>
+                <when test="stuffStatType != null">
+                    vs.statType = #{stuffStatType}
+                </when>
+                <when test="statType != null">
+                    vs.statType = #{statType}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND vs.sizeId = #{sizeId}
+            </if>
+            <if test="stuffId != null">
+                AND vs.stuffId = #{stuffId}
+            </if>
+
+            <choose>
+                <when test="workDate != null">
+                    AND vs.workDate = #{workDate}
+                </when>
+                <when test="startDate != null and endDate != null">
+                    AND vs.workDate BETWEEN #{startDate} AND #{endDate}
+                </when>
+                <when test="startDate != null">
+                    AND vs.workDate &gt;= #{startDate}
+                </when>
+                <when test="endDate != null">
+                    AND vs.workDate &lt;= #{endDate}
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (fs.firm_id LIKE #{firmId} OR fs.firm_id IS NULL)
+            </if>
+        </where>
+    </select>
+
+    <select id="listStuffDailyCount" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcStuffStat">
+        SELECT
+         vs.[statType]
+        ,ISNULL(fs.[verifyStuff], vs.[stuffId]) AS [stuffId]
+        ,vs.[stuffId] AS stuffName
+        ,vs.[workDate]
+
+        ,SUM(vs.[verifyCount]) [verifyCount]
+        ,SUM(vs.[passCount]) [passCount]
+        ,SUM(vs.[failCount]) [failCount]
+        ,SUM(vs.[workCount]) [workCount]
+        ,SUM(vs.[overCount]) [overCount]
+        ,fs.[firm_id] firmId
+        ,fm.[firm_name] AS firmName
+        FROM [dbo].[vc_stuff_score] vs
+        LEFT JOIN [dbo].[bw_user] fs ON vs.stuffId = fs.user_name
+        LEFT JOIN [dbo].[bw_firm] fm ON fs.firm_id = fm.firm_id
+        <where>
+            <choose>
+                <when test="stuffStatType != null">
+                    vs.statType = #{stuffStatType}
+                </when>
+                <when test="statType != null">
+                    vs.statType = #{statType}
+                </when>
+            </choose>
+
+            <if test="stuffId != null">
+                AND vs.stuffId = #{stuffId}
+            </if>
+
+            <choose>
+                <when test="workDate != null">
+                    AND vs.workDate = #{workDate}
+                </when>
+                <when test="startDate != null and endDate != null">
+                    AND vs.workDate BETWEEN #{startDate} AND #{endDate}
+                </when>
+                <when test="startDate != null">
+                    AND vs.workDate &gt;= #{startDate}
+                </when>
+                <when test="endDate != null">
+                    AND vs.workDate &lt;= #{endDate}
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (fs.firm_id LIKE #{firmId} OR fs.firm_id IS NULL)
+            </if>
+        </where>
+        GROUP BY
+        vs.[statType]
+        ,vs.[stuffId]
+        ,fs.[verifyStuff]
+        ,vs.[workDate]
+        ,fs.[firm_id]
+        ,fm.[firm_name]
+    </select>
+
+    <select id="listStuffDailySizeCount" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcStuffStat">
+        SELECT
+        vs.[statType]
+        ,ISNULL(fs.[verifyStuff], vs.[stuffId]) AS [stuffId]
+        ,vs.[stuffId] AS stuffName
+        ,vs.[workDate]
+
+        ,vs.[sizeId]
+        --        ,vs.[modelSize]
+        ,ISNULL(vs.[sizeName], vs.[sizeId]) AS sizeName
+
+        ,SUM(vs.[verifyCount]) [verifyCount]
+        ,SUM(vs.[passCount]) [passCount]
+        ,SUM(vs.[failCount]) [failCount]
+        ,SUM(vs.[workCount]) [workCount]
+        ,SUM(vs.[overCount]) [overCount]
+        ,fs.[firm_id] [firmId]
+        ,fm.[firm_name] AS firmName
+        FROM [dbo].[vc_stuff_score] vs
+        LEFT JOIN [dbo].[bw_user] fs ON vs.stuffId = fs.user_name
+        LEFT JOIN [dbo].[bw_firm] fm ON fs.firm_id = fm.firm_id
+        <where>
+            <choose>
+                <when test="stuffStatType != null">
+                    vs.statType = #{stuffStatType}
+                </when>
+                <when test="statType != null">
+                    vs.statType = #{statType}
+                </when>
+            </choose>
+
+            <if test="stuffId != null">
+                AND vs.stuffId = #{stuffId}
+            </if>
+            <if test="sizeId != null">
+                AND vs.sizeId = #{sizeId}
+            </if>
+
+            <choose>
+                <when test="workDate != null">
+                    AND vs.workDate = #{workDate}
+                </when>
+                <when test="startDate != null and endDate != null">
+                    AND vs.workDate BETWEEN #{startDate} AND #{endDate}
+                </when>
+                <when test="startDate != null">
+                    AND vs.workDate &gt;= #{startDate}
+                </when>
+                <when test="endDate != null">
+                    AND vs.workDate &lt;= #{endDate}
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (fs.firm_id LIKE #{firmId} OR fs.firm_id IS NULL)
+            </if>
+        </where>
+        GROUP BY
+        vs.[statType]
+        ,vs.[stuffId]
+        ,fs.[verifyStuff]
+        ,vs.[workDate]
+        ,vs.[sizeId]
+        --        ,vs.[modelSize]
+        ,ISNULL(vs.[sizeName], vs.[sizeId])
+        ,fs.[firm_id]
+        ,fm.[firm_name]
+    </select>
+
+    <select id="listFactoryStat" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcFactoryStat">
+        SELECT [statType]
+             ,[meterClass]
+             ,[sizeId]
+             ,[factId]
+
+             ,[startDate]
+             ,[endDate]
+
+             ,[totalCount]
+             ,[verifyCount]
+             ,[meterCount]
+             ,[waitCount]
+             ,[passCount]
+             ,[failCount]
+
+             ,ISNULL([meterClassName], [meterClass]) AS meterClassName
+             ,ISNULL([factName], [factId]) AS factName
+             ,ISNULL([sizeName], [sizeId]) AS sizeName
+
+             ,[createBy]
+             ,[createDate]
+             ,[updateBy]
+             ,[updateDate]
+        FROM [dbo].[vc_factory_stat] vf
+        <where>
+            <if test="statType != null">
+                vf.statType = #{statType}
+            </if>
+            <if test="meterClass != null">
+                AND vf.meterClass = #{meterClass}
+            </if>
+            <if test="sizeId != null">
+                AND vf.sizeId = #{sizeId}
+            </if>
+            <if test="factId != null">
+                AND vf.factId LIKE #{factId}
+            </if>
+            <choose>
+                <when test="startDate != null and endDate != null">
+                    AND (vf.startDate BETWEEN #{startDate} AND #{endDate}
+                    OR #{startDate} BETWEEN vf.startDate AND vf.endDate)
+                </when>
+                <when test="startDate != null">
+                    AND #{startDate} BETWEEN vf.startDate AND vf.endDate
+                </when>
+                <when test="endDate != null">
+                    AND #{endDate} BETWEEN vf.startDate AND vf.endDate
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="listVerifyStat"  parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcSizeStat">
+        SELECT vt.[statType]
+             ,vt.[sizeId]
+             ,ISNULL(sz.[value_name], vt.[sizeId]) AS sizeName
+
+             ,vt.verifyTypeId
+             ,ISNULL(vtp.value_name, vt.verifyTypeId) AS verifyTypeName
+
+             ,vt.verifyReason
+             ,ISNULL(vtr.value_name, vt.verifyReason) AS verifyReasonName
+
+             ,vt.meterClass
+             ,ISNULL(vtc.value_name, vt.meterClass) AS meterClassName
+
+             ,vt.brandId
+             ,ISNULL(vtb.value_name, vt.brandId) AS brandName
+
+             ,vt.modelSize
+
+             ,vt.[startDate]
+             ,vt.[endDate]
+
+             ,vt.[totalCount]
+             ,vt.[verifyCount]
+             ,vt.[waitCount]
+             ,vt.[passCount]
+             ,vt.[failCount]
+
+             ,vt.[verifyMeter]
+             ,vt.[passMeter]
+             ,vt.[failMeter]
+
+             ,vt.[totalBatch]
+             ,vt.[verifyingBatch]
+             ,vt.[finishedBatch]
+
+             ,vt.[createBy]
+             ,vt.[createDate]
+             ,vt.[updateBy]
+             ,vt.[updateDate]
+        FROM [dbo].[vc_verify_stat] vt
+        LEFT JOIN [dbo].[vc_code_value] sz ON (vt.sizeId = sz.[value_id] AND sz.[code_id] = 'SIZE')
+        LEFT JOIN [dbo].vc_code_value vtp ON (vt.verifyTypeId = vtp.value_id AND vtp.code_id = 'VERIFY_TYPE')
+        LEFT JOIN [dbo].vc_code_value vtr ON (vt.verifyReason = vtr.value_id AND vtr.code_id = 'VERIFY_REASON')
+        LEFT JOIN [dbo].vc_code_value vtc ON (vt.meterClass = vtc.value_id AND vtc.code_id = 'METER_CLASS')
+        LEFT JOIN [dbo].vc_code_value vtb ON (vt.brandId = vtb.value_id AND vtb.code_id = 'BRAND')
+        <where>
+            <if test="statType != null">
+                vt.statType = #{statType}
+            </if>
+            <if test="sizeId != null">
+                AND vt.sizeId = #{sizeId}
+            </if>
+            <if test="factId != null">
+                AND vt.factId LIKE #{factId}
+            </if>
+            <if test="verifyTypeId != null">
+                AND vt.verifyTypeId = #{verifyTypeId}
+            </if>
+            <if test="verifyReason != null">
+                AND vt.verifyReason LIKE #{verifyReason}
+            </if>
+            <if test="brandId != null">
+                AND vt.brandId = #{brandId}
+            </if>
+            <if test="modelSize != null">
+                AND vt.modelSize LIKE #{modelSize}
+            </if>
+            <choose>
+                <when test="startDate != null and endDate != null">
+                    AND vt.startDate BETWEEN #{startDate} AND #{endDate}
+                </when>
+                <when test="startDate != null">
+                    AND vt.startDate &gt;= #{startDate}
+                </when>
+                <when test="endDate != null">
+                    AND vt.startDate &lt;= #{endDate}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <update id="statVerify" statementType="CALLABLE" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam">
+        <![CDATA[
+        {
+            call [dbo].[statVerifyOnce] (
+                #{stuffId, mode=IN, jdbcType=VARCHAR},
+                #{startDate, mode=IN, jdbcType=VARCHAR},
+                #{result, mode=OUT, jdbcType=INTEGER}
+            ) }
+        ]]>
+    </update>
+
+    <update id="syncStuffScore" statementType="CALLABLE">
+        <![CDATA[
+        {
+            CALL [dbo].[syncStuffScore]
+            }
+        ]]>
+    </update>
+
+    <delete id="deleteSizeStat" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam">
+        DELETE vt FROM [dbo].[vc_verify_stat] vt
+        <where>
+            <if test="statType != null">
+                vt.statType = #{statType}
+            </if>
+            <if test="sizeId != null">
+                AND vt.sizeId = #{sizeId}
+            </if>
+            <if test="factId != null">
+                AND vt.factId LIKE #{factId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND vt.startDate BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="startDate != null and endDate == null">
+                AND vt.startDate &gt;= #{startDate}
+            </if>
+            <if test="startDate == null and endDate != null">
+                AND vt.startDate &lt;= #{endDate}
+            </if>
+        </where>
+    </delete>
+    
+    <delete id="deleteFactoryStat" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam">
+        DELETE vf FROM [dbo].[vc_factory_stat] vf
+        <where>
+            <if test="statType != null">
+                vf.statType = #{statType}
+            </if>
+            <if test="sizeId != null">
+                AND vf.sizeId = #{sizeId}
+            </if>
+            <if test="factId != null">
+                AND vf.factId LIKE #{factId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND vf.startDate BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="startDate != null and endDate == null">
+                AND vf.startDate &gt;= #{startDate}
+            </if>
+            <if test="startDate == null and endDate != null">
+                AND vf.startDate &lt;= #{endDate}
+            </if>
+        </where>
+    </delete>
+    
+    <delete id="deleteStuffScore" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam">
+        DELETE vs FROM [dbo].[vc_stuff_score] vs
+        LEFT JOIN [dbo].[vc_firm_stuff] fs ON vs.stuffId = fs.stuffId
+        <where>
+            <if test="stuffStatType != null">
+                vs.statType = #{stuffStatType}
+            </if>
+            <if test="stuffStatType == null and statType != null">
+                vs.statType = #{statType}
+            </if>
+            <if test="sizeId != null">
+                AND vs.sizeId = #{sizeId}
+            </if>
+            <if test="stuffId != null">
+                AND vs.stuffId = #{stuffId}
+            </if>
+            <if test="workDate != null">
+                AND vs.workDate = #{workDate}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND vs.workDate BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="startDate != null and endDate == null">
+                AND vs.workDate &gt;= #{startDate}
+            </if>
+            <if test="startDate == null and endDate != null">
+                AND vs.workDate &lt;= #{endDate}
+            </if>
+        </where>
+    </delete>
+
+    <select id="listPlan" parameterType="com.abel.bigwater.verifymeter.webapi.StatParam"
+            resultType="com.abel.bigwater.verifymeter.model.VcPlanProc">
+        SELECT TOP (1000) [planId]
+                        ,[planYear]
+                        ,[planMonth]
+                        ,[planDay]
+                        ,[planCount]
+                        ,[procCount]
+                        ,[createBy]
+                        ,[createDate]
+                        ,[updateBy]
+                        ,[updateDate]
+        FROM [dbo].[vc_verify_plan]
+        <where>
+            <if test="planId != null">
+                [planId] = #{planId}
+            </if>
+            <if test="planYear != null">
+                AND [planYear] = #{planYear}
+            </if>
+            <if test="planMonth != null">
+                AND [planMonth] = #{planMonth}
+            </if>
+            <if test="planDay != null">
+                AND [planDay] = #{planDay}
+            </if>
+            <if test="planYearStart != null and planYearEnd != null">
+                AND [planYear] BETWEEN #{planYearStart} AND #{planYearEnd}
+            </if>
+        </where>
+        ORDER BY planYear, planMonth, planDay
+    </select>
+
+    <insert id="insertPlan" parameterType="com.abel.bigwater.verifymeter.model.VcPlanProc"
+            useGeneratedKeys="true" keyProperty="planId" keyColumn="planId">
+        INSERT INTO [dbo].[vc_verify_plan](
+       [planYear]
+      ,[planMonth]
+      ,[planDay]
+      ,[planCount]
+      ,[procCount]
+      ,[createBy]
+      ,[createDate])
+      VALUES (
+              #{planYear}
+             ,#{planMonth}
+             ,#{planDay}
+             ,#{planCount}
+             ,#{procCount}
+             ,#{createBy}
+             ,GETDATE()
+             )
+    </insert>
+
+    <update id="updatePlan" parameterType="com.abel.bigwater.verifymeter.model.VcPlanProc">
+        UPDATE [dbo].[vc_verify_plan]
+        <set>
+            <if test="planCount != null">
+                ,[planCount] = #{planCount}
+            </if>
+            <if test="updateBy != null">
+                ,[updateBy] = #{updateBy}
+            </if>
+            , [updateDate] = GETDATE()
+        </set>
+        <where>
+            <choose>
+                <when test="planId != null">
+                    [planId] = #{planId}
+                </when>
+                <otherwise>
+                    [planYear] = #{planYear}
+                    <choose>
+                        <when test="planMonth != null">
+                            AND [planMonth] = #{planMonth}
+                        </when>
+                        <otherwise>
+                            AND [planMonth] IS NULL
+                        </otherwise>
+                    </choose>
+                    <choose>
+                        <when test="planDay != null">
+                            AND [planDay] = #{planDay}
+                        </when>
+                        <otherwise>
+                            AND [planDay] IS NULL
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+</mapper>
