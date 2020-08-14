@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.UserMapper">
+
+    <select id="listUser" resultType="com.abel.bigwater.model.BwUser">
+        SELECT DISTINCT
+        u.userId AS id
+        , u.userName AS name
+        , u.mobile
+        , u.email
+        , u.passHash
+        , u.status
+        , u.firmId
+        , f.firmName
+        , emailValid
+        , emailToken
+        , userToken
+        , u.smallIcon
+        , u.bigIcon
+        , u.signPic
+        , u.createBy
+        , u.createDate
+        , u.updateBy
+        , u.updateDate
+        , u.verifyStuff
+        , ul.lastLoginTime
+        FROM BwUser u LEFT JOIN (
+        SELECT userId, MAX(loginTime) AS lastLoginTime
+        FROM BwUserLogin
+        GROUP BY userId) ul ON u.userId = ul.userId
+
+        LEFT JOIN bwFirm f ON u.firmId = f.firmId
+
+        <where>
+            u.firmId LIKE #{firmId}
+            <if test='idStr != null'>
+                AND u.userId LIKE #{idStr}
+            </if>
+            <if test='nameStr != null'>
+                AND u.userName LIKE #{nameStr}
+            </if>
+        </where>
+    </select>
+
+    <select id="listUserByRole" resultType="com.abel.bigwater.model.BwUser">
+        SELECT u.userId     AS id
+             , u.name
+             , u.mobile
+             , u.email
+             , u.passHash
+             , u.status
+             , u.firmId
+             , f.firmName
+             , u.emailValid
+             , u.emailToken
+             , u.userToken
+             , u.smallIcon
+             , u.bigIcon
+             , u.signPic
+             , u.createBy
+             , u.createDate
+             , u.updateBy
+             , u.updateDate
+             , u.verifyStuff
+             , ul.lastLoginTime
+        FROM BwUser u
+                 LEFT JOIN (
+            SELECT userId,
+                   MAX(loginTime) AS lastLoginTime
+            FROM BwUserLogin
+            GROUP BY userId) ul ON u.userId = ul.userId
+                 JOIN BwUserRole ur ON u.userId = ur.userId
+                 LEFT JOIN BwFirm f ON u.firmId = f.firmId
+        WHERE ur.roleName = #{roleName}
+    </select>
+
+    <select id="selectUser" resultType="com.abel.bigwater.model.BwUser">
+        SELECT u.userId     as id
+             , u.userName     as name
+             , u.mobile
+             , u.email
+             , u.status
+             , u.passHash
+             , u.firmId
+             , f.firmName
+             , emailValid
+             , emailToken
+             , userToken
+             , u.smallIcon
+             , u.bigIcon
+             , u.signPic
+             , u.createBy
+             , u.createDate
+             , u.updateBy
+             , u.updateDate
+             , u.verifyStuff
+             , ul.lastLoginTime
+        FROM BwUser u
+                 LEFT JOIN (
+            SELECT userId, MAX(loginTime) AS lastLoginTime
+            FROM BwUserLogin
+            GROUP BY userId
+        ) ul ON u.userId = ul.userId
+                 LEFT JOIN BwFirm f ON u.firmId = f.firmId
+        WHERE u.userId = #{userId}
+           OR u.mobile = #{userId}
+           OR u.email = #{userId}
+    </select>
+
+    <insert id="insertUser" parameterType="com.abel.bigwater.model.BwUser">
+        INSERT INTO BwUser
+        ( userId
+        , userName
+        , mobile
+        , email
+        , status
+        , passHash
+        , firmId
+        , emailValid
+        , emailToken
+        , userToken
+        , smallIcon
+        , bigIcon
+        , signPic
+        , createBy
+        , createDate
+        , verifyStuff)
+        VALUES ( #{id}
+               , #{name}
+               , #{mobile}
+               , #{email}
+               , #{passHash}
+               , #{status}
+               , #{firmId}
+               , #{emailValid}
+               , #{emailToken}
+               , #{userToken}
+               , #{smallIcon}
+               , #{bigIcon}
+               , #{signPic}
+               , #{createBy}
+               , GETDATE()
+               , #{verifyStuff})
+
+    </insert>
+
+    <delete id="deleteUser" parameterType="com.abel.bigwater.model.BwUser">
+        DELETE
+        FROM BwUser
+        <where>
+            userId = #{id}
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
+        </where>
+    </delete>
+
+    <update id="updateUser" parameterType="com.abel.bigwater.model.BwUser">
+
+        UPDATE BwUser
+        <set>
+            <if test='status != null'>
+                status = #{status},
+            </if>
+            <if test='firmId != null'>
+                firmId = #{firmId},
+            </if>
+            <if test='name != null'>
+                userName = #{name},
+            </if>
+            <if test='mobile != null'>
+                mobile = #{mobile},
+            </if>
+            <if test='email != null'>
+                email = #{email},
+            </if>
+            <if test='passHash != null'>
+                passHash = #{passHash},
+            </if>
+            <if test='signPic != null'>
+                signPic = #{signPic},
+            </if>
+            <if test='smallIcon != null'>
+                smallIcon = #{smallIcon},
+            </if>
+            <if test='bigIcon != null'>
+                bigIcon = #{bigIcon},
+            </if>
+            <if test="verifyStuff != null">
+                verifyStuff = #{verifyStuff},
+            </if>
+            updateBy = #{updateBy},
+            updateDate = GETDATE()
+        </set>
+        WHERE userId = #{id}
+    </update>
+
+    <update id="updateUserToken" parameterType="com.abel.bigwater.model.BwUser">
+
+        UPDATE BwUser
+        <set>
+            <if test='emailValid != null'>
+                emailValid = #{emailValid},
+            </if>
+            <if test='emailToken != null'>
+                emailToken = #{emailToken},
+            </if>
+            <if test='userToken != null'>
+                userToken = #{userToken},
+            </if>
+        </set>
+        WHERE userId = #{id}
+    </update>
+
+    <insert id="insertUserLogin" parameterType="com.abel.bigwater.model.BwUserLogin">
+        INSERT INTO BwUserLogin
+        (sessionId,
+         userId,
+         loginTime,
+         ipAddr,
+         devId,
+         shareSalt)
+        VALUES (#{id},
+                #{userId},
+                #{loginTime},
+                #{ipAddr},
+                #{devId},
+                #{shareSalt})
+    </insert>
+
+    <delete id="deleteUserLogin">
+        DELETE
+        FROM BwUserLogin
+        WHERE sessionId = #{sid}
+    </delete>
+
+    <delete id="deleteUserLoginObsolete">
+        DELETE
+        FROM BwUserLogin
+        WHERE loginTime &lt; DateAdd(m, -1, getdate())
+    </delete>
+
+    <select id="selectUserLogin" parameterType="com.abel.bigwater.api.LoginRequest"
+            resultType="com.abel.bigwater.model.BwUserLogin">
+        SELECT ul.sessionId AS id,
+               ul.userId,
+               ul.loginTime,
+               ul.ipAddr,
+               ul.devId,
+               ul.shareSalt,
+               u.userName,
+               u.firmId,
+               u.smallIcon,
+               u.bigIcon,
+               u.signPic,
+               u.verifyStuff,
+               f.firmName
+        FROM BwUserLogin ul
+                 JOIN BwUser u ON (ul.userId = u.userId)
+                 LEFT JOIN BwFirm f ON (u.firmId = f.firmId)
+        WHERE ul.userId = #{userId}
+          AND ul.devId = #{devId}
+          AND ul.sessionId = #{sessionId}
+    </select>
+
+    <select id="listUserLogin" resultType="com.abel.bigwater.model.BwUserLogin">
+        SELECT ul.sessionId AS id,
+        ul.userId AS userId,
+        ul.loginTime,
+        ul.ipAddr,
+        ul.devId,
+        ul.shareSalt,
+        u.userName,
+        u.firmId
+        , u.smallIcon
+        , u.bigIcon
+        , u.signPic
+        , u.verifyStuff
+        , f.firmName
+        FROM BwUserLogin ul JOIN BwUser u ON (ul.userId = u.userId)
+        LEFT JOIN BwFirm f ON (u.firmId = f.firmId)
+        WHERE f.firmId LIKE #{firmId}
+        <if test='userId != null'>
+            AND ul.userId LIKE #{userId}
+        </if>
+        <if test='startTime != null'>
+            AND ul.loginTime &gt;= #{startTime}
+        </if>
+        <if test='endTime != null'>
+            AND ul.loginTime &lt; #{endTime}
+        </if>
+        <if test='sessionId != null'>
+            AND ul.sessionId = #{sessionId}
+        </if>
+    </select>
+
+    <delete id="kickUserLogin">
+
+        DELETE ul FROM BwUserLogin ul
+        <where>
+            <choose>
+                <when test='sessionId != null'>
+                    AND ul.sessionId = #{sessionId}
+                </when>
+                <otherwise>
+                    <if test='firmId != null'>
+                        ul.firmId LIKE #{firmId}
+                    </if>
+                    <if test='userId != null'>
+                        AND ul.userId = #{userId}
+                    </if>
+                    <if test='startTime != null'>
+                        AND ul.loginTime &gt;= #{startTime}
+                    </if>
+                    <if test='endTime != null'>
+                        AND ul.loginTime &lt; #{endTime}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <select id="rightList" resultType="com.abel.bigwater.model.BwRight">
+        SELECT rightName AS name
+             , rightDesc
+             , preInit
+        FROM BwRight
+    </select>
+
+    <select id="roleList" resultType="com.abel.bigwater.model.BwRole">
+        SELECT roleName as name
+             , roleDesc
+             , preInit
+        FROM BwRole
+    </select>
+
+    <select id="userRoleList" resultType="com.abel.bigwater.model.BwRole">
+        SELECT ur.userId   AS userId
+             , ur.roleName as name
+             , r.roleDesc
+        FROM BwUserRole ur
+                 JOIN BwRole r ON ur.roleName = r.roleName
+        WHERE ur.userId = #{userId}
+    </select>
+
+    <select id="userRightList" resultType="com.abel.bigwater.model.BwRight">
+        SELECT DISTINCT r.rightName AS name
+        , r.rightDesc
+        FROM BwUserRole ur
+        JOIN BwRoleRight rr ON ur.roleName = rr.roleName
+        JOIN BwRight r ON rr.rightName = r.rightName
+        WHERE ur.userId = #{userId}
+        <if test='rightName != null'>
+            AND r.rightName = #{rightName}
+        </if>
+
+    </select>
+
+    <select id="selectRole" resultType="com.abel.bigwater.model.BwRole">
+        SELECT roleName as name, roleDesc
+        FROM BwRole
+        WHERE roleName = #{name}
+
+    </select>
+
+    <select id="roleRightList" resultType="com.abel.bigwater.model.BwRight">
+        SELECT rr.rightName as name
+             , r.rightDesc
+        FROM BwRoleRight rr
+                 JOIN BwRight r ON rr.rightName = r.rightName
+        WHERE rr.roleName = #{roleName}
+
+    </select>
+
+    <insert id="insertRole" parameterType="com.abel.bigwater.model.BwRole">
+        INSERT into BwRole(roleName, roleDesc, preInit)
+        VALUES (#{name}, #{roleDesc}, 0)
+    </insert>
+
+    <insert id="insertRoleRight">
+        INSERT INTO BwRoleRight (roleName, rightName)
+        VALUES (#{roleName}, #{rightName})
+    </insert>
+
+    <insert id="insertUserRole">
+        INSERT INTO BwUserRole(userId, roleName)
+        VALUES (#{userId}, #{roleName})
+    </insert>
+
+    <update id="updateRole" parameterType="com.abel.bigwater.model.BwRole">
+        UPDATE BwRole
+        set roleName = #{name},
+            roleDesc = #{roleDesc}
+        WHERE roleName = #{name}
+          AND preInit = 0
+    </update>
+
+    <delete id="deleteRole">
+        DELETE
+        FROM BwRole
+        WHERE roleName = #{roleName}
+          AND preInit = 0
+    </delete>
+
+    <delete id="deleteRoleRight">
+        DELETE rr
+        FROM BwRoleRight rr,
+             BwRole rl
+        WHERE rl.roleName = rr.roleName
+          AND rr.roleName = #{roleName}
+          AND rl.preInit = 0
+    </delete>
+
+    <delete id="deleteUserRole">
+        DELETE
+        FROM BwUserRole
+        WHERE userId = #{userId}
+    </delete>
+
+    <update id="updateLoginCity" parameterType="com.abel.bigwater.model.BwUserLogin">
+        UPDATE BwUserLogin
+        <set>
+            loginCity = #{city}
+        </set>
+        <where>
+            sessionId = #{id}
+        </where>
+
+    </update>
+
+    <insert id="insertUserOper" parameterType="com.abel.bigwater.model.BwUserOper"
+            keyProperty="operId" keyColumn="oper_id" useGeneratedKeys="true">
+        INSERT INTO BwUserOper
+        (userId,
+         operTime,
+         returnTime,
+         firmId,
+         devId,
+         operCase,
+         operRole,
+         operRight,
+         operResult,
+         operDesc,
+         clientIp,
+         serverIp,
+         operCity)
+        VALUES (#{userId},
+                #{operTime},
+                #{returnTime},
+                #{firmId},
+                #{devId},
+                #{operCase},
+                #{operRole},
+                #{operRight},
+                #{operResult},
+                #{operDesc},
+                #{clientIp},
+                #{serverIp},
+                #{operCity});
+    </insert>
+
+    <update id="updateUserOper" parameterType="com.abel.bigwater.model.BwUserOper">
+        UPDATE BwUserOper
+        <set>
+            <if test="operCity != null">
+                operCity = #{operCity},
+            </if>
+            <if test="returnTime != null">
+                returnTime = #{returnTime}
+            </if>
+        </set>
+        <where>
+            operId = #{operId}
+        </where>
+    </update>
+
+    <select id="listUserOper" parameterType="com.abel.bigwater.api.UserOperParam"
+            resultType="com.abel.bigwater.model.BwUserOper">
+        SELECT operId
+        , userId
+        , operTime
+        , returnTime
+        , firmId
+        , operCase
+        , operRole
+        , operRight
+        , operResult
+        , operDesc
+        FROM BwUserOper
+        <where>
+            <if test='firmId != null'>
+                firmId LIKE #{firmId}
+            </if>
+            <if test='operTime1 != null'>
+                AND operTime &gt;= #{operTime1}
+            </if>
+            <if test='operTime2 != null'>
+                AND operTime &lt; #{operTime2}
+            </if>
+            <if test='userId != null'>
+                AND userId = #{userId}
+            </if>
+            <if test='operCase != null'>
+                AND operCase = #{operCase}
+            </if>
+        </where>
+    </select>
+
+    <select id="statUserOper" parameterType="com.abel.bigwater.api.UserOperParam"
+            resultType="com.abel.bigwater.model.BwUserOper">
+        SELECT userId AS userId
+        , operCase
+        , COUNT(1) AS operCount
+        FROM BwUserOper
+        <where>
+            <if test='firmId != null'>
+                firmId LIKE #{firmId}
+            </if>
+            <if test='operTime1 != null'>
+                AND operTime &gt;= #{operTime1}
+            </if>
+            <if test='operTime2 != null'>
+                AND operTime &lt; #{operTime2}
+            </if>
+            <if test='userId != null'>
+                AND userId = #{userId}
+            </if>
+            <if test='operCase != null'>
+                AND operCase = #{operCase}
+            </if>
+        </where>
+        GROUP BY userId, operCase
+    </select>
+
+</mapper>

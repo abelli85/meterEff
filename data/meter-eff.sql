@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/13 16:01:53                           */
+/* Created on:     2020/8/14 14:57:31                           */
 /*==============================================================*/
 
 
@@ -123,6 +123,10 @@ create table BwDma (
    cntMnf               INT4                 null,
    onlineDate           TIMESTAMP WITH TIME ZONE null,
    memo                 VARCHAR(45)          null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_BWDMA primary key (dmaId)
 );
 
@@ -157,6 +161,8 @@ create table BwEffDecay (
    decayEff             VARCHAR(20)          null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    deprecated           BOOL                 null,
    constraint PK_BWEFFDECAY primary key (wid)
 );
@@ -244,6 +250,10 @@ create table BwFirm (
    email                VARCHAR(200)         null,
    memo                 TEXT                 null,
    preinit              BOOL                 null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_BWFIRM primary key (firmId)
 );
 
@@ -301,6 +311,10 @@ create table BwMeter (
    meterLoc             POINT                null,
    lastCalib            TIMESTAMP WITH TIME ZONE null,
    memo                 VARCHAR(45)          null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_BWMETER primary key (meterId)
 );
 
@@ -339,8 +353,8 @@ firmId
 /* Table: BwRight                                               */
 /*==============================================================*/
 create table BwRight (
-   rightName            CHAR(10)             not null,
-   rightDesc            CHAR(10)             null,
+   rightName            VARCHAR(45)          not null,
+   rightDesc            VARCHAR(45)          null,
    preInit              BOOL                 null,
    constraint PK_BWRIGHT primary key (rightName)
 );
@@ -360,7 +374,7 @@ create table BwRole (
 /*==============================================================*/
 create table BwRoleRight (
    roleName             VARCHAR(45)          not null,
-   rightName            CHAR(10)             not null,
+   rightName            VARCHAR(45)          not null,
    constraint PK_BWROLERIGHT primary key (roleName, rightName)
 );
 
@@ -376,7 +390,6 @@ create table BwUser (
    passHash             VARCHAR(45)          null,
    status               VARCHAR(10)          null,
    firmId               VARCHAR(45)          not null,
-   createTime           TIMESTAMP WITH TIME ZONE null,
    smallIcon            VARCHAR(200)         null,
    bigIcon              VARCHAR(200)         null,
    signPic              VARCHAR(200)         null,
@@ -390,6 +403,10 @@ create table BwUser (
    lastOperTime         TIMESTAMP WITH TIME ZONE null,
    lastOperIp           VARCHAR(200)         null,
    lastOperLoc          POINT                null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_BWUSER primary key (userId)
 );
 
@@ -457,6 +474,10 @@ create table BwZone (
    zoneRegion           POLYGON              null,
    firmId               VARCHAR(45)          not null,
    leafable             INT4                 null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_BWZONE primary key (zoneId)
 );
 

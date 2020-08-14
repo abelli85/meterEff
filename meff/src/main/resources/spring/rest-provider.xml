@@ -26,7 +26,8 @@
 
     <bean:annotation-driven/>
     <context:component-scan base-package="org.apache.dubbo.samples.rest"/>
-    <context:component-scan base-package="com.abel.bigwater.verifymeter.impl"/>
+    <context:component-scan base-package="com.abel.bigwater.impl"/>
+    <context:component-scan base-package="com.abel.bigwater.mapper"/>
 
     <dubbo:application name="rest-provider" owner="programmer" organization="dubbo"/>
 
@@ -82,39 +83,7 @@
     <dubbo:service interface="org.apache.dubbo.integration.swagger.DubboSwaggerService" ref="swaggerService"
                    protocol="rest"/>
 
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.UserService" ref="loginService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.CodeService" ref="codeService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.VerifyService" ref="verifyService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.ReportService" ref="reportService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.LifeService" ref="lifeService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.StatService" ref="statService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.StudyService" ref="studyService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.WareService" ref="wareService"
-                   protocol="rest"
-                   validation="true"/>
-
-    <dubbo:service interface="com.abel.bigwater.verifymeter.webapi.RegService" ref="regService"
+    <dubbo:service interface="com.abel.bigwater.api.UserService" ref="loginService"
                    protocol="rest"
                    validation="true"/>
 </beans>

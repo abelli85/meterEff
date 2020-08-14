@@ -3,7 +3,7 @@
 <!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
 注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
  -->
-<mapper namespace="com.abel.bigwater.verifymeter.mapper.ConfigMapper">
+<mapper namespace="com.abel.bigwater.mapper.ConfigMapper">
     <select id="configList" resultType="com.abel.bigwater.model.BwConfig">
         SELECT group_id AS groupId,
         config_id AS configId,

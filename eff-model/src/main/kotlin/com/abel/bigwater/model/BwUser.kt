@@ -58,12 +58,6 @@ class BwUser : BwObject() {
     /** 最后操作地区 */
     var lastOperLoc: String? = null
 
-    /** 创建时间  */
-    @JsonSerialize(using = JsonDateSerializer::class)
-    @JsonDeserialize(using = JsonDateDeserializer::class)
-    @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
-    var createTime: Date? = null
-
     /**
      * @return the mobile
      */

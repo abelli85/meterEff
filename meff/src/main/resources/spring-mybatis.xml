@@ -41,11 +41,11 @@
     </bean>
     <!--扫描Mapper-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.abel.bigwater.verifymeter.mapper"/>
+        <property name="basePackage" value="com.abel.bigwater.mapper"/>
     </bean>
     <!--启用最新的注解器、映射器-->
     <mvc:annotation-driven/>
-    <context:component-scan base-package="com.abel.bigwater.verifymeter.*"/>
+    <context:component-scan base-package="com.abel.bigwater.*"/>
     <!--jsp视图解析器-->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
