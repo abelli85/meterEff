@@ -33,8 +33,8 @@ open class UserServiceImpl : UserService {
      */
     override fun userInfo(id: Long): BwResult<BwUser> {
         return BwResult(BwUser().apply {
-            this.id = id.toString()
-            name = "测试${id}"
+            this.userId = id.toString()
+            userName = "测试${id}"
             firmId = "11"
             firmName = "水司演示"
         })
@@ -86,7 +86,7 @@ open class UserServiceImpl : UserService {
         }
 
         // check right
-        val rightList = userMapper?.userRightList(user.id!!, rightName)
+        val rightList = userMapper?.userRightList(user.userId!!, rightName)
         if (rightList?.isEmpty() == true) {
             log.warn("用户权限不足: ${rightName}")
             return BwResult(5, CANNOT_LOGIN_WEB)
@@ -165,7 +165,7 @@ open class UserServiceImpl : UserService {
                 bigIcon = user.bigIcon
                 signPic = user.signPic
 
-                userName = user.name
+                userName = user.userName
                 loginHost = remoteHost
                 loginIp = remoteAddr
             }
@@ -239,7 +239,7 @@ open class UserServiceImpl : UserService {
         }
 
         return try {
-            BwResult(0, if (loginManager!!.invalidSession(ul.id!!) > 0) "会话成功退出" else "会话已退出")
+            BwResult(0, if (loginManager!!.invalidSession(ul.sessionId!!) > 0) "会话成功退出" else "会话已退出")
         } catch (ex: Exception) {
             oper.apply {
                 operResult = 1
@@ -274,7 +274,7 @@ open class UserServiceImpl : UserService {
                 user!!.passHash = up.newHash
 
                 val cnt = userMapper?.updateUser(BwUser().apply {
-                    id = user.id
+                    userId = user.userId
                     passHash = up.newHash
                 })
 
@@ -295,7 +295,7 @@ open class UserServiceImpl : UserService {
 
     /** 获取制定用户的详情 */
     override fun userInfo(holder: BwHolder<BwUser>): BwResult<BwUser> {
-        log.info("try to retrieve user info ${holder.single?.id}")
+        log.info("try to retrieve user info ${holder.single?.userId}")
 
         val rightName = UserService.BASE_PATH + "/info"
         try {
@@ -310,13 +310,13 @@ open class UserServiceImpl : UserService {
                 firmId = firmId + "%"
             } else firmId = "%"
 
-            val userId = if (holder.single == null || holder.single!!.id.isNullOrBlank())
-                holder.single?.id else login.single?.userId
+            val userId = if (holder.single == null || holder.single!!.userId.isNullOrBlank())
+                holder.single?.userId else login.single?.userId
 
             // retrieve user.
             val user = userMapper?.listUser(firmId, userId, null)?.firstOrNull() ?: null
             if (user == null) return BwResult(3, "获取用户详情失败: ${userId}")
-            user.roles = userMapper?.userRoleList(user.id!!)
+            user.roles = userMapper?.userRoleList(user.userId!!)
 
             user.passHash = "DUMMY"
             user.firm = configMapper!!.selectFirm(firmId = user.firmId).firstOrNull()
@@ -353,7 +353,7 @@ open class UserServiceImpl : UserService {
             userList?.forEach {
                 it.passHash = "DUMMY"
 
-                it.roles = userMapper?.userRoleList(it.id!!)
+                it.roles = userMapper?.userRoleList(it.userId!!)
             }
 
             return BwResult<BwUser>(userList!!)
@@ -370,7 +370,7 @@ open class UserServiceImpl : UserService {
         log.info("${holder.lr?.userId} try to create user: ${JSON.toJSONString(holder.single)}")
 
         val user = holder.single
-        if (user == null || user.id.isNullOrBlank() || user.passHash.isNullOrBlank()) {
+        if (user == null || user.userId.isNullOrBlank() || user.passHash.isNullOrBlank()) {
             return BwResult(3, "无效的用户信息")
         }
 
@@ -388,7 +388,7 @@ open class UserServiceImpl : UserService {
 
             val cnt = userMapper?.insertUser(user)
             for (r1 in user.roles.orEmpty()) {
-                userMapper?.insertUserRole(user.id!!, r1.name!!)
+                userMapper?.insertUserRole(user.userId!!, r1.name!!)
             }
 
             return BwResult(user)
@@ -402,9 +402,9 @@ open class UserServiceImpl : UserService {
      * 更改用户
      */
     override fun updateUser(holder: BwHolder<BwUser>): BwResult<BwUser> {
-        log.info("${holder.lr?.userId} try to create user: ${holder.single?.name} - ${holder.single?.id}")
+        log.info("${holder.lr?.userId} try to create user: ${holder.single?.userName} - ${holder.single?.userId}")
 
-        if (holder.single?.id.isNullOrBlank()) {
+        if (holder.single?.userId.isNullOrBlank()) {
             return BwResult(3, "无效的用户信息")
         }
         val user = holder.single!!
@@ -438,9 +438,9 @@ open class UserServiceImpl : UserService {
 
             // 删除用户角色
             if (!user.roles.isNullOrEmpty()) {
-                userMapper?.deleteUserRole(user.id!!)
+                userMapper?.deleteUserRole(user.userId!!)
                 user.roles.orEmpty().forEach {
-                    userMapper?.insertUserRole(user.id!!, it.name!!)
+                    userMapper?.insertUserRole(user.userId!!, it.name!!)
                 }
             }
 
@@ -462,10 +462,10 @@ open class UserServiceImpl : UserService {
      * 删除用户
      */
     override fun deleteUser(holder: BwHolder<BwUser>): BwResult<BwUser> {
-        log.info("${holder.lr?.userId} try to delete user: ${holder.single?.name} - ${holder.single?.id}")
+        log.info("${holder.lr?.userId} try to delete user: ${holder.single?.userName} - ${holder.single?.userId}")
 
-        if (holder.single?.id.isNullOrBlank() || holder.single?.id == USER_ADMIN) {
-            return BwResult(2, "无法删除该用户: ${holder.single?.id}.")
+        if (holder.single?.userId.isNullOrBlank() || holder.single?.userId == USER_ADMIN) {
+            return BwResult(2, "无法删除该用户: ${holder.single?.userId}.")
         }
         val user = holder.single!!
 
@@ -487,8 +487,8 @@ open class UserServiceImpl : UserService {
             oper.operRole = login.single!!.roleList?.firstOrNull()?.name
 
             if (login.code != 0) return BwResult(login.code, login.error!!)
-            if (login.single?.userId == user.id) {
-                return BwResult(3, "用户不能删除自己: ${user.id}")
+            if (login.single?.userId == user.userId) {
+                return BwResult(3, "用户不能删除自己: ${user.userId}")
             }
 
             // 先更新用户信息
@@ -497,7 +497,7 @@ open class UserServiceImpl : UserService {
                 user.firmId = login.single!!.firmId!!.plus("%")
             }
             // 删除用户角色
-            userMapper!!.deleteUserRole(user.id!!)
+            userMapper!!.deleteUserRole(user.userId!!)
             val cnt = userMapper!!.deleteUser(user)
 
 
@@ -505,7 +505,7 @@ open class UserServiceImpl : UserService {
             oper.operResult = 0
 
             return BwResult(user).apply {
-                error = "已删除($cnt): ${user.id}"
+                error = "已删除($cnt): ${user.userId}"
             }
         } catch (ex: Exception) {
             log.error(ex.message, ex);

@@ -7,8 +7,8 @@
 
     <select id="listUser" resultType="com.abel.bigwater.model.BwUser">
         SELECT DISTINCT
-        u.userId AS id
-        , u.userName AS name
+        u.userId
+        , u.userName
         , u.mobile
         , u.email
         , u.passHash
@@ -168,8 +168,8 @@
             <if test='firmId != null'>
                 firmId = #{firmId},
             </if>
-            <if test='name != null'>
-                userName = #{name},
+            <if test='userName != null'>
+                userName = #{userName},
             </if>
             <if test='mobile != null'>
                 mobile = #{mobile},
@@ -193,9 +193,9 @@
                 verifyStuff = #{verifyStuff},
             </if>
             updateBy = #{updateBy},
-            updateDate = GETDATE()
+            updateDate = current_timestamp
         </set>
-        WHERE userId = #{id}
+        WHERE userId = #{userId}
     </update>
 
     <update id="updateUserToken" parameterType="com.abel.bigwater.model.BwUser">
@@ -223,7 +223,7 @@
          ipAddr,
          devId,
          shareSalt)
-        VALUES (#{id},
+        VALUES (#{sessionId},
                 #{userId},
                 #{loginTime},
                 #{ipAddr},
@@ -245,7 +245,7 @@
 
     <select id="selectUserLogin" parameterType="com.abel.bigwater.api.LoginRequest"
             resultType="com.abel.bigwater.model.BwUserLogin">
-        SELECT ul.sessionId AS id,
+        SELECT ul.sessionId,
                ul.userId,
                ul.loginTime,
                ul.ipAddr,
@@ -267,7 +267,7 @@
     </select>
 
     <select id="listUserLogin" resultType="com.abel.bigwater.model.BwUserLogin">
-        SELECT ul.sessionId AS id,
+        SELECT ul.sessionId,
         ul.userId AS userId,
         ul.loginTime,
         ul.ipAddr,
@@ -299,15 +299,17 @@
 
     <delete id="kickUserLogin">
 
-        DELETE ul FROM BwUserLogin ul
+        DELETE FROM BwUserLogin
+            USING BwUserLogin AS ul
+            LEFT JOIN BwUser u ON ul.userId = u.userId
         <where>
             <choose>
                 <when test='sessionId != null'>
-                    AND ul.sessionId = #{sessionId}
+                    ul.sessionId = #{sessionId}
                 </when>
                 <otherwise>
                     <if test='firmId != null'>
-                        ul.firmId LIKE #{firmId}
+                        AND u.firmId LIKE #{firmId}
                     </if>
                     <if test='userId != null'>
                         AND ul.userId = #{userId}

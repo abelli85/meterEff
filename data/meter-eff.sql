@@ -1,10 +1,12 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/17 13:07:17                           */
+/* Created on:     2020/8/17 17:05:19                           */
 /*==============================================================*/
 
 
 drop table BwConfig;
+
+drop index idx_data_time;
 
 drop table BwData;
 
@@ -45,6 +47,16 @@ drop index idx_login_user;
 drop index idx_sid;
 
 drop table BwUserLogin;
+
+drop index idx_oper_time;
+
+drop index idx_oper_role;
+
+drop index idx_oper_ip;
+
+drop index idx_oper_user;
+
+drop table BwUserOper;
 
 drop table BwUserRole;
 
@@ -117,6 +129,14 @@ create table BwData (
    firmId               VARCHAR(45)          null,
    rssi                 INT4                 null,
    constraint PK_BWDATA primary key (extId, sampleTime)
+);
+
+/*==============================================================*/
+/* Index: idx_data_time                                         */
+/*==============================================================*/
+create  index idx_data_time on BwData (
+sampleTime,
+extId
 );
 
 /*==============================================================*/
@@ -464,6 +484,69 @@ sessionId
 create  index idx_login_user on BwUserLogin (
 userId,
 loginTime
+);
+
+/*==============================================================*/
+/* Table: BwUserOper                                            */
+/*==============================================================*/
+create table BwUserOper (
+   operId               SERIAL not null,
+   userId               VARCHAR(45)          not null,
+   operTime             TIMESTAMP WITH TIME ZONE not null,
+   returnTime           TIMESTAMP WITH TIME ZONE null,
+   firmId               VARCHAR(45)          not null,
+   devId                VARCHAR(45)          not null,
+   operCase             VARCHAR(45)          null,
+   operRole             VARCHAR(45)          null,
+   operRight            VARCHAR(45)          null,
+   loginIp              VARCHAR(45)          null,
+   loginHost            VARCHAR(45)          null,
+   loginAddr            VARCHAR(45)          null,
+   loginLoc             POINT                null,
+   clientIp             VARCHAR(45)          null,
+   serverIp             VARCHAR(45)          null,
+   operCity             VARCHAR(45)          null,
+   operResult           VARCHAR(45)          null,
+   operCount            INT4                 null,
+   operDesc             VARCHAR(200)         null,
+   constraint PK_BWUSEROPER primary key (operId)
+);
+
+/*==============================================================*/
+/* Index: idx_oper_user                                         */
+/*==============================================================*/
+create  index idx_oper_user on BwUserOper (
+firmId,
+userId,
+operTime
+);
+
+/*==============================================================*/
+/* Index: idx_oper_ip                                           */
+/*==============================================================*/
+create  index idx_oper_ip on BwUserOper (
+operCity,
+loginIp,
+operTime
+);
+
+/*==============================================================*/
+/* Index: idx_oper_role                                         */
+/*==============================================================*/
+create  index idx_oper_role on BwUserOper (
+operCase,
+operRole,
+operTime
+);
+
+/*==============================================================*/
+/* Index: idx_oper_time                                         */
+/*==============================================================*/
+create  index idx_oper_time on BwUserOper (
+operTime,
+firmId,
+operRole,
+loginIp
 );
 
 /*==============================================================*/

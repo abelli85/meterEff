@@ -31,7 +31,7 @@ open class LoginManager {
     @Synchronized
     fun genSession(lr: LoginRequest, remoteHost: String, ipAddr: String): BwUserLogin {
         val login = BwUserLogin()
-        login.id = UUID.randomUUID().toString()
+        login.sessionId = UUID.randomUUID().toString()
 
         login.userId = lr.userId
         login.loginTime = Date()

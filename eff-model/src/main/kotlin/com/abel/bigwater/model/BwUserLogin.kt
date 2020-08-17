@@ -18,7 +18,7 @@ class BwUserLogin : BwObject() {
     /**
      * @return the id
      */
-    var id: String? = null
+    var sessionId: String? = null
 
     /**
      * @return the userId
@@ -142,8 +142,8 @@ class BwUserLogin : BwObject() {
      */
     override fun toString(): String {
         return String.format(
-                "BwUserLogin [id=%s, userId=%s, loginTime=%s, ipAddr=%s, devId=%s, userName=%s, firmId=%s, firmName=%s]",
-                id, userId, loginTime, ipAddr, devId, userName, firmId, firmName)
+                "BwUserLogin [sessionId=%s, userId=%s, loginTime=%s, ipAddr=%s, devId=%s, userName=%s, firmId=%s, firmName=%s]",
+                sessionId, userId, loginTime, ipAddr, devId, userName, firmId, firmName)
     }
 
 }

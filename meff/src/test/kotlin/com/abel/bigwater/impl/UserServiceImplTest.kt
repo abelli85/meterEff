@@ -103,8 +103,8 @@ class UserServiceImplTest {
             userId = "abel"
             devId = "junit"
             timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            sessionId = sess.id
-            clientHash = DigestUtils.md5DigestAsHex((sess.id + timestamp + sess.shareSalt).toByteArray())
+            sessionId = sess.sessionId
+            clientHash = DigestUtils.md5DigestAsHex((sess.sessionId + timestamp + sess.shareSalt).toByteArray())
         })
 
         lgr.info("login second: {}", JSON.toJSONString(ul, true))
@@ -172,7 +172,7 @@ class UserServiceImplTest {
             devId = "junit"
             timestamp = "dummy-timestamp"
             clientHash = "dummy-hash"
-            sessionId = ul.id
+            sessionId = ul.sessionId
         })
 
         lgr.info("login with invalid session: {}", JSON.toJSONString(ret, true))
@@ -192,7 +192,7 @@ class UserServiceImplTest {
         assertTrue(ul?.code == 0)
 
         val rl2 = bean?.logout(BwUserLogin().apply {
-            id = ul?.single?.id
+            sessionId = ul?.single?.sessionId
             userId = ul?.single?.userId
             firmId = ul?.single?.firmId
         })
@@ -217,7 +217,7 @@ class UserServiceImplTest {
 
         assertTrue(ul?.code == 0)
 
-        val user = bean?.userInfo(BwHolder(buildLoginRequest(ul?.single!!), BwUser().apply { id = "scott" }))
+        val user = bean?.userInfo(BwHolder(buildLoginRequest(ul?.single!!), BwUser().apply { userId = "scott" }))
         lgr.info("user info: {}", ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(user))
         assertTrue(user?.single?.firmId != null)
     }
@@ -243,8 +243,8 @@ class UserServiceImplTest {
     fun createUser() {
         val ul = login()
         val usr = BwUser().apply {
-            id = "test-1"
-            name = "测试-1"
+            userId = "test-1"
+            userName = "测试-1"
             mobile = "13312345678"
             email = "133@123.cn"
             firmId = "2799"
@@ -258,7 +258,7 @@ class UserServiceImplTest {
             assertEquals(0, r1.code)
 
             kotlin.run {
-                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.id))
+                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.userId))
                 lgr.info("user info: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
             }
@@ -266,7 +266,7 @@ class UserServiceImplTest {
             // update stuff-id & firm-id
             kotlin.run {
                 val r2 = bean!!.updateUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
-                    id = usr.id
+                    userId = usr.userId
                     firmId = "00"
                     verifyStuff = "98"
                 }))
@@ -276,7 +276,7 @@ class UserServiceImplTest {
 
             // verify if changed
             kotlin.run {
-                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.id))
+                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.userId))
                 lgr.info("changed user info: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
                 assertEquals("98", r2.list?.firstOrNull()?.verifyStuff)
@@ -285,7 +285,7 @@ class UserServiceImplTest {
         } finally {
             kotlin.run {
                 val r2 = bean!!.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
-                    id = usr.id
+                    userId = usr.userId
                 }))
                 lgr.info("delete user: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
@@ -306,7 +306,7 @@ class UserServiceImplTest {
         assertTrue(ul?.code == 0)
 
         val user = bean?.updateUser(BwHolder(buildLoginRequest(ul?.single!!), BwUser().apply {
-            this.id = "abel"
+            this.userId = "abel"
             this.signPic = "http://localhost:8080/docs/images/tomcat.png"
             this.smallIcon = "http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg"
             this.bigIcon = "http://localhost:8080/docs/images/asf-logo.svg"
@@ -319,7 +319,7 @@ class UserServiceImplTest {
     fun deleteUser() {
         val ul = login()
         val r1 = bean?.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
-            id = "abel"
+            userId = "abel"
         }))
 
         lgr.info(JSON.toJSONString(r1, true))

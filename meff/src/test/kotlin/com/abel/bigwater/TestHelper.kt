@@ -13,8 +13,8 @@ object TestHelper {
             userId = sess.userId
             devId = sess.devId
             timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            sessionId = sess.id
-            clientHash = DigestUtils.md5DigestAsHex((sess.id + timestamp + sess.shareSalt).toByteArray())
+            sessionId = sess.sessionId
+            clientHash = DigestUtils.md5DigestAsHex((sess.sessionId + timestamp + sess.shareSalt).toByteArray())
         }
     }
 }

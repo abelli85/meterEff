@@ -41,7 +41,7 @@ open class MapperTest {
     @Test
     fun testUpdateUser() {
         val u = BwUser().apply {
-            id = "abel"
+            userId = "abel"
             emailToken = UUID.randomUUID().toString().take(32)
         }
 

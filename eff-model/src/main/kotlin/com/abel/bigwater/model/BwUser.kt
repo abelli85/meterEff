@@ -22,12 +22,12 @@ class BwUser : BwObject() {
     /**
      * @return the id
      */
-    var id: String? = null
+    var userId: String? = null
 
     /**
      * @return the name
      */
-    var name: String? = null
+    var userName: String? = null
 
     /**
      * 检定员ID
@@ -157,7 +157,7 @@ class BwUser : BwObject() {
      * @see java.lang.Object#toString()
      */
     override fun toString(): String {
-        return ("BwUser [id=" + id + ", name=" + name + ", mobile=" + mobile
+        return ("BwUser [userId=" + userId + ", userName=" + userName + ", mobile=" + mobile
                 + ", email=" + email + ", passHash=" + passHash + ", status="
                 + status + ", firmId=" + firmId + ", emailValid=" + emailValid
                 + ", emailToken=" + emailToken + ", userToken=" + userToken

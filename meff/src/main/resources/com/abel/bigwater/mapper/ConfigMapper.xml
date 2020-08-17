@@ -5,117 +5,117 @@
  -->
 <mapper namespace="com.abel.bigwater.mapper.ConfigMapper">
     <select id="configList" resultType="com.abel.bigwater.model.BwConfig">
-        SELECT group_id AS groupId,
-        config_id AS configId,
-        config_value AS value,
-        config_name AS configName,
-        config_type AS configType,
-        config_desc AS configDesc,
-        c.firm_id AS firmId,
-        f.firm_name AS firmName
-        , create_by AS createBy
-        , create_date AS createDate
-        , update_by AS updateBy
-        , update_date AS updateDate
-        FROM bw_config c LEFT JOIN bw_firm f ON c.firm_id = f.firm_id
+        SELECT groupId
+        , configId
+        , value
+        , configName
+        , configType
+        , configDesc
+        , c.firmId
+        , f.firmName
+        , c.createBy
+        , c.createDate
+        , c.updateBy
+        , c.updateDate
+        FROM bwconfig c LEFT JOIN bwfirm f ON c.firmid = f.firmid
         <where>
             <if test="configId != null">
-                config_id = #{configId}
+                c.configId = #{configId}
             </if>
             <if test="firmId != null">
-                AND c.firm_id LIKE #{firmId}
+                AND c.firmId LIKE #{firmId}
             </if>
             <if test="groupId != null">
-                AND group_id = #{groupId}
+                AND groupId = #{groupId}
             </if>
         </where>
     </select>
 
     <update id="updateConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        UPDATE bw_config
+        UPDATE BwConfig
         <set>
-            config_value = #{value}
+            value = #{value}
             <if test="configName != null">
-                , config_name = #{configName}
+                , configName = #{configName}
             </if>
             <if test="configType != null">
-                , config_type = #{configType}
+                , configType = #{configType}
             </if>
             <if test="configDesc != null">
-                , config_desc = #{configDesc}
+                , configDesc = #{configDesc}
             </if>
-            , update_by = #{updateBy}
-            , update_date = GETDATE()
+            , updateBy = #{updateBy}
+            , updateDate = current_timestamp
         </set>
         <where>
-            config_id = #{configId}
+            configId = #{configId}
             <if test="firmId != null">
-                AND firm_id LIKE #{firmId}
+                AND firmId LIKE #{firmId}
             </if>
             <if test="groupId != null">
-                AND group_id = #{groupId}
+                AND groupId = #{groupId}
             </if>
         </where>
     </update>
 
     <delete id="deleteConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        DELETE bw_config
-        WHERE config_id = #{configId}
-          AND firm_id = #{firmId}
+        DELETE FROM BwConfig
+        WHERE configId = #{configId}
+          AND firmId = #{firmId}
     </delete>
 
     <insert id="insertConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        INSERT INTO bw_config(config_id, group_id, config_name,
-                              config_type, config_desc, config_value, firm_id
-            , create_by, create_date)
+        INSERT INTO BwConfig(configId, groupId, configName,
+            configType, configDesc, value, firmId
+            , createBy, createDate)
         VALUES(#{configId}, #{groupId}, #{configName},
                #{configType}, #{configDesc}, #{value}, #{firmId}
-                  , #{createBy}, GETDATE())
+               , #{createBy}, current_timestamp)
     </insert>
 
     <select id="selectFirm" resultType="com.abel.bigwater.model.BwFirm">
-        SELECT firm_id as id,
-        firm_name as name,
-        firm_loc.STAsText() AS firmLoc,
-        firm_region.STAsText() AS firmRegion
-        ,[firm_grade] AS grade
-        ,[small_icon] AS smallIcon
-        ,[large_icon] AS largeIcon
-        ,[firm_addr] AS addr
-        ,[postcode]
-        ,[firm_contact] AS contact
-        ,[firm_phone] AS phone
-        ,[firm_phone2] AS phone2
-        ,[firm_fax] AS fax
-        ,[firm_email] AS email
-        ,[firm_memo] AS memo
-        ,[preinit]
-        FROM bw_firm
+        SELECT firmId
+        ,firmName
+        ,firmLoc
+        ,firmRegion
+        ,grade
+        ,smallIcon
+        ,largeIcon
+        ,addr
+        ,postcode
+        ,contact
+        ,phone
+        ,phone2
+        ,fax
+        ,email
+        ,memo
+        ,preinit
+        FROM BwFirm
         <where>
             <if test='firmId != null'>
-                firm_id LIKE #{firmId}
+                firmId LIKE #{firmId}
             </if>
             <if test='keywords != null'>
-                AND MATCH(firm_id, firm_name) AGAINST (#{keywords} IN BOOLEAN MODE)
+                AND MATCH(firmId, firmName) AGAINST (#{keywords} IN BOOLEAN MODE)
             </if>
         </where>
     </select>
 
     <insert id="addFirm" parameterType="com.abel.bigwater.model.BwFirm">
-        INSERT INTO bw_firm(firm_id, firm_name
+        INSERT INTO BwFirm(firmId, firmName
                            <include refid="firmFields"></include>
-                           ,[firm_grade]
-                           ,[small_icon]
-                           ,[large_icon]
-                           ,[firm_addr]
-                           ,[postcode]
-                           ,[firm_contact]
-                           ,[firm_phone]
-                           ,[firm_phone2]
-                           ,[firm_fax]
-                           ,[firm_email]
-                           ,[preinit])
-        VALUES(#{id}, #{name}
+                           ,grade
+                           ,smallIcon
+                           ,largeIcon
+                           ,addr
+                           ,postcode
+                           ,contact
+                           ,phone
+                           ,phone2
+                           ,fax
+                           ,email
+                           ,preinit)
+        VALUES(#{firmId}, #{firmName}
               <include refid="firmValues"></include>
               , #{grade}
               , #{smallIcon}
@@ -133,13 +133,13 @@
     <sql id="firmFields">
         <trim suffixOverrides=",">
             <if test="firmLoc != null">
-                , firm_loc
+                , firmLoc
             </if>
             <if test="firmRegion != null">
-                , firm_region
+                , firmRegion
             </if>
             <if test="memo != null">
-                , [firm_memo]
+                , memo
             </if>
         </trim>
     </sql>
@@ -160,57 +160,57 @@
     </sql>
 
     <delete id="deleteFirm">
-        DELETE FROM bw_firm
-        WHERE firm_id = #{firmId}
+        DELETE FROM BwFirm
+        WHERE firmId = #{firmId}
         AND preinit = 0
     </delete>
 
     <update id="updateFirm" parameterType="com.abel.bigwater.model.BwFirm">
-        UPDATE bw_firm
+        UPDATE BwFirm
         <set>
-            <if test='name != null'>
-                firm_name = #{name}
+            <if test='firmName != null'>
+                firmName = #{firmName}
             </if>
             <if test='firmLoc != null'>
-                , firm_loc = geometry::STGeomFromText(#{firmLoc}, 0)
+                , firmLoc = geometry::STGeomFromText(#{firmLoc}, 0)
             </if>
             <if test='firmRegion != null'>
-                , firm_region = geometry::STGeomFromText(#{firmRegion}, 0)
+                , firmRegion = geometry::STGeomFromText(#{firmRegion}, 0)
             </if>
             <if test='grade != null'>
-                ,[firm_grade] = #{grade}
+                ,grade = #{grade}
             </if>
             <if test='smallIcon != null'>
-                ,[small_icon] = #{smallIcon}
+                ,smallIcon = #{smallIcon}
             </if>
             <if test='largeIcon != null'>
-                ,[large_icon] = #{largeIcon}
+                ,largeIcon = #{largeIcon}
             </if>
             <if test='addr != null'>
-                ,[firm_addr] = #{addr}
+                ,addr = #{addr}
             </if>
             <if test="postcode != null">
                 ,postcode = #{postcode}
             </if>
             <if test='contact != null'>
-                ,[firm_contact] = #{contact}
+                ,contact = #{contact}
             </if>
             <if test='phone != null'>
-                ,[firm_phone] = #{phone}
+                ,phone = #{phone}
             </if>
             <if test='phone2 != null'>
-                ,[firm_phone2] = #{phone2}
+                ,phone2 = #{phone2}
             </if>
             <if test='fax != null'>
-                ,[firm_fax] = #{fax}
+                ,fax = #{fax}
             </if>
             <if test='email != null'>
-                ,[firm_email] = #{email}
+                ,email = #{email}
             </if>
             <if test='memo != null'>
-                ,[firm_memo] = #{memo}
+                ,memo = #{memo}
             </if>
         </set>
-        WHERE firm_id = #{id}
+        WHERE firmId = #{firmId}
     </update>
 </mapper>
