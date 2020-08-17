@@ -122,8 +122,7 @@ open class LoginManager {
             serverIp = ctx.localAddressString
             operRight = rightName
             operCase = caseName
-            operDesc = content
-            operDesc = content?.take(260)
+            operDesc = content?.take(160)
             devId = (ctx.get("User-Agent") as String?)?.take(32)
         }
 
@@ -148,7 +147,9 @@ open class LoginManager {
             }
         }
 
-        userMapper!!.insertUserOper(uo)
+        userMapper!!.insertUserOper(uo.also {
+            it.devId = it.devId ?: "dummy"
+        })
         fillOperCity(uo)
 
         // return valid login.

@@ -232,6 +232,7 @@ open class UserServiceImpl : UserService {
         val oper = BwUserOper().apply {
             userId = ul.userId
             firmId = ul.firmId
+            devId = ul.devId ?: "dummy"
             operTime = Date()
             operRight = UserService.BASE_PATH + "/login"
             operCase = UserService.BASE_PATH + "/login"
@@ -411,12 +412,13 @@ open class UserServiceImpl : UserService {
 
         // 记录日志
         val rightName = UserService.BASE_PATH + "/updateUser"
-        val oper = BwUserOper()
-        oper.userId = holder.lr?.userId
-        oper.operTime = Date()
-        oper.operRight = rightName
-        oper.operCase = rightName
-        oper.operResult = 2
+        val oper = BwUserOper().apply {
+            userId = holder.lr?.userId
+            operTime = Date()
+            operRight = rightName
+            operCase = rightName
+            operResult = 2
+        }
 
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single))
@@ -454,7 +456,9 @@ open class UserServiceImpl : UserService {
             log.error(ex.message, ex);
             return BwResult(1, ex.message!!);
         } finally {
-            userMapper?.insertUserOper(oper)
+            userMapper?.insertUserOper(oper.also {
+                it.devId = it.devId ?: "dummy"
+            })
         }
     }
 
@@ -471,12 +475,15 @@ open class UserServiceImpl : UserService {
 
         // 记录日志
         val rightName = UserService.BASE_PATH + "/deleteUser"
-        val oper = BwUserOper()
-        oper.userId = holder.lr?.userId
-        oper.operTime = Date()
-        oper.operRight = rightName
-        oper.operCase = rightName
-        oper.operResult = 2
+        val oper = BwUserOper().apply {
+            userId = holder.lr?.userId
+            devId = "dummy"
+
+            operTime = Date()
+            operRight = rightName
+            operCase = rightName
+            operResult = 2
+        }
 
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(user))
@@ -590,12 +597,15 @@ open class UserServiceImpl : UserService {
 
         // 操作轨迹
         val rightName = UserService.BASE_PATH + "/deleteRole"
-        val oper = BwUserOper()
-        oper.userId = holder.lr?.userId
-        oper.operTime = Date()
-        oper.operCase = rightName
-        oper.operRight = rightName
-        oper.operResult = 2
+        val oper = BwUserOper().apply {
+            userId = holder.lr?.userId
+            operTime = Date()
+            devId = "dummy"
+
+            operCase = rightName
+            operRight = rightName
+            operResult = 2
+        }
 
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
@@ -697,8 +707,8 @@ open class UserServiceImpl : UserService {
      * 增加机构信息
      */
     override fun addFirm(holder: BwHolder<BwFirm>): BwResult<BwFirm> {
-        if (holder.single?.id.isNullOrBlank()
-                || holder.single?.name.isNullOrBlank()) {
+        if (holder.single?.firmId.isNullOrBlank()
+                || holder.single?.firmName.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
@@ -712,8 +722,8 @@ open class UserServiceImpl : UserService {
             }
 
             // 只能更新 所在机构及分公司
-            if (!holder.single!!.id!!.startsWith(login.single!!.firmId!!)) {
-                return BwResult(3, WARN_NO_RIGHT + holder.single?.id)
+            if (!holder.single!!.firmId!!.startsWith(login.single!!.firmId!!)) {
+                return BwResult(3, WARN_NO_RIGHT + holder.single?.firmId)
             }
 
             val cnt = configMapper!!.addFirm(holder.single!!)
@@ -730,7 +740,7 @@ open class UserServiceImpl : UserService {
      * 更新机构信息
      */
     override fun updateFirm(holder: BwHolder<BwFirm>): BwResult<BwFirm> {
-        if (holder.single?.id.isNullOrBlank()) {
+        if (holder.single?.firmId.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
@@ -744,8 +754,8 @@ open class UserServiceImpl : UserService {
             }
 
             // 只能更新 所在机构及分公司
-            if (!holder.single!!.id!!.startsWith(login.single!!.firmId!!)) {
-                return BwResult(3, WARN_NO_RIGHT + holder.single?.id)
+            if (!holder.single!!.firmId!!.startsWith(login.single!!.firmId!!)) {
+                return BwResult(3, WARN_NO_RIGHT + holder.single?.firmId)
             }
 
             val cnt = configMapper!!.updateFirm(holder.single!!)
@@ -762,7 +772,7 @@ open class UserServiceImpl : UserService {
      * 删除机构信息
      */
     override fun deleteFirm(holder: BwHolder<BwFirm>): BwResult<BwFirm> {
-        if (holder.single?.id.isNullOrBlank()) {
+        if (holder.single?.firmId.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
@@ -776,14 +786,14 @@ open class UserServiceImpl : UserService {
             }
 
             // 只能更新 所在机构及分公司
-            if (!holder.single!!.id!!.startsWith(login.single!!.firmId!!)) {
-                return BwResult(3, WARN_NO_RIGHT + holder.single?.id)
+            if (!holder.single!!.firmId!!.startsWith(login.single!!.firmId!!)) {
+                return BwResult(3, WARN_NO_RIGHT + holder.single?.firmId)
             }
 
-            val cnt = configMapper!!.deleteFirm(holder.single!!.id!!)
+            val cnt = configMapper!!.deleteFirm(holder.single!!.firmId!!)
             return if (cnt == 1) BwResult(holder.single!!).apply {
                 error = "删除机构： $cnt"
-            } else BwResult(4, "预置机构不允许删除: ".plus(holder.single?.id))
+            } else BwResult(4, "预置机构不允许删除: ".plus(holder.single?.firmId))
         } catch (ex: Exception) {
             log.error(ex.message, ex);
             return BwResult(1, "内部错误: ${ex.message}")

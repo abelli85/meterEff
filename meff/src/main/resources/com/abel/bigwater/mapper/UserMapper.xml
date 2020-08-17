@@ -46,8 +46,8 @@
     </select>
 
     <select id="listUserByRole" resultType="com.abel.bigwater.model.BwUser">
-        SELECT u.userId     AS id
-             , u.name
+        SELECT u.userId
+             , u.userName
              , u.mobile
              , u.email
              , u.passHash
@@ -78,8 +78,8 @@
     </select>
 
     <select id="selectUser" resultType="com.abel.bigwater.model.BwUser">
-        SELECT u.userId     as id
-             , u.userName     as name
+        SELECT u.userId
+             , u.userName
              , u.mobile
              , u.email
              , u.status
@@ -128,12 +128,12 @@
         , createBy
         , createDate
         , verifyStuff)
-        VALUES ( #{id}
-               , #{name}
+        VALUES ( #{userId}
+               , #{userName}
                , #{mobile}
                , #{email}
-               , #{passHash}
                , #{status}
+               , #{passHash}
                , #{firmId}
                , #{emailValid}
                , #{emailToken}
@@ -142,7 +142,7 @@
                , #{bigIcon}
                , #{signPic}
                , #{createBy}
-               , GETDATE()
+               , now()
                , #{verifyStuff})
 
     </insert>
@@ -151,7 +151,7 @@
         DELETE
         FROM BwUser
         <where>
-            userId = #{id}
+            userId = #{userId}
             <if test="firmId != null">
                 AND firmId LIKE #{firmId}
             </if>
@@ -212,7 +212,7 @@
                 userToken = #{userToken},
             </if>
         </set>
-        WHERE userId = #{id}
+        WHERE userId = #{userId}
     </update>
 
     <insert id="insertUserLogin" parameterType="com.abel.bigwater.model.BwUserLogin">
@@ -240,7 +240,7 @@
     <delete id="deleteUserLoginObsolete">
         DELETE
         FROM BwUserLogin
-        WHERE loginTime &lt; DateAdd(m, -1, getdate())
+        WHERE loginTime &lt; now() - interval '1 month'
     </delete>
 
     <select id="selectUserLogin" parameterType="com.abel.bigwater.api.LoginRequest"
@@ -268,7 +268,7 @@
 
     <select id="listUserLogin" resultType="com.abel.bigwater.model.BwUserLogin">
         SELECT ul.sessionId,
-        ul.userId AS userId,
+        ul.userId,
         ul.loginTime,
         ul.ipAddr,
         ul.devId,
@@ -379,7 +379,7 @@
 
     <insert id="insertRole" parameterType="com.abel.bigwater.model.BwRole">
         INSERT into BwRole(roleName, roleDesc, preInit)
-        VALUES (#{name}, #{roleDesc}, 0)
+        VALUES (#{name}, #{roleDesc}, false)
     </insert>
 
     <insert id="insertRoleRight">
@@ -397,28 +397,26 @@
         set roleName = #{name},
             roleDesc = #{roleDesc}
         WHERE roleName = #{name}
-          AND preInit = 0
+          AND preInit = false
     </update>
 
     <delete id="deleteRole">
         DELETE
         FROM BwRole
         WHERE roleName = #{roleName}
-          AND preInit = 0
+          AND preInit = false
     </delete>
 
     <delete id="deleteRoleRight">
-        DELETE rr
-        FROM BwRoleRight rr,
-             BwRole rl
-        WHERE rl.roleName = rr.roleName
-          AND rr.roleName = #{roleName}
-          AND rl.preInit = 0
+        DELETE FROM BwRoleRight
+            USING BwRoleRight AS rr
+            LEFT JOIN BwRole rl ON rr.rolename = rl.rolename
+        WHERE rr.roleName = #{roleName}
+          AND rl.preInit = false
     </delete>
 
     <delete id="deleteUserRole">
-        DELETE
-        FROM BwUserRole
+        DELETE FROM BwUserRole
         WHERE userId = #{userId}
     </delete>
 
@@ -434,7 +432,7 @@
     </update>
 
     <insert id="insertUserOper" parameterType="com.abel.bigwater.model.BwUserOper"
-            keyProperty="operId" keyColumn="oper_id" useGeneratedKeys="true">
+            keyProperty="operId" keyColumn="operid" useGeneratedKeys="true">
         INSERT INTO BwUserOper
         (userId,
          operTime,

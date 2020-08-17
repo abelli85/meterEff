@@ -127,7 +127,7 @@
               , #{phone2}
               , #{fax}
               , #{email}
-              , 0)
+              , false)
     </insert>
 
     <sql id="firmFields">
@@ -147,10 +147,10 @@
     <sql id="firmValues">
         <trim suffixOverrides=",">
             <if test="firmLoc != null">
-                , geometry::STGeomFromText(#{firmLoc}, 0)
+                , st_geomFromText(#{firmLoc})::point
             </if>
             <if test="firmRegion != null">
-                , geometry::STGeomFromText(#{firmRegion}, 0)
+                , st_geomFromText(#{firmRegion})::polygon
             </if>
             <if test="memo != null">
                 , #{memo}
@@ -162,7 +162,7 @@
     <delete id="deleteFirm">
         DELETE FROM BwFirm
         WHERE firmId = #{firmId}
-        AND preinit = 0
+        AND preinit = false
     </delete>
 
     <update id="updateFirm" parameterType="com.abel.bigwater.model.BwFirm">
@@ -172,10 +172,10 @@
                 firmName = #{firmName}
             </if>
             <if test='firmLoc != null'>
-                , firmLoc = geometry::STGeomFromText(#{firmLoc}, 0)
+                , firmLoc = st_geomFromText(#{firmLoc})::point
             </if>
             <if test='firmRegion != null'>
-                , firmRegion = geometry::STGeomFromText(#{firmRegion}, 0)
+                , firmRegion = st_geomFromText(#{firmRegion})::polygon
             </if>
             <if test='grade != null'>
                 ,grade = #{grade}

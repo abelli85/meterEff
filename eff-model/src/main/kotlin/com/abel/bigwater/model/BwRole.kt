@@ -20,7 +20,7 @@ class BwRole : BwObject() {
     /**
      * 1: 预置; 0 - 用户添加
      */
-    var preInit: Int? = null
+    var preInit: Boolean? = null
 
     /**
      * 显示在列表框

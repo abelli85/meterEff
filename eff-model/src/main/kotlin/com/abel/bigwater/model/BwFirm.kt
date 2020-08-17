@@ -4,12 +4,12 @@ class BwFirm : BwObject() {
     /**
      * @return the id
      */
-    var id: String? = null
+    var firmId: String? = null
 
     /**
      * @return the name
      */
-    var name: String? = null
+    var firmName: String? = null
 
     /**
      * 位置的WKT数据，对应矢量坐标Point。
@@ -81,13 +81,13 @@ class BwFirm : BwObject() {
     /**
      * 预置标志，1 - 不可删改; 0 - 可删改.
      */
-    var preinit: Int? = 1
+    var preinit: Boolean? = false
 
     /**
      * 用来在combox/listbox中显示为标题。
      */
     var title: String? = ""
-        get() = "${id} - ${name}"
+        get() = "${firmId} - ${firmName}"
 
     /*
      * (non-Javadoc)
@@ -95,16 +95,16 @@ class BwFirm : BwObject() {
      * @see java.lang.Object#toString()
      */
     override fun toString(): String {
-        return "BwFirm [id=$id, name=$name]"
+        return "BwFirm [id=$firmId, name=$firmName]"
     }
 
     override fun hashCode(): Int {
-        return id?.hashCode() ?: 0
+        return firmId?.hashCode() ?: 0
     }
 
     override fun equals(other: Any?): Boolean {
         if (other is BwFirm) {
-            return id == (other as BwFirm).id
+            return firmId == (other as BwFirm).firmId
         }
         return false
     }

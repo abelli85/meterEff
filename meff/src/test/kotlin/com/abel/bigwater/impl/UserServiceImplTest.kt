@@ -25,7 +25,6 @@ import org.junit.runners.MethodSorters
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.mybatis.spring.annotation.MapperScan
-import org.mybatis.spring.annotation.MapperScans
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
@@ -56,10 +55,10 @@ class UserServiceImplTest {
     /**
      * 登录并返回结果
      */
-    private fun login(blog: Boolean = false): BwUserLogin {
-        val passHash = DigestUtils.md5DigestAsHex("test".toByteArray())
+    private fun login(_userId: String = "abel", _pass: String = "test", blog: Boolean = false): BwUserLogin {
+        val passHash = DigestUtils.md5DigestAsHex(_pass.toByteArray())
         val ul = bean?.login(LoginRequest().apply {
-            userId = "abel"
+            userId = _userId
             devId = "junit"
             timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
             clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
@@ -439,7 +438,7 @@ class UserServiceImplTest {
         val user = bean?.updateRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
             name = "BACK_USER"
             roleDesc = "test"
-            preInit = 0
+            preInit = false
         }))
         lgr.info("try to update role: {}", ObjectMapper().writeValueAsString(user))
         // 预置角色不能修改
@@ -461,7 +460,7 @@ class UserServiceImplTest {
         val user = bean?.updateRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
             name = "BACK_USER"
             roleDesc = "test"
-            preInit = 0
+            preInit = false
         }))
         lgr.info("try to update role: {}", ObjectMapper().writeValueAsString(user))
         assertTrue(user?.code == 3)
@@ -490,8 +489,8 @@ class UserServiceImplTest {
     @Test
     fun testUpdateFirm() {
         val ftest = BwFirm().apply {
-            id = "2799"
-            name = "测试机构"
+            firmId = "2799"
+            firmName = "测试机构"
         }
 
         val ul = login()
@@ -499,7 +498,7 @@ class UserServiceImplTest {
         try {
             configMapper!!.addFirm(ftest)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r1))
 
             val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul),
@@ -512,11 +511,11 @@ class UserServiceImplTest {
                     }))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3))
-            assertEquals(true, r3.list?.find { it.id == ftest.id } != null)
+            assertEquals(true, r3.list?.find { it.firmId == ftest.firmId } != null)
         } finally {
-            configMapper!!.deleteFirm(ftest.id!!)
+            configMapper!!.deleteFirm(ftest.firmId!!)
         }
     }
 
@@ -526,8 +525,8 @@ class UserServiceImplTest {
     @Test
     fun testUpdateFirmGeometry() {
         val ftest = BwFirm().apply {
-            id = "2799"
-            name = "测试机构"
+            firmId = "2799"
+            firmName = "测试机构"
             firmLoc = GeometryFactory().createPoint(Coordinate(117.435974, 33.609617)).toText()
         }
 
@@ -536,7 +535,7 @@ class UserServiceImplTest {
         try {
             configMapper!!.addFirm(ftest)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r1), true)
 
             val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul),
@@ -556,19 +555,19 @@ class UserServiceImplTest {
                     }))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3, true))
-            assertEquals(true, r3.list?.find { it.id == ftest.id } != null)
+            assertEquals(true, r3.list?.find { it.firmId == ftest.firmId } != null)
         } finally {
-            configMapper!!.deleteFirm(ftest.id!!)
+            configMapper!!.deleteFirm(ftest.firmId!!)
         }
     }
 
     @Test
     fun testAddFirm() {
         val ftest = BwFirm().apply {
-            id = "2799"
-            name = "测试机构"
+            firmId = "2799"
+            firmName = "测试机构"
             firmLoc = GeometryFactory().createPoint(Coordinate(117.435974, 33.609617)).toText()
             phone = "0875-12345678"
             addr = "上布水务大楼"
@@ -592,29 +591,29 @@ class UserServiceImplTest {
             lgr.info("add firm: {}", JSON.toJSONString(r5, true))
             assertEquals(0, r5.code)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
-            lgr.info("firm list: {}", JSON.toJSONString(r1.list?.find { it.id == ftest.id }, true))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            lgr.info("firm list: {}", JSON.toJSONString(r1.list?.find { it.firmId == ftest.firmId }, true))
 
             val r2 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul), ftest))
             lgr.info("delete firm: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.id))
-            lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.id == ftest.id }, true))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.firmId == ftest.firmId }, true))
             assertEquals(0, r3.code)
         } finally {
-            configMapper!!.deleteFirm(ftest.id!!)
+            configMapper!!.deleteFirm(ftest.firmId!!)
         }
     }
 
     @Test
     fun testDeleteFirm() {
         val ftest = BwFirm().apply {
-            id = "2799"
-            name = "test-2799"
+            firmId = "2799"
+            firmName = "test-2799"
         }
         val fmain = BwFirm().apply {
-            id = "27"
+            firmId = "27"
         }
         val ul = login()
 
@@ -630,20 +629,26 @@ class UserServiceImplTest {
             lgr.info("delete firm: {}", JSON.toJSONString(r2, true))
             assertNotEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), fmain.id))
-            lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.id == fmain.id }, true))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), fmain.firmId))
+            lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.firmId == fmain.firmId }, true))
             assertEquals(0, r3.code)
         } finally {
-            configMapper!!.deleteFirm(ftest.id!!)
+            configMapper!!.deleteFirm(ftest.firmId!!)
         }
     }
 
     @Test
     fun operList() {
+        val ul = login()
+        val r1 = bean!!.operList(BwHolder(TestHelper.buildLoginRequest(ul), UserOperParam()))
+        lgr.info("oper list: {}...", JSON.toJSONString(r1, true).take(1000))
     }
 
     @Test
     fun operStat() {
+        val ul = login()
+        val r1 = bean!!.operStat(BwHolder(TestHelper.buildLoginRequest(ul), UserOperParam()))
+        lgr.info("oper stat: {}...", JSON.toJSONString(r1, true).take(1000))
     }
 
     @Test
