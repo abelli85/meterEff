@@ -6,7 +6,7 @@ TRUNCATE TABLE BwUserRole;
 TRUNCATE TABLE bw_role_right;
 TRUNCATE TABLE bw_role;
 TRUNCATE TABLE bw_right;
-TRUNCATE TABLE bw_config;
+TRUNCATE TABLE BwConfig;
 
 TRUNCATE TABLE bw_firm;
 
@@ -148,21 +148,21 @@ VALUES
 -- INSERT INTO BwUserRole (userId, roleName) VALUES('scott', 'DMA_USER');
 
 
-DELETE c FROM bw_config c
-WHERE config_id IN ('LOSS_R', 'LOSS_LAST_DATE', 'RTU_STATUS_MAIL_LIST', 'LOSS_MINQ_START_HOUR', 'LOSS_MINQ_END_HOUR'
+DELETE FROM BwConfig c
+WHERE configId IN ('LOSS_R', 'LOSS_LAST_DATE', 'RTU_STATUS_MAIL_LIST', 'LOSS_MINQ_START_HOUR', 'LOSS_MINQ_END_HOUR'
 , 'START_WORK_TIME', 'END_WORK_TIME');
 
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, create_by, create_date) VALUES('LOSS_R', 'DATA', '1', '7', 'sys', GETDATE());
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, create_by, create_date) VALUES('LOSS_LAST_DATE', 'DATA', '1', '2014-12-29', 'sys', GETDATE());
+INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_R', 'DATA', '1', '7', 'sys', current_timestamp);
+INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_LAST_DATE', 'DATA', '1', '2014-12-29', 'sys', current_timestamp);
 
 -- RTU status notify users.
--- DELETE FROM bw_config WHERE config_id = 'RTU_STATUS_MAIL_LIST' AND group_id = 'DATA';
--- INSERT INTO bw_config (config_id, group_id, config_value) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', 'abelli5@126.com;abelli@139.com;')
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, create_by, create_date) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', '1', 'abelli5@126.com;8963095@qq.com;334862512@qq.com;', 'sys', GETDATE());
+-- DELETE FROM BwConfig WHERE configId = 'RTU_STATUS_MAIL_LIST' AND groupId = 'DATA';
+-- INSERT INTO BwConfig (configId, groupId, value) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', 'abelli5@126.com;abelli@139.com;')
+INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', '1', 'abelli5@126.com;8963095@qq.com;334862512@qq.com;', 'sys', current_timestamp);
 -- for loss calculating.
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, create_by, create_date) VALUES('LOSS_MINQ_START_HOUR', 'DATA', '1', '2', 'sys', GETDATE());
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, create_by, create_date) VALUES('LOSS_MINQ_END_HOUR', 'DATA', '1', '5', 'sys', GETDATE());
+INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_START_HOUR', 'DATA', '1', '2', 'sys', current_timestamp);
+INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_END_HOUR', 'DATA', '1', '5', 'sys', current_timestamp);
 
-INSERT INTO bw_config (config_id, group_id, firmId, config_value, config_name, config_type, create_by, create_date) 
-VALUES('START_WORK_TIME', 'VERIFY', '27', '9:00', '上班时间', '时间', 'sys', GETDATE()),
-('END_WORK_TIME', 'VERIFY', '27', '18:00', '下班时间', '时间', 'sys', GETDATE());
+INSERT INTO BwConfig (configId, groupId, firmId, value, configName, configType, createBy, createDate)
+VALUES('START_WORK_TIME', 'VERIFY', '27', '9:00', '上班时间', '时间', 'sys', current_timestamp),
+('END_WORK_TIME', 'VERIFY', '27', '18:00', '下班时间', '时间', 'sys', current_timestamp);

@@ -1,8 +1,10 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/14 14:57:31                           */
+/* Created on:     2020/8/17 13:07:17                           */
 /*==============================================================*/
 
+
+drop table BwConfig;
 
 drop table BwData;
 
@@ -67,6 +69,24 @@ drop index idx_verify_stuff;
 drop index idx_verify_meter_date;
 
 drop table vc_meter_verify_result;
+
+/*==============================================================*/
+/* Table: BwConfig                                              */
+/*==============================================================*/
+create table BwConfig (
+   firmId               VARCHAR(45)          not null,
+   groupId              VARCHAR(45)          not null,
+   configId             VARCHAR(45)          not null,
+   configName           VARCHAR(45)          null,
+   configDesc           VARCHAR(45)          null,
+   configType           VARCHAR(45)          null,
+   value                VARCHAR(200)         null,
+   createBy             VARCHAR(45)          not null,
+   createDate           TIMESTAMP WITH TIME ZONE not null,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
+   constraint PK_BWCONFIG primary key (firmId, configId, groupId)
+);
 
 /*==============================================================*/
 /* Table: BwData                                                */

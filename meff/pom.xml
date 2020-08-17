@@ -52,7 +52,7 @@
         <spring-boot.version>1.5.13.RELEASE</spring-boot.version>
         <mssql-jdbc.version>8.2.2.jre8</mssql-jdbc.version>
         <druid.version>1.1.23</druid.version>
-        <postgresql.version>42.2.14</postgresql.version>
+        <postgresql.version>42.2.15</postgresql.version>
     </properties>
 
     <dependencyManagement>
