@@ -478,9 +478,10 @@ class UserServiceImplTest {
 
         assertTrue(ul?.code == 0)
 
-        val user = bean?.firmList(BwHolder(buildLoginRequest(ul?.single!!), ""))
-        lgr.info("firm list: {}", ObjectMapper().writeValueAsString(user))
-        assertTrue(user?.list?.size ?: 0 > 1)
+        val user = bean!!.firmList(BwHolder(buildLoginRequest(ul?.single!!), ""))
+        lgr.info("firm list: {}", ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(user))
+        lgr.info("branch list: {}", user.list?.map { it.title })
+        assertTrue(user.list?.size ?: 0 > 1)
     }
 
     /**

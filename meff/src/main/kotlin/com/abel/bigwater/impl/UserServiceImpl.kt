@@ -696,7 +696,27 @@ open class UserServiceImpl : UserService {
             }
 
             val firmId = if (Helper.TOP_FIRM_ID == login.single?.firmId) "%" else (login.single?.firmId + "%")
-            return BwResult(configMapper?.selectFirm(firmId)!!)
+            val firmList = configMapper?.selectFirm(firmId)!!
+            firmList.forEachIndexed { index, firm ->
+                // skip 0
+                when {
+                    index > 0 -> {
+                        val last = firmList[index - 1]
+                        if (!firm.firmId!!.startsWith(last.firmId!!)) {
+                            if (firmList.take(index - 1).firstOrNull { firm.firmId!!.startsWith(it.firmId!!) } == null) {
+                                return BwResult(firmList).apply {
+                                    code = 3
+                                    error = "机构编码有间断: ${firm.firmId}/${firm.firmName}"
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        log.info("开始匹配: ${firm.firmId}/${firm.firmName}")
+                    }
+                }
+            }
+            return BwResult(firmList)
         } catch (ex: Exception) {
             log.error(ex.message, ex);
             return BwResult(1, "内部错误: ${ex.message}")
