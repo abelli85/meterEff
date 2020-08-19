@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/17 17:05:19                           */
+/* Created on:     2020/8/19 16:59:39                           */
 /*==============================================================*/
 
 
@@ -23,6 +23,8 @@ drop table BwEffDetail;
 drop table BwEffTask;
 
 drop table BwFirm;
+
+drop index idx_meter_steel;
 
 drop index idx_meter_firm;
 
@@ -66,6 +68,16 @@ drop table BwZone;
 
 drop table BwZoneMeter;
 
+drop table vc_code;
+
+drop table vc_code_value;
+
+drop table vc_factory_meter_model;
+
+drop table vc_meter_factory;
+
+drop table vc_meter_type;
+
 drop index idx_verify_point_batch;
 
 drop index idx_verify_point_item;
@@ -81,6 +93,12 @@ drop index idx_verify_stuff;
 drop index idx_verify_meter_date;
 
 drop table vc_meter_verify_result;
+
+drop index idx_work_holi_yr;
+
+drop index idx_work_holi_date;
+
+drop table vc_workday_holiday;
 
 /*==============================================================*/
 /* Table: BwConfig                                              */
@@ -183,10 +201,8 @@ firmId
 create table BwDmaMeter (
    dmaId                VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
-   sizeId               VARCHAR(45)          not null,
-   sizeName             VARCHAR(45)          not null,
    inOutput             INT4                 not null,
-   constraint PK_BWDMAMETER primary key (dmaId, meterId, sizeId, sizeName)
+   constraint PK_BWDMAMETER primary key (dmaId, meterId)
 );
 
 /*==============================================================*/
@@ -330,7 +346,7 @@ create table BwMeter (
    chargable            VARCHAR(45)          null,
    firmId               VARCHAR(45)          not null,
    meterBrandId         VARCHAR(45)          null,
-   stealNo              VARCHAR(45)          null,
+   steelNo              VARCHAR(45)          null,
    remoteBrandId        VARCHAR(45)          null,
    rtuId                VARCHAR(45)          null,
    rtuCode              VARCHAR(45)          null,
@@ -387,6 +403,13 @@ extId
 /*==============================================================*/
 create  index idx_meter_firm on BwMeter (
 firmId
+);
+
+/*==============================================================*/
+/* Index: idx_meter_steel                                       */
+/*==============================================================*/
+create  index idx_meter_steel on BwMeter (
+steelNo
 );
 
 /*==============================================================*/
@@ -597,10 +620,77 @@ firmId
 create table BwZoneMeter (
    zoneId               VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
-   sizeId               VARCHAR(45)          not null,
-   sizeName             VARCHAR(45)          not null,
    inOutput             INT4                 not null,
-   constraint PK_BWZONEMETER primary key (zoneId, meterId, sizeId, sizeName)
+   constraint PK_BWZONEMETER primary key (zoneId, meterId)
+);
+
+/*==============================================================*/
+/* Table: vc_code                                               */
+/*==============================================================*/
+create table vc_code (
+   codeId               varchar(20)          not null,
+   codeName             varchar(40)          null,
+   memo                 varchar(200)         null,
+   preInit              BOOL                 null,
+   constraint PK_VC_CODE primary key (codeId)
+);
+
+/*==============================================================*/
+/* Table: vc_code_value                                         */
+/*==============================================================*/
+create table vc_code_value (
+   codeId               varchar(20)          not null,
+   valueId              varchar(20)          not null,
+   valueName            varchar(40)          null,
+   valueOrder           int                  null,
+   valueType            varchar(20)          null,
+   preInit              BOOL                 null,
+   disabled             BOOL                 null,
+   constraint PK_VC_CODE_VALUE primary key (codeId, valueId)
+);
+
+/*==============================================================*/
+/* Table: vc_factory_meter_model                                */
+/*==============================================================*/
+create table vc_factory_meter_model (
+   factId               varchar(2)           not null,
+   typeId               varchar(2)           not null,
+   modelSize            varchar(100)         not null,
+   modelList            varchar(500)         null,
+   preInit              BOOL                 null default true,
+   constraint PK_VC_FACTORY_METER_MODEL primary key (factId, typeId, modelSize)
+);
+
+/*==============================================================*/
+/* Table: vc_meter_factory                                      */
+/*==============================================================*/
+create table vc_meter_factory (
+   factId               varchar(2)           not null,
+   factName             varchar(45)          null,
+   addr                 varchar(45)          null,
+   contact              varchar(45)          null,
+   phone                varchar(45)          null,
+   phone2               varchar(45)          null,
+   fax                  varchar(45)          null,
+   email                varchar(160)         null,
+   memo                 text                 null,
+   preInit              BOOL                 null default true,
+   createBy             varchar(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null,
+   updateBy             varchar(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
+   constraint PK_VC_METER_FACTORY primary key (factId)
+);
+
+/*==============================================================*/
+/* Table: vc_meter_type                                         */
+/*==============================================================*/
+create table vc_meter_type (
+   typeId               varchar(2)           not null,
+   typeName             varchar(45)          null,
+   memo                 varchar(200)         null,
+   preInit              BOOL                 null default true,
+   constraint PK_VC_METER_TYPE primary key (typeId)
 );
 
 /*==============================================================*/
@@ -747,5 +837,44 @@ verifyDate
 create  index idx_verify_item on vc_meter_verify_result (
 instrumentNo,
 itemId
+);
+
+/*==============================================================*/
+/* Table: vc_workday_holiday                                    */
+/*==============================================================*/
+create table vc_workday_holiday (
+   wid                  SERIAL not null,
+   startDate            DATE                 not null,
+   endDate              DATE                 not null,
+   yr                   INT4                 not null,
+   holiday              BOOL                 null default false,
+   weekend              BOOL                 null default false,
+   workday              BOOL                 null default true,
+   ruleType             varchar(100)         null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
+   constraint PK_VC_WORKDAY_HOLIDAY primary key (wid)
+);
+
+comment on table vc_workday_holiday is
+'保存国家法定节假日、工作日调休. holiday=1:节日, 无论是否工作日; weekend=1: 假日, 无论是否工作日; weekday=1: 工作日，无论是否周末.';
+
+/*==============================================================*/
+/* Index: idx_work_holi_date                                    */
+/*==============================================================*/
+create unique index idx_work_holi_date on vc_workday_holiday (
+startDate,
+endDate
+);
+
+/*==============================================================*/
+/* Index: idx_work_holi_yr                                      */
+/*==============================================================*/
+create unique index idx_work_holi_yr on vc_workday_holiday (
+yr,
+startDate,
+endDate
 );
 

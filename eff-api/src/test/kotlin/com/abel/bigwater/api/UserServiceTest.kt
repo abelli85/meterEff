@@ -21,6 +21,9 @@ class UserServiceTest {
         val URL_GET = TestHelper.URL_BASE + "/user/11"
     }
 
+    /**
+     * 列出登录会话
+     */
     @Test
     fun testListLogin() {
         val ul = TestHelper.login()
@@ -55,6 +58,9 @@ class UserServiceTest {
         }
     }
 
+    /**
+     * 机构列表
+     */
     @Test
     fun testFirmList() {
         val ul = TestHelper.login()

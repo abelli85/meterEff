@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.CodeMapper">
+
+    <select id="listFactory" resultType="com.abel.bigwater.model.VcFactory">
+        SELECT factId
+             , factName
+             , addr
+             , contact
+             , phone
+             , phone2
+             , fax
+             , email
+             , memo
+             , preInit
+             , createBy
+             , createDate
+             , updateBy
+             , updateDate
+        FROM vc_meter_factory
+    </select>
+
+    <insert id="insertFactory" parameterType="com.abel.bigwater.model.VcFactory">
+        INSERT INTO vc_meter_factory
+        ( factId
+        , factName
+        , addr
+        , contact
+        , phone
+        , phone2
+        , fax
+        , email
+        , memo
+        , preInit
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
+        )
+        VALUES ( #{factId}
+               , #{factName}
+               , #{addr}
+               , #{contact}
+               , #{phone}
+               , #{phone2}
+               , #{fax}
+               , #{email}
+               , #{memo}
+               , false
+               , #{createBy}
+               , #{createDate}
+               , #{updateBy}
+               , #{updateDate}
+               )
+    </insert>
+
+    <delete id="deleteFactory" parameterType="com.abel.bigwater.model.VcFactory">
+        DELETE
+        FROM vc_meter_factory
+        WHERE factId = #{factId}
+          AND preInit = false
+    </delete>
+
+    <select id="listCode" resultType="com.abel.bigwater.model.VcCode">
+        SELECT codeId
+             , codeName
+             , memo
+             , preInit
+        FROM vc_code
+    </select>
+
+    <select id="listValue" parameterType="com.abel.bigwater.model.VcCode"
+            resultType="com.abel.bigwater.model.VcCodeValue">
+        SELECT codeId
+        ,valueId
+        ,valueName
+        ,valueOrder
+        ,valueType
+        ,preInit
+        ,disabled
+        FROM vc_code_value
+        <where>
+            <if test="codeId != null">
+                codeId = #{codeId}
+            </if>
+        </where>
+        ORDER BY valueOrder
+    </select>
+
+    <insert id="createValue" parameterType="com.abel.bigwater.model.VcCodeValue">
+        INSERT INTO vc_code_value
+        ( codeId
+        , valueId
+        , valueName
+        , valueOrder
+        , valueType
+        , preInit)
+        VALUES ( #{codeId}
+               , #{valueId}
+               , #{valueName}
+               , #{valueOrder}
+               , #{valueType}
+               , false)
+    </insert>
+
+    <update id="updateValue" parameterType="com.abel.bigwater.model.VcCodeValue">
+        UPDATE vc_code_value
+        SET valueName  = #{valueName}
+          , valueOrder = #{valueOrder}
+          , valueType  = #{valueType}
+        WHERE codeId = #{codeId}
+          AND valueId = #{valueId}
+          AND preInit = false
+    </update>
+
+    <update id="disableValue" parameterType="com.abel.bigwater.model.VcCodeValue">
+        UPDATE vc_code_value
+        SET disabled  = #{disabled}
+        WHERE codeId = #{codeId}
+          AND valueId = #{valueId}
+    </update>
+
+    <delete id="deleteValue" parameterType="com.abel.bigwater.model.VcCodeValue">
+        DELETE FROM vc_code_value
+        WHERE codeId = #{codeId}
+          AND valueId = #{valueId}
+          AND preInit = false
+    </delete>
+
+    <select id="listMeterType" resultType="com.abel.bigwater.model.VcMeterType">
+        SELECT typeId
+             , typeName
+             , memo
+             , preInit
+        FROM vc_meter_type
+    </select>
+
+    <insert id="insertMeterType" parameterType="com.abel.bigwater.model.VcMeterType">
+        INSERT INTO vc_meter_type
+        ( typeId
+        , typeName
+        , memo
+        , preInit
+        )
+        VALUES ( #{typeId}
+               , #{typeName}
+               , #{memo}
+               , false
+               )
+    </insert>
+
+    <delete id="deleteMeterType" parameterType="com.abel.bigwater.model.VcMeterType">
+        DELETE
+        FROM vc_meter_type
+        WHERE typeId = #{typeId}
+          AND preInit = false
+    </delete>
+
+    <select id="listFactoryModel" parameterType="com.abel.bigwater.model.VcFactory"
+            resultType="com.abel.bigwater.model.VcFactoryModel">
+        SELECT factId
+        ,typeId
+        ,modelSize
+        ,modelList
+        ,preInit
+        FROM vc_factory_meter_model
+        <where>
+            <if test="factId != null">
+                factId = #{factId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertFactoryModel" parameterType="com.abel.bigwater.model.VcFactoryModel">
+        INSERT INTO vc_factory_meter_model
+        ( factId
+        , typeId
+        , modelSize
+        , modelList
+        , preInit
+        )
+        VALUES ( #{factId}
+               , #{typeId}
+               , #{modelSize}
+               , #{modelList}
+               , false
+               )
+    </insert>
+
+    <delete id="deleteFactoryModel" parameterType="com.abel.bigwater.model.VcFactoryModel">
+        DELETE
+        FROM vc_factory_meter_model
+        WHERE factId = #{factId}
+          AND typeId = #{typeId}
+          AND modelSize = #{modelSize}
+          AND preInit = false
+    </delete>
+
+    <insert id="insertWorkdayHoliday" parameterType="com.abel.bigwater.model.VcWorkdayHoliday"
+            keyColumn="wid" keyProperty="wid" useGeneratedKeys="true">
+        INSERT INTO vc_workday_holiday
+        ( startDate
+        , endDate
+        , yr
+        , holiday
+        , weekend
+        , workday
+        , ruleType
+        , createBy
+        , createDate
+        )
+        VALUES ( #{startDate}
+               , #{endDate}
+               , #{yr}
+               , #{holiday}
+               , #{weekend}
+               , #{workday}
+               , #{ruleType}
+               , #{createBy}
+               , now()
+               )
+    </insert>
+
+    <delete id="deleteWorkdayHoliday" parameterType="com.abel.bigwater.model.VcWorkdayHoliday">
+        DELETE
+        FROM vc_workday_holiday
+        WHERE wid = #{wid}
+    </delete>
+
+    <select id="selectWorkdayHoliday" parameterType="com.abel.bigwater.model.VcWorkdayHoliday"
+            resultType="com.abel.bigwater.model.VcWorkdayHoliday">
+        SELECT wid
+        ,startDate
+        ,endDate
+        ,yr
+        ,holiday
+        ,weekend
+        ,workday
+        ,ruleType
+        ,createBy
+        ,createDate
+        ,updateBy
+        ,updateDate
+        FROM vc_workday_holiday
+        <where>
+            <if test="wid != null">
+                wid = #{wid}
+            </if>
+            <if test="startDate != null">
+                AND startDate = #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND endDate = #{endDate}
+            </if>
+            <if test="yr != null">
+                AND yr = #{yr}
+            </if>
+            <if test="ruleType != null">
+                AND ruleType = #{ruleType}
+            </if>
+        </where>
+    </select>
+</mapper>
