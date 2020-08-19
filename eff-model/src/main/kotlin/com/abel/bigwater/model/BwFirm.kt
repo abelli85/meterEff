@@ -1,6 +1,6 @@
 package com.abel.bigwater.model
 
-class BwFirm : BwObject() {
+class BwFirm : BwBase() {
     /**
      * @return the id
      */

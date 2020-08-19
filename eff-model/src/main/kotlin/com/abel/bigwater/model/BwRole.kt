@@ -3,7 +3,7 @@ package com.abel.bigwater.model
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(value = ["updateBy", "createBy", "updateDate", "createDate", "title"], ignoreUnknown = true)
-class BwRole : BwObject() {
+class BwRole : BwBase() {
     /**
      * @return the name
      */

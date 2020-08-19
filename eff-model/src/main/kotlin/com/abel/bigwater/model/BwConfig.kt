@@ -1,6 +1,6 @@
 package com.abel.bigwater.model
 
-class BwConfig : BwObject, Cloneable {
+class BwConfig : BwBase, Cloneable {
     /**
      * @return the groupId
      */

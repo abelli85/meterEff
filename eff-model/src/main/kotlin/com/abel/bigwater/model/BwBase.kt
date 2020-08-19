@@ -3,11 +3,10 @@ package com.abel.bigwater.model
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import java.io.Serializable
 import java.util.*
 
-//import org.springframework.format.annotation.DateTimeFormat;
-
-open class BwObject : BwObjectInterface {
+abstract class BwBase : Serializable {
     /**
      * @return the createBy
      */

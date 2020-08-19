@@ -4,7 +4,6 @@
 package com.abel.bigwater.model
 
 import com.alibaba.fastjson.annotation.JSONField
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -14,7 +13,7 @@ import java.util.*
  * @author Abel5
  */
 @JsonIgnoreProperties(value = ["updateBy", "createBy", "updateDate", "createDate", "loginGeom"], ignoreUnknown = true)
-class BwUserLogin : BwObject() {
+class BwUserLogin : BwBase() {
     /**
      * @return the id
      */

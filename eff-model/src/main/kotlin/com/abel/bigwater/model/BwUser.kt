@@ -18,7 +18,7 @@ enum class UserStatus {
     BLACK
 }
 
-class BwUser : BwObject() {
+class BwUser : BwBase() {
     /**
      * @return the id
      */
