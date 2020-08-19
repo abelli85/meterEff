@@ -51,9 +51,9 @@
                , #{memo}
                , false
                , #{createBy}
-               , #{createDate}
+               , now()
                , #{updateBy}
-               , #{updateDate}
+               , now()
                )
     </insert>
 
@@ -69,6 +69,10 @@
              , codeName
              , memo
              , preInit
+             , createBy
+             , createDate
+             , updateBy
+             , updateDate
         FROM vc_code
     </select>
 
@@ -81,6 +85,10 @@
         ,valueType
         ,preInit
         ,disabled
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
         FROM vc_code_value
         <where>
             <if test="codeId != null">
@@ -97,13 +105,23 @@
         , valueName
         , valueOrder
         , valueType
-        , preInit)
+        , preInit
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
+        )
         VALUES ( #{codeId}
                , #{valueId}
                , #{valueName}
                , #{valueOrder}
                , #{valueType}
-               , false)
+               , false
+               , #{createBy}
+               , now()
+               , #{updateBy}
+               , now()
+               )
     </insert>
 
     <update id="updateValue" parameterType="com.abel.bigwater.model.VcCodeValue">
@@ -111,6 +129,8 @@
         SET valueName  = #{valueName}
           , valueOrder = #{valueOrder}
           , valueType  = #{valueType}
+          , updateBy = #{updateBy}
+          , updateDate = now()
         WHERE codeId = #{codeId}
           AND valueId = #{valueId}
           AND preInit = false
@@ -119,6 +139,8 @@
     <update id="disableValue" parameterType="com.abel.bigwater.model.VcCodeValue">
         UPDATE vc_code_value
         SET disabled  = #{disabled}
+          , updateBy = #{updateBy}
+          , updateDate = now()
         WHERE codeId = #{codeId}
           AND valueId = #{valueId}
     </update>

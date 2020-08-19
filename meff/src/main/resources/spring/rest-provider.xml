@@ -86,4 +86,8 @@
     <dubbo:service interface="com.abel.bigwater.api.UserService" ref="loginService"
                    protocol="rest"
                    validation="true"/>
+
+    <dubbo:service interface="com.abel.bigwater.api.CodeService" ref="codeService"
+                   protocol="rest"
+                   validation="true"/>
 </beans>

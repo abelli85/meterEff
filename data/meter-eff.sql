@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/19 16:59:39                           */
+/* Created on:     2020/8/19 18:14:57                           */
 /*==============================================================*/
 
 
@@ -632,6 +632,10 @@ create table vc_code (
    codeName             varchar(40)          null,
    memo                 varchar(200)         null,
    preInit              BOOL                 null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_VC_CODE primary key (codeId)
 );
 
@@ -646,6 +650,10 @@ create table vc_code_value (
    valueType            varchar(20)          null,
    preInit              BOOL                 null,
    disabled             BOOL                 null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateBy             VARCHAR(45)          null,
+   updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_VC_CODE_VALUE primary key (codeId, valueId)
 );
 
@@ -675,9 +683,9 @@ create table vc_meter_factory (
    email                varchar(160)         null,
    memo                 text                 null,
    preInit              BOOL                 null default true,
-   createBy             varchar(45)          null,
-   createDate           TIMESTAMP WITH TIME ZONE null,
-   updateBy             varchar(45)          null,
+   createBy             VARCHAR(45)          null,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
    constraint PK_VC_METER_FACTORY primary key (factId)
 );

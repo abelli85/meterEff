@@ -27,6 +27,8 @@ interface CodeService {
         const val PATH_DELETE_WORKDAY_HOLIDAY = "/deleteWorkdayHoliday"
         const val PATH_SELECT_WORKDAY_HOLIDAY = "/selectWorkdayHoliday"
 
+        const val PATH_LIST_CODE = "/listCode"
+        const val PATH_LIST_VALUE = "/listValue"
         const val PATH_CREATE_VALUE = "/createValue"
         const val PATH_UPDATE_VALUE = "/updateValue"
         const val PATH_DELETE_VALUE = "/deleteValue"
@@ -69,14 +71,14 @@ interface CodeService {
      * 列出所有代码类
      */
     @POST
-    @Path("listCode")
+    @Path(PATH_LIST_CODE)
     fun listCode(holder: BwHolder<VcCode>): BwResult<VcCode>
 
     /**
      * 列出指定代码的值列表
      */
     @POST
-    @Path("listValue")
+    @Path(PATH_LIST_VALUE)
     fun listValue(holder: BwHolder<VcCode>): BwResult<VcCodeValue>
 
     /**

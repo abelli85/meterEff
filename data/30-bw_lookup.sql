@@ -13,17 +13,16 @@ TRUNCATE TABLE vc_meter_factory;
 08-重庆智慧水务有限公司
 09-杭州水表股份有限公司"
  */
-INSERT INTO vc_meter_factory(factId, factName) VALUES
-('01', '宁波水表股份有限公司'), 
-('02', '申舒斯仪表系统（福州）有限公司'),
-('03', '杭州山科智能科技股份有限公司'),
-('04', '深圳市兴源鼎新科技有限公司'),
-('05', '浙江和达科技股份有限公司'),
-('06', '三川智慧科技股份有限公司'),
-('07', '宁波东海集团有限公司'),
-('08', '重庆智慧水务有限公司'),
-('09', '杭州水表股份有限公司')
-;
+INSERT INTO vc_meter_factory(factId, factName, createBy, createDate) VALUES
+('01', '宁波水表股份有限公司', 'robot', timestamptz '2020-8-19'),
+('02', '申舒斯仪表系统（福州）有限公司', 'robot', timestamptz '2020-8-19'),
+('03', '杭州山科智能科技股份有限公司', 'robot', timestamptz '2020-8-19'),
+('04', '深圳市兴源鼎新科技有限公司', 'robot', timestamptz '2020-8-19'),
+('05', '浙江和达科技股份有限公司', 'robot', timestamptz '2020-8-19'),
+('06', '三川智慧科技股份有限公司', 'robot', timestamptz '2020-8-19'),
+('07', '宁波东海集团有限公司', 'robot', timestamptz '2020-8-19'),
+('08', '重庆智慧水务有限公司', 'robot', timestamptz '2020-8-19'),
+('09', '杭州水表股份有限公司', 'robot', timestamptz '2020-8-19');
 
 TRUNCATE TABLE vc_factory_meter_model;
 TRUNCATE TABLE vc_meter_type;
@@ -78,48 +77,44 @@ INSERT INTO vc_factory_meter_model(factId, typeId, modelSize, modelList) VALUES
 TRUNCATE TABLE vc_code_value;
 TRUNCATE TABLE vc_code;
 
-INSERT INTO vc_code(codeId, codeName, memo, preInit) VALUES
-('SIZE', '水表口径', 'DN15~400', true),
-('VERIFY_REASON', '作业原因', '', true),
-('VERIFY_TYPE', '作业类型', '', true),
-('REPORT_TYPE', '报告类型', '只显示不允许添加', true),
-('BRAND', '水表品牌', '', true),
-('METER_CLASS', '水表类型', '不同于水表分类', true),
+INSERT INTO vc_code(codeId, codeName, memo, preInit, createBy, createDate) VALUES
+('SIZE', '水表口径', 'DN15~400', true, 'robot', timestamptz '2020-8-19'),
+('VERIFY_REASON', '作业原因', '', true, 'robot', timestamptz '2020-8-19'),
+('VERIFY_TYPE', '作业类型', '', true, 'robot', timestamptz '2020-8-19'),
+('REPORT_TYPE', '报告类型', '只显示不允许添加', true, 'robot', timestamptz '2020-8-19'),
+('BRAND', '水表品牌', '', true, 'robot', timestamptz '2020-8-19'),
+('METER_CLASS', '水表类型', '不同于水表分类', true, 'robot', timestamptz '2020-8-19'),
+('ACCURACY_GRADE', '准确精度等级', '', true, 'robot', timestamptz '2020-8-19'),
+('TEMP_GRADE', '温度等级', '', true, 'robot', timestamptz '2020-8-19'),
+('MAP_GRADE', 'MAP', '', true, 'robot', timestamptz '2020-8-19'),
+('ABNORMAL_REASON', '异常原因', '', true, 'robot', timestamptz '2020-8-19'),
+('BATCH', '批次状态', '只显示不允许添加', true, 'robot', timestamptz '2020-8-19');
 
-('ACCURACY_GRADE', '准确精度等级', '', true),
-('TEMP_GRADE', '温度等级', '', true),
-('MAP_GRADE', 'MAP', '', true),
-('ABNORMAL_REASON', '异常原因', '', true),
-
-('BATCH', '批次状态', '只显示不允许添加', true)
-;
-
-INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit, disabled) VALUES
-('SIZE', '15', 'DN15',  15, 'INT', true, false),
-('SIZE', '20', 'DN20',  20, 'INT', true, false),
-('SIZE', '25', 'DN25',  25, 'INT', true, false),
-('SIZE', '40', 'DN40',  40, 'INT', true, false),
-('SIZE', '50', 'DN50',  50, 'INT', true, false),
-('SIZE', '80', 'DN80',  80, 'INT', true, false),
-('SIZE', '90', 'D100',  90, 'INT', true, false),
-('SIZE', '91', 'DN150', 91, 'INT', true, false),
-('SIZE', '92', 'DN200', 92, 'INT', true, false),
-('SIZE', '93', 'DN300', 93, 'INT', true, false),
-('SIZE', '94', 'DN400', 94, 'INT', true, false),
-('SIZE', '95', 'DN250', 95, 'INT', true, false),
-('SIZE', 'DN15',  'DN15',  115, 'INT', true, true),
-('SIZE', 'DN20',  'DN20',  120, 'INT', true, true),
-('SIZE', 'DN25',  'DN25',  125, 'INT', true, true),
-('SIZE', 'DN40',  'DN40',  140, 'INT', true, true),
-('SIZE', 'DN50',  'DN50',  150, 'INT', true, true),
-('SIZE', 'DN80',  'DN80',  180, 'INT', true, true),
-('SIZE', 'D100',  'D100',  190, 'INT', true, true),
-('SIZE', 'DN150', 'DN150', 191, 'INT', true, true),
-('SIZE', 'DN200', 'DN200', 192, 'INT', true, true),
-('SIZE', 'DN300', 'DN300', 193, 'INT', true, true),
-('SIZE', 'DN400', 'DN400', 194, 'INT', true, true),
-('SIZE', 'DN250', 'DN250', 195, 'INT', true, true)
-;
+INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit, disabled, createBy, createDate) VALUES
+('SIZE', '15', 'DN15',  15, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '20', 'DN20',  20, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '25', 'DN25',  25, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '40', 'DN40',  40, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '50', 'DN50',  50, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '80', 'DN80',  80, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '90', 'D100',  90, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '91', 'DN150', 91, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '92', 'DN200', 92, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '93', 'DN300', 93, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '94', 'DN400', 94, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '95', 'DN250', 95, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN15',  'DN15',  115, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN20',  'DN20',  120, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN25',  'DN25',  125, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN40',  'DN40',  140, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN50',  'DN50',  150, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN80',  'DN80',  180, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'D100',  'D100',  190, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN150', 'DN150', 191, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN200', 'DN200', 192, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN300', 'DN300', 193, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN400', 'DN400', 194, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN250', 'DN250', 195, 'INT', true, true, 'robot', timestamptz '2020-8-19');
 
 /**
   安装前首检、大表后续检定、争议检定、使用中抽检、水表招标，实验室比对，期间核查，重复性试验，稳定性考核，计量研究
