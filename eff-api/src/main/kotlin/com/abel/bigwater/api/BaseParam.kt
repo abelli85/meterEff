@@ -1,15 +1,12 @@
 package com.abel.bigwater.api
 
-import com.abel.bigwater.model.JsonDateDeserializer
-import com.abel.bigwater.model.JsonDateSerializer
-import com.abel.bigwater.model.JsonHelper
-import com.abel.bigwater.model.VcBase
+import com.abel.bigwater.model.*
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
-open class BaseParam : VcBase() {
+open class BaseParam : BwBase() {
 
     /**
      * 记录创建的日期
