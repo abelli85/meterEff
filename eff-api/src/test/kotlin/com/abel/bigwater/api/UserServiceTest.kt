@@ -1,5 +1,6 @@
 package com.abel.bigwater.api
 
+import com.abel.bigwater.model.BwFirm
 import com.abel.bigwater.model.BwUser
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -7,12 +8,8 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
-import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
-import org.junit.Assert
 import org.junit.Test
 import org.slf4j.LoggerFactory
-import org.springframework.util.DigestUtils
 
 class UserServiceTest {
     /**
@@ -26,26 +23,14 @@ class UserServiceTest {
 
     @Test
     fun testListLogin() {
-        val post = HttpPost(TestHelper.URL_LOGIN).apply {
-            entity = StringEntity(JSON.toJSONString(LoginRequest().also {
-                it.userId = "abel"
-                it.devId = "junit"
-                it.timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-                it.clientHash = DigestUtils.md5DigestAsHex((DigestUtils.md5DigestAsHex("test".toByteArray()) + it.timestamp).toByteArray())
-            }), ContentType.APPLICATION_JSON)
-        }
-
-        val resp = HttpClients.createDefault().execute(post)
-        val json = resp.entity.content.reader().readText()
-        val ret = ObjectMapper().readValue(json, TestHelper.BwUserLoginResult::class.java)
-        Assert.assertEquals(0, ret.code)
+        val ul = TestHelper.login()
 
         kotlin.run {
             val post2 = HttpPost(URL_USER_INFO).apply {
                 entity = StringEntity(JSON.toJSONString(BwHolder<BwUser>().also {
-                    it.lr = TestHelper.buildLoginRequest(ret.single!!)
+                    it.lr = TestHelper.buildLoginRequest(ul.single!!)
                     it.single = BwUser().also { up ->
-                        up.userId = ret.single?.userId
+                        up.userId = ul.single?.userId
                     }
                 }), ContentType.APPLICATION_JSON)
             }
@@ -57,10 +42,10 @@ class UserServiceTest {
         kotlin.run {
             val post2 = HttpPost(URL_LIST_LOGIN).apply {
                 entity = StringEntity(JSON.toJSONString(BwHolder<UserOperParam>().also {
-                    it.lr = TestHelper.buildLoginRequest(ret.single!!)
+                    it.lr = TestHelper.buildLoginRequest(ul.single!!)
                     it.single = UserOperParam().also { up ->
-                        up.firmId = ret.single!!.firmId
-                        up.userId = ret.single!!.userId
+                        up.firmId = ul.single!!.firmId
+                        up.userId = ul.single!!.userId
                     }
                 }), ContentType.APPLICATION_JSON)
             }
@@ -70,12 +55,34 @@ class UserServiceTest {
         }
     }
 
+    @Test
+    fun testFirmList() {
+        val ul = TestHelper.login()
+
+        val post = HttpPost(URL_FIRM_LIST).apply {
+            entity = StringEntity(JSON.toJSONString(BwHolder<String>().also {
+                it.lr = TestHelper.buildLoginRequest(ul.single!!)
+            }), ContentType.APPLICATION_JSON)
+        }
+
+        val resp = HttpClients.createDefault().execute(post)
+        val json = resp.entity.content.reader().readText()
+        lgr.info("firm list response: {}", json)
+
+        val rf = ObjectMapper().readValue<BwResultFirm>(json, BwResultFirm::class.java)
+        lgr.info("firm list: {}", rf.list?.map { it.title }?.joinToString("\r\n"))
+    }
+
     companion object {
 
         const val URL_LIST_LOGIN = TestHelper.URL_BASE + "/user/loginList"
 
         const val URL_USER_INFO = TestHelper.URL_BASE + "/user/info"
 
+        const val URL_FIRM_LIST = TestHelper.URL_BASE + UserService.BASE_PATH + UserService.PATH_FIRM_LIST
+
         private val lgr = LoggerFactory.getLogger(UserServiceTest::class.java)
+
+        class BwResultFirm : BwResult<BwFirm>()
     }
 }

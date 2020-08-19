@@ -15,8 +15,9 @@ import javax.ws.rs.*
 interface UserService {
 
     companion object {
-        val BASE_PATH = "/user"
+        const val BASE_PATH = "/user"
 
+        const val PATH_FIRM_LIST = "/firmList"
         const val PATH_UPDATE_FIRM = "/updateFirm"
         const val PATH_ADD_FIRM = "/addFirm"
         const val PATH_DELETE_FIRM = "/deleteFirm"
@@ -169,7 +170,7 @@ interface UserService {
      * @formatter:on
      */
     @POST
-    @Path("firmList")
+    @Path(PATH_FIRM_LIST)
     fun firmList(holder: BwHolder<String>): BwResult<BwFirm>
 
     /**

@@ -2,10 +2,7 @@ package com.abel.bigwater.impl
 
 import com.abel.bigwater.TestHelper
 import com.abel.bigwater.TestHelper.buildLoginRequest
-import com.abel.bigwater.api.BwHolder
-import com.abel.bigwater.api.LoginRequest
-import com.abel.bigwater.api.UserOperParam
-import com.abel.bigwater.api.UserService
+import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.ConfigMapper
 import com.abel.bigwater.mapper.UserMapper
 import com.abel.bigwater.model.BwFirm
@@ -30,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.util.DigestUtils
+import kotlin.math.log
 
 /**
  * Launch zookeeper before the tests.
@@ -55,18 +53,18 @@ class UserServiceImplTest {
     /**
      * 登录并返回结果
      */
-    private fun login(_userId: String = "abel", _pass: String = "test", blog: Boolean = false): BwUserLogin {
+    private fun login(_userId: String = "abel", _pass: String = "test", blog: Boolean = false): BwResult<BwUserLogin> {
         val passHash = DigestUtils.md5DigestAsHex(_pass.toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
+        val ul = bean!!.login(LoginRequest().apply {
             userId = _userId
             devId = "junit"
             timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
             clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
         })
 
-        lgr.info("login first: {}", if (blog) JSON.toJSONString(ul, true) else ul?.error)
-        assertTrue(ul?.code == 0)
-        return ul!!.single!!
+        lgr.info("login first: {}", if (blog) JSON.toJSONString(ul, true) else ul.error)
+        assertTrue(ul.code == 0)
+        return ul
     }
 
     @Test
@@ -252,19 +250,19 @@ class UserServiceImplTest {
         }
 
         try {
-            val r1 = bean!!.createUser(BwHolder(TestHelper.buildLoginRequest(ul), usr))
+            val r1 = bean!!.createUser(BwHolder(TestHelper.buildLoginRequest(ul.single!!), usr))
             lgr.info("create user result: {}", JSON.toJSONString(r1, true))
             assertEquals(0, r1.code)
 
             kotlin.run {
-                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.userId))
+                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), usr.userId))
                 lgr.info("user info: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
             }
 
             // update stuff-id & firm-id
             kotlin.run {
-                val r2 = bean!!.updateUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
+                val r2 = bean!!.updateUser(BwHolder(TestHelper.buildLoginRequest(ul.single!!), BwUser().apply {
                     userId = usr.userId
                     firmId = "00"
                     verifyStuff = "98"
@@ -275,7 +273,7 @@ class UserServiceImplTest {
 
             // verify if changed
             kotlin.run {
-                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul), usr.userId))
+                val r2 = bean!!.userList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), usr.userId))
                 lgr.info("changed user info: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
                 assertEquals("98", r2.list?.firstOrNull()?.verifyStuff)
@@ -283,7 +281,7 @@ class UserServiceImplTest {
             }
         } finally {
             kotlin.run {
-                val r2 = bean!!.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
+                val r2 = bean!!.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul.single!!), BwUser().apply {
                     userId = usr.userId
                 }))
                 lgr.info("delete user: {}", JSON.toJSONString(r2, true))
@@ -294,17 +292,9 @@ class UserServiceImplTest {
 
     @Test
     fun updateUser() {
-        val passHash = DigestUtils.md5DigestAsHex("test".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "abel"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.updateUser(BwHolder(buildLoginRequest(ul?.single!!), BwUser().apply {
+        val user = bean!!.updateUser(BwHolder(buildLoginRequest(ul.single!!), BwUser().apply {
             this.userId = "abel"
             this.signPic = "http://localhost:8080/docs/images/tomcat.png"
             this.smallIcon = "http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg"
@@ -317,7 +307,7 @@ class UserServiceImplTest {
     @Test
     fun deleteUser() {
         val ul = login()
-        val r1 = bean?.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul), BwUser().apply {
+        val r1 = bean?.deleteUser(BwHolder(TestHelper.buildLoginRequest(ul.single!!), BwUser().apply {
             userId = "abel"
         }))
 
@@ -345,17 +335,9 @@ class UserServiceImplTest {
 
     @Test
     fun createRoleDuplicate() {
-        val passHash = DigestUtils.md5DigestAsHex("world".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "admin"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.createRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+        val user = bean!!.createRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
             name = "BACK_USER"
         }))
         lgr.info("try to create role: {}", ObjectMapper().writeValueAsString(user))
@@ -364,18 +346,9 @@ class UserServiceImplTest {
 
     @Test
     fun createRole() {
+        val ul = login()
         try {
-            val passHash = DigestUtils.md5DigestAsHex("world".toByteArray())
-            val ul = bean?.login(LoginRequest().apply {
-                userId = "admin"
-                devId = "junit"
-                timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-                clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-            })
-
-            assertTrue(ul?.code == 0)
-
-            val user = bean?.createRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+            val user = bean!!.createRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
                 name = "BACK_USER2"
             }))
             lgr.info("try to create role: {}", ObjectMapper().writeValueAsString(user))
@@ -387,17 +360,9 @@ class UserServiceImplTest {
 
     @Test
     fun deleteRoleRef() {
-        val passHash = DigestUtils.md5DigestAsHex("world".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "admin"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.deleteRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+        val user = bean!!.deleteRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
             name = "BACK_USER"
         }))
         lgr.info("try to delete role: {}", ObjectMapper().writeValueAsString(user))
@@ -406,17 +371,9 @@ class UserServiceImplTest {
 
     @Test
     fun deleteRole() {
-        val passHash = DigestUtils.md5DigestAsHex("world".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "admin"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.deleteRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+        val user = bean!!.deleteRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
             name = "DMA_USER"
         }))
         lgr.info("try to delete role: {}", ObjectMapper().writeValueAsString(user))
@@ -425,17 +382,9 @@ class UserServiceImplTest {
 
     @Test
     fun updateRoleAuthFailed() {
-        val passHash = DigestUtils.md5DigestAsHex("test".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "abel"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.updateRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+        val user = bean!!.updateRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
             name = "BACK_USER"
             roleDesc = "test"
             preInit = false
@@ -447,17 +396,9 @@ class UserServiceImplTest {
 
     @Test
     fun updateRole() {
-        val passHash = DigestUtils.md5DigestAsHex("world".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "admin"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean?.updateRole(BwHolder(buildLoginRequest(ul?.single!!), BwRole().apply {
+        val user = bean!!.updateRole(BwHolder(buildLoginRequest(ul.single!!), BwRole().apply {
             name = "BACK_USER"
             roleDesc = "test"
             preInit = false
@@ -468,19 +409,11 @@ class UserServiceImplTest {
 
     @Test
     fun firmList() {
-        val passHash = DigestUtils.md5DigestAsHex("test".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "abel"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val user = bean!!.firmList(BwHolder(buildLoginRequest(ul?.single!!), ""))
+        val user = bean!!.firmList(BwHolder(buildLoginRequest(ul.single!!), ""))
         lgr.info("firm list: {}", ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(user))
-        lgr.info("branch list: {}", user.list?.map { it.title })
+        lgr.info("branch list: {}", user.list?.map { it.title }?.joinToString("\r\n"))
         assertTrue(user.list?.size ?: 0 > 1)
     }
 
@@ -499,10 +432,10 @@ class UserServiceImplTest {
         try {
             configMapper!!.addFirm(ftest)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r1))
 
-            val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul),
+            val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!),
                     ftest.apply {
                         phone = "0875-12345678"
                         addr = "上布水务大楼"
@@ -512,7 +445,7 @@ class UserServiceImplTest {
                     }))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3))
             assertEquals(true, r3.list?.find { it.firmId == ftest.firmId } != null)
         } finally {
@@ -536,10 +469,10 @@ class UserServiceImplTest {
         try {
             configMapper!!.addFirm(ftest)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r1), true)
 
-            val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul),
+            val r2 = bean!!.updateFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!),
                     ftest.apply {
                         phone = "0875-12345678"
                         addr = "上布水务大楼"
@@ -556,7 +489,7 @@ class UserServiceImplTest {
                     }))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3, true))
             assertEquals(true, r3.list?.find { it.firmId == ftest.firmId } != null)
         } finally {
@@ -588,18 +521,18 @@ class UserServiceImplTest {
         val ul = login()
 
         try {
-            val r5 = bean!!.addFirm(BwHolder(TestHelper.buildLoginRequest(ul), ftest))
+            val r5 = bean!!.addFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest))
             lgr.info("add firm: {}", JSON.toJSONString(r5, true))
             assertEquals(0, r5.code)
 
-            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r1 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r1.list?.find { it.firmId == ftest.firmId }, true))
 
-            val r2 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul), ftest))
+            val r2 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest))
             lgr.info("delete firm: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), ftest.firmId))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.firmId == ftest.firmId }, true))
             assertEquals(0, r3.code)
         } finally {
@@ -619,18 +552,18 @@ class UserServiceImplTest {
         val ul = login()
 
         try {
-            val r1 = bean!!.addFirm(BwHolder(TestHelper.buildLoginRequest(ul), ftest))
+            val r1 = bean!!.addFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest))
             assertEquals(0, r1.code)
 
-            val r5 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul), ftest))
+            val r5 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!), ftest))
             lgr.info("delete firm: {}", JSON.toJSONString(r5, true))
             assertEquals(0, r5.code)
 
-            val r2 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul), fmain))
+            val r2 = bean!!.deleteFirm(BwHolder(TestHelper.buildLoginRequest(ul.single!!), fmain))
             lgr.info("delete firm: {}", JSON.toJSONString(r2, true))
             assertNotEquals(0, r2.code)
 
-            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul), fmain.firmId))
+            val r3 = bean!!.firmList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), fmain.firmId))
             lgr.info("firm list: {}", JSON.toJSONString(r3.list?.find { it.firmId == fmain.firmId }, true))
             assertEquals(0, r3.code)
         } finally {
@@ -641,30 +574,22 @@ class UserServiceImplTest {
     @Test
     fun operList() {
         val ul = login()
-        val r1 = bean!!.operList(BwHolder(TestHelper.buildLoginRequest(ul), UserOperParam()))
+        val r1 = bean!!.operList(BwHolder(TestHelper.buildLoginRequest(ul.single!!), UserOperParam()))
         lgr.info("oper list: {}...", JSON.toJSONString(r1, true).take(1000))
     }
 
     @Test
     fun operStat() {
         val ul = login()
-        val r1 = bean!!.operStat(BwHolder(TestHelper.buildLoginRequest(ul), UserOperParam()))
+        val r1 = bean!!.operStat(BwHolder(TestHelper.buildLoginRequest(ul.single!!), UserOperParam()))
         lgr.info("oper stat: {}...", JSON.toJSONString(r1, true).take(1000))
     }
 
     @Test
     fun testKickLogin() {
-        val passHash = DigestUtils.md5DigestAsHex("test".toByteArray())
-        val ul = bean?.login(LoginRequest().apply {
-            userId = "abel"
-            devId = "junit"
-            timestamp = DateTime.now().toString(ISODateTimeFormat.basicDateTime())
-            clientHash = DigestUtils.md5DigestAsHex((passHash + timestamp).toByteArray())
-        })
+        val ul = login()
 
-        assertTrue(ul?.code == 0)
-
-        val ret = bean?.kickLogin(BwHolder(buildLoginRequest(ul?.single!!), UserOperParam().apply {
+        val ret = bean!!.kickLogin(BwHolder(buildLoginRequest(ul.single!!), UserOperParam().apply {
             firmId = "11"
             userId = "abel"
         }))
