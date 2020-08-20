@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.LocMapper">
+
+    <select id="selectRtuLog" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.BwRtuLog">
+        SELECT r.logId
+        , r.logTime
+        , r.logCmd
+        , r.logLen
+        , r.rtuId
+        , r.meterId
+        , r.logText
+        , r.logResp
+        , r.logComment
+        , r.forwardReading
+        , r.revertReading
+        , r.literPulse
+        , r.rssi
+        , r.reverseWarn
+        , r.maxWarn
+        , r.cutWarn
+        , r.voltWarn
+        , r.rssiWarn
+        , r.remoteDevice
+        , r.remoteServer
+        , r.f18
+        , r.firmId
+        FROM bw_rtu_log r
+        LEFT JOIN bw_meter m ON r.meterid = m.meterid
+        <where>
+            <choose>
+                <when test="logTime1 != null and logTime2 != null">
+                    r.logTime BETWEEN #{logTime1} AND #{logTime2}
+                </when>
+                <when test="logTime1 != null">
+                    r.logTime &gt;= #{logTime1}
+                </when>
+                <when test="logTime2 != null">
+                    AND r.logTime &lt; #{logTime2}
+                </when>
+            </choose>
+            <if test="rtuId != null">
+                AND r.rtuId LIKE #{rtuId}
+            </if>
+            <if test="meterId != null">
+                AND r.meterId LIKE #{meterId}
+            </if>
+            <if test="firmId != null">
+                AND (m.meterId IS NULL OR m.firmId LIKE #{firmId})
+            </if>
+        </where>
+        ORDER BY r.logTime DESC
+        LIMIT #{index}, #{rows}
+    </select>
+
+    <insert id="addRtuLog" parameterType="com.abel.bigwater.model.BwRtuLog">
+        INSERT INTO bw_rtu_log( logTime
+                              , logCmd
+                              , logLen
+                              , rtuId
+                              , meterId
+                              , logText
+                              , logResp
+                              , logComment
+                              , forwardReading
+                              , revertReading
+                              , literPulse
+                              , rssi
+                              , reverseWarn
+                              , maxWarn
+                              , cutWarn
+                              , voltWarn
+                              , rssiWarn
+                              , remoteDevice
+                              , remoteServer
+                              , f18
+                              , firmId)
+        VALUES ( #{logTime}
+               , #{logCmd}
+               , #{logLen}
+               , #{rtuId}
+               , #{meterId}
+               , #{logText}
+               , #{logResp}
+               , #{logComment}
+               , #{forwardReading}
+               , #{revertReading}
+               , #{literPulse}
+               , #{rssi}
+               , #{reverseWarn}
+               , #{maxWarn}
+               , #{cutWarn}
+               , #{voltWarn}
+               , #{rssiWarn}
+               , #{remoteDevice}
+               , #{remoteServer}
+               , #{f18}
+               , #{firmId})
+    </insert>
+
+    <delete id="deleteRtuLog" parameterType="com.abel.bigwater.api.DataParam">
+        DELETE FROM bw_rtu_log
+
+        <where>
+            <choose>
+                <when test="logTime1 != null and logTime2 != null">
+                    logTime BETWEEN #{logTime1} AND #{logTime2}
+                </when>
+                <when test="logTime1 != null">
+                    logTime &gt;= #{logTime1}
+                </when>
+                <when test="logTime2 != null">
+                    logTime &lt; #{logTime2}
+                </when>
+                <otherwise>
+                    logId = #{logId}
+                </otherwise>
+            </choose>
+            <if test="rtuId != null">
+                AND rtuId LIKE #{rtuId}
+            </if>
+            <if test="meterId != null">
+                AND meterId LIKE #{meterId}
+            </if>
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
+        </where>
+    </delete>
+
+    <select id="selectRtuList" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.BwRtu">
+        SELECT rtuId
+        , meterId
+        , lastTime
+        , lastCmd
+        , lastDataTime
+        , lastText
+        , lastResp
+        , firstTime
+        , firstCmd
+        , firstText
+        , firstResp
+        , meterName
+        , meterAddr
+        , rtuLoc
+        , forwardReading
+        , revertReading
+        , literPulse
+        , rssi
+        , reverseWarn
+        , maxWarn
+        , cutWarn
+        , voltWarn
+        , rssiWarn
+        , remoteServer
+        , stateDesc
+        , hoursSleep
+        , firmId
+        FROM bw_rtu
+        <where>
+            <choose>
+                <when test="rtuId != null">
+                    rtuId LIKE #{rtuId}
+                </when>
+                <otherwise>
+                    meterId LIKE #{meterId}
+                </otherwise>
+            </choose>
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="addRtu" parameterType="com.abel.bigwater.model.BwRtu">
+        INSERT INTO bw_rtu( rtuId
+                          , meterId
+                          , lastTime
+                          , lastCmd
+                          , lastDataTime
+                          , lastText
+                          , lastResp
+                          , firstTime
+                          , firstCmd
+                          , firstText
+                          , firstResp
+                          , meterName
+                          , meterAddr
+                          , rtuLoc
+                          , forwardReading
+                          , revertReading
+                          , literPulse
+                          , rssi
+                          , reverseWarn
+                          , maxWarn
+                          , cutWarn
+                          , voltWarn
+                          , rssiWarn
+                          , remoteServer
+                          , stateDesc
+                          , hoursSleep
+                          , firmId)
+        VALUES ( #{rtuId}
+               , #{meterId}
+               , #{lastTime}
+               , #{lastCmd}
+               , #{lastDataTime}
+               , #{lastText}
+               , #{lastResp}
+               , #{firstTime}
+               , #{firstCmd}
+               , #{firstText}
+               , #{firstResp}
+               , #{meterName}
+               , #{meterAddr}
+               , #{rtuLoc}
+               , #{forwardReading}
+               , #{revertReading}
+               , #{literPulse}
+               , #{rssi}
+               , #{reverseWarn}
+               , #{maxWarn}
+               , #{cutWarn}
+               , #{voltWarn}
+               , #{rssiWarn}
+               , #{remoteServer}
+               , #{stateDesc}
+               , #{hoursSleep}
+               , #{firmId})
+    </insert>
+
+    <update id="updateRtu" parameterType="com.abel.bigwater.model.BwRtu">
+        UPDATE bw_rtu
+        SET meterId = #{meterId}
+        , lastTime = #{lastTime}
+        , lastCmd = #{lastCmd}
+        , lastDataTime = #{lastDataTime}
+        , lastText = #{lastText}
+        , lastResp = #{lastResp}
+        , firstTime = #{firstTime}
+        , firstCmd = #{firstCmd}
+        , firstText = #{firstText}
+        , firstResp = #{firstResp}
+        , meterName = #{meterName}
+        , meterAddr = #{meterAddr}
+        , rtuLoc = #{rtuLoc}
+        , forwardReading = #{forwardReading}
+        , revertReading = #{revertReading}
+        , literPulse = #{literPulse}
+        , rssi = #{rssi}
+        , reverseWarn = #{reverseWarn}
+        , maxWarn = #{maxWarn}
+        , cutWarn = #{cutWarn}
+        , voltWarn = #{voltWarn}
+        , rssiWarn = #{rssiWarn}
+        , remoteServer = #{remoteServer}
+        , stateDesc = #{stateDesc}
+        , hoursSleep = #{hoursSleep}
+        , firmId = #{firmId}
+        <where>
+            rtuId = #{rtuId}
+        </where>
+    </update>
+
+    <delete id="deleteRtu" parameterType="com.abel.bigwater.api.MeterParam">
+        DELETE
+        FROM bw_rtu
+        <where>
+            <choose>
+                <when test="rtuId != null">
+                    rtuId LIKE #{rtuId}
+                </when>
+                <otherwise>
+                    meterId LIKE #{meterId}
+                </otherwise>
+            </choose>
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
+        </where>
+    </delete>
+</mapper>

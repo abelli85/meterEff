@@ -26,5 +26,7 @@ enum class BwMeterType(val typeName: String) {
      * 车载
      * @obsolete
      */
-    VEHICLE("车载");
+    VEHICLE("车载"),
+
+    ALL("全部");
 }

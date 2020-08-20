@@ -189,6 +189,11 @@ open class BwMeter : BwBase() {
     var dmaId: String? = null
 
     /**
+     * the name to set
+     */
+    var dmaName: String? = null
+
+    /**
      * 水司标示
      * the firmId to set
      */

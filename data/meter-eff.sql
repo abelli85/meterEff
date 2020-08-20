@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/20 10:00:53                           */
+/* Created on:     2020/8/20 18:15:57                           */
 /*==============================================================*/
 
 
@@ -13,6 +13,12 @@ drop table bw_data;
 drop index idx_dma_firm;
 
 drop table bw_dma;
+
+drop index idx_loss_firm;
+
+drop index idx_loss_dma;
+
+drop table bw_dma_loss;
 
 drop table bw_dma_meter;
 
@@ -41,6 +47,22 @@ drop table bw_right;
 drop table bw_role;
 
 drop table bw_role_right;
+
+drop index idx_rtu_meter;
+
+drop index idx_rtu_firm;
+
+drop table bw_rtu;
+
+drop index idx_rtu_log_cmd;
+
+drop index idx_rtu_log_meter;
+
+drop index idx_rtu_log_rtu;
+
+drop index idx_rtu_log_time;
+
+drop table bw_rtu_log;
 
 drop table bw_user;
 
@@ -193,6 +215,56 @@ create table bw_dma (
 /*==============================================================*/
 create  index idx_dma_firm on bw_dma (
 firmId
+);
+
+/*==============================================================*/
+/* Table: bw_dma_loss                                           */
+/*==============================================================*/
+create table bw_dma_loss (
+   wid                  SERIAL not null,
+   dmaId                VARCHAR(45)          not null,
+   statDate             TIMESTAMP WITH TIME ZONE not null,
+   durationDay          INT4                 not null default 1,
+   parentPhyloss1       DECIMAL(15,3)        null,
+   parentV0             DECIMAL(15,3)        null,
+   firmId               VARCHAR(45)          not null,
+   comments             VARCHAR(200)         null,
+   flowNight            DECIMAL(15,3)        null,
+   avgFlow              DECIMAL(15,3)        null,
+   flowMax              DECIMAL(15,3)        null,
+   flowMin              DECIMAL(15,3)        null,
+   numSeconds           INT8                 null,
+   status               VARCHAR(45)          null,
+   meterId              VARCHAR(45)          null,
+   reff                 DECIMAL(15,3)        null,
+   parentPhyloss0       DECIMAL(15,3)        null,
+   pressureTeff         DECIMAL(15,3)        null,
+   phylossRate          DECIMAL(15,3)        null,
+   numberMeter          DECIMAL(15,3)        null,
+   avgMeterv            DECIMAL(15,3)        null,
+   grossMeterv          DECIMAL(15,3)        null,
+   visualLoss           DECIMAL(15,3)        null,
+   visualLossRate       DECIMAL(15,3)        null,
+   constraint PK_BW_DMA_LOSS primary key (wid)
+);
+
+/*==============================================================*/
+/* Index: idx_loss_dma                                          */
+/*==============================================================*/
+create  index idx_loss_dma on bw_dma_loss (
+dmaId,
+statDate,
+durationDay
+);
+
+/*==============================================================*/
+/* Index: idx_loss_firm                                         */
+/*==============================================================*/
+create  index idx_loss_firm on bw_dma_loss (
+firmId,
+dmaId,
+durationDay,
+statDate
 );
 
 /*==============================================================*/
@@ -439,6 +511,121 @@ create table bw_role_right (
    roleName             VARCHAR(45)          not null,
    rightName            VARCHAR(45)          not null,
    constraint PK_BW_ROLE_RIGHT primary key (roleName, rightName)
+);
+
+/*==============================================================*/
+/* Table: bw_rtu                                                */
+/*==============================================================*/
+create table bw_rtu (
+   rtuId                VARCHAR(45)          not null,
+   meterId              VARCHAR(45)          null,
+   lastTime             TIMESTAMP WITH TIME ZONE null,
+   lastCmd              VARCHAR(45)          null,
+   lastDataTime         TIMESTAMP WITH TIME ZONE null,
+   lastText             VARCHAR(500)         null,
+   lastResp             VARCHAR(200)         null,
+   firstTime            TIMESTAMP WITH TIME ZONE null,
+   firstCmd             VARCHAR(45)          null,
+   firstText            VARCHAR(500)         null,
+   firstResp            VARCHAR(200)         null,
+   meterName            VARCHAR(45)          null,
+   meterAddr            VARCHAR(45)          null,
+   rtuLoc               POINT                null,
+   forwardReading       DECIMAL(15,3)        null,
+   revertReading        DECIMAL(15,3)        null,
+   literPulse           DECIMAL(15,3)        null,
+   rssi                 DECIMAL(15,3)        null,
+   reverseWarn          DECIMAL(15,3)        null,
+   maxWarn              DECIMAL(15,3)        null,
+   cutWarn              DECIMAL(15,3)        null,
+   voltWarn             DECIMAL(15,3)        null,
+   rssiWarn             DECIMAL(15,3)        null,
+   remoteServer         VARCHAR(45)          null,
+   stateDesc            VARCHAR(200)         null,
+   hoursSleep           DECIMAL(15,3)        null,
+   firmId               VARCHAR(45)          null,
+   constraint PK_BW_RTU primary key (rtuId)
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_firm                                          */
+/*==============================================================*/
+create  index idx_rtu_firm on bw_rtu (
+firmId,
+rtuId,
+meterId
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_meter                                         */
+/*==============================================================*/
+create  index idx_rtu_meter on bw_rtu (
+firmId,
+meterId
+);
+
+/*==============================================================*/
+/* Table: bw_rtu_log                                            */
+/*==============================================================*/
+create table bw_rtu_log (
+   logId                SERIAL not null,
+   logTime              TIMESTAMP WITH TIME ZONE null,
+   logCmd               VARCHAR(45)          null,
+   logLen               INT4                 null,
+   rtuId                VARCHAR(45)          null,
+   meterId              VARCHAR(45)          null,
+   logText              VARCHAR(500)         null,
+   logResp              VARCHAR(200)         null,
+   logComment           VARCHAR(500)         null,
+   forwardReading       DECIMAL(15,3)        null,
+   revertReading        DECIMAL(15,3)        null,
+   literPulse           DECIMAL(15,3)        null,
+   rssi                 DECIMAL(15,3)        null,
+   reverseWarn          DECIMAL(15,3)        null,
+   maxWarn              DECIMAL(15,3)        null,
+   cutWarn              DECIMAL(15,3)        null,
+   voltWarn             DECIMAL(15,3)        null,
+   rssiWarn             DECIMAL(15,3)        null,
+   remoteDevice         VARCHAR(45)          null,
+   remoteServer         VARCHAR(45)          null,
+   f18                  VARCHAR(45)          null,
+   firmId               VARCHAR(45)          null,
+   constraint PK_BW_RTU_LOG primary key (logId)
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_log_time                                      */
+/*==============================================================*/
+create  index idx_rtu_log_time on bw_rtu_log (
+logTime
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_log_rtu                                       */
+/*==============================================================*/
+create  index idx_rtu_log_rtu on bw_rtu_log (
+rtuId,
+meterId,
+logTime
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_log_meter                                     */
+/*==============================================================*/
+create  index idx_rtu_log_meter on bw_rtu_log (
+meterId,
+rtuId,
+logTime
+);
+
+/*==============================================================*/
+/* Index: idx_rtu_log_cmd                                       */
+/*==============================================================*/
+create  index idx_rtu_log_cmd on bw_rtu_log (
+logCmd,
+rtuId,
+meterId,
+logTime
 );
 
 /*==============================================================*/

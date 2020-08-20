@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.LocMapper">
+
+    <select id="selectDmaLocById" parameterType="com.abel.bigwater.api.LocParam"
+            resultType="com.abel.bigwater.model.BwDmaLoc">
+        SELECT d.dmaId
+        , d.dmaName
+        , ST_AsText(d.dmaLoc::geometry) AS dmaLoc
+        , ST_AsText(d.dmaRegion::geometry) AS dmaRegion
+        , d.showType
+        , dl.statDate AS lastLossDate
+        , dl.parentPhyloss1 AS lastLoss
+        , dl.numSeconds
+        , dl.phylossRate AS lastLossRate
+        , dl.comments AS comments
+        FROM bw_dma d
+        LEFT JOIN bw_dma_loss dl ON d.dmaId = dl.dmaId
+        LEFT JOIN (
+        SELECT dmaId
+        , MAX(statDate) AS statDate
+        FROM bw_dma_loss
+        <where>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+        </where>
+        GROUP BY dmaId
+        ) dlm ON d.dmaId = dlm.dmaId
+        AND (dlm.statDate = dl.statDate
+        OR dlm.statDate - interval '1 day' = dl.statDate)
+    </select>
+
+    <select id="selectDmaLocAll" parameterType="com.abel.bigwater.api.LocParam"
+            resultType="com.abel.bigwater.model.BwDmaLoc">
+        SELECT d.dmaId
+        ,d.dmaName
+        ,ST_AsText(d.dmaLoc::geometry) AS dmaLoc
+        ,ST_AsText(d.dmaRegion::geometry) AS dmaRegion
+        ,d.showType
+        ,dl.statDate AS lastLossDate
+        ,dl.parentPhyloss1 AS lastLoss
+        ,dl.numSeconds AS numSeconds
+        ,dl.phylossRate AS lastLossRate
+        ,dl.flowMax
+        ,dl.flowMin
+        ,dl.avgFlow
+        ,dl.comments AS comments
+        FROM bw_dma d
+        LEFT JOIN
+        (
+        SELECT * FROM bw_dma_loss
+        <where>
+            <if test="firmId != null">
+                firmId LIKE #{firmId}
+            </if>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+            <choose>
+                <when test="statDate != null">
+                    AND statDate = #{statDate}
+                </when>
+                <when test="statDate1 != null and statDate2 != null">
+                    AND statDate BETWEEN #{statDate1} AND #{statDate2}
+                </when>
+                <when test="statDate1 != null">
+                    AND statDate &gt;= #{statDate1}
+                </when>
+                <when test="statDate2 != null">
+                    AND statDate &lt;= #{statDate2}
+                </when>
+            </choose>
+        </where>
+        ) AS dl ON d.dmaId = dl.dmaId
+        <where>
+            <if test="firmId != null">
+                d.firmId LIKE #{firmId}
+            </if>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND d.dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND d.dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+        </where>
+        ORDER BY dl.statDate DESC
+        LIMIT 0, 2000
+    </select>
+
+    <select id="selectDmaLocAllLast" parameterType="com.abel.bigwater.api.LocParam"
+            resultType="com.abel.bigwater.model.BwDmaLoc">
+        SELECT d.dmaId
+        ,d.dmaName
+        ,ST_AsText(d.dmaLoc::geometry) AS dmaLoc
+        ,ST_AsText(d.dmaRegion::geometry) AS dmaRegion
+        ,d.showType
+        ,dl.statDate AS lastLossDate
+        ,dl.parentPhyloss1 AS lastLoss
+        ,dl.numSeconds
+        ,dl.phylossRate AS lastLossRate
+        ,dl.flowMax
+        ,dl.flowMin
+        ,dl.avgFlow
+        ,dl.comments
+        FROM bw_dma d
+        LEFT JOIN
+        (
+        SELECT dmaId
+        , MAX(statDate) AS statDate
+        FROM bw_dma_loss
+        <where>
+            <if test="firmId != null">
+                firmId LIKE #{firmId}
+            </if>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+            <choose>
+                <when test="statDate != null">
+                    AND statDate = #{statDate}
+                </when>
+                <when test="statDate1 != null and statDate2 != null">
+                    AND statDate BETWEEN #{statDate1} AND #{statDate2}
+                </when>
+                <when test="statDate1 != null">
+                    AND statDate &gt;= #{statDate1}
+                </when>
+                <when test="statDate2 != null">
+                    AND statDate &lt;= #{statDate2}
+                </when>
+            </choose>
+        </where>
+        GROUP BY dmaId
+        ) AS dlm ON d.dmaId = dlm.dmaId
+        LEFT JOIN bw_dma_loss dl ON dlm.dmaId = dl.dmaId
+        AND (dlm.statDate = dl.statDate OR dlm.statDate - INTERVAL '1 DAY' = dl.statDate)
+        <where>
+            <if test="firmId != null">
+                d.firmId LIKE #{firmId}
+            </if>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND d.dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND d.dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+        </where>
+        ORDER BY dl.statDate DESC
+        LIMIT 0, 2000
+    </select>
+
+    <update id="updateDmaLoc" parameterType="com.abel.bigwater.model.BwDmaLoc">
+        UPDATE bw_dma
+        <set>
+            <if test='dmaLoc != null'>
+                dmaLoc = ST_GeomFromText(#{dmaLoc})::point,
+            </if>
+            <if test='dmaRegion != null'>
+                dmaRegion = ST_GeomFromText(#{dmaRegion})::polygon
+            </if>
+        </set>
+        WHERE dmaId = #{dmaId}
+    </update>
+</mapper>

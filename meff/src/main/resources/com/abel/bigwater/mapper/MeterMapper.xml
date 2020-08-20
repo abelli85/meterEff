@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.MeterMapper">
+    <select id="selectMeterBrand" resultType="com.abel.bigwater.model.BwMeterBrand">
+        SELECT valueId   AS brandId,
+               valueName AS brandName
+        FROM vc_code_value
+        WHERE codeId = 'BRAND'
+        ORDER BY valueOrder
+    </select>
+
+    <select id="selectRemoteBrand" resultType="com.abel.bigwater.model.BwRemoteBrand">
+        SELECT valueId   AS brandId,
+               valueName AS brandName
+        FROM vc_code_value
+        WHERE codeId = 'REMOTE'
+        ORDER BY valueOrder
+    </select>
+
+    <insert id="insertMeter" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
+        INSERT INTO bw_meter ( meterId
+                             , userCode
+                             , meterCode
+                             , meterName
+                             , meterOrder
+                             , extId
+                             , location
+                             , installDate
+                             , meterPulse
+                             , q1
+                             , q2
+                             , q3
+                             , q4
+                             , q1r
+                             , q2r
+                             , q3r
+                             , q4r
+                             , sizeId
+                             , sizeName
+                             , modelSize
+                             , typeId
+                             , userType
+                             , waterPrice
+                             , serviceArea
+                             , servicePopulation
+                             , contactNumber
+                             , chargable
+                             , firmId
+                             , meterBrandId
+                             , steelNo
+                             , remoteBrandId
+                             , rtuId
+                             , rtuCode
+                             , rtuAddr
+                             , rtuInstallDate
+                             , rtuInstallPerson
+                             , rtuContact
+                             , commCard
+                             , remoteModel
+                             , remoteMemo
+                             , commIsp
+                             , pressureRange
+                             , pressureMaxLimit
+                             , pressureMinLimit
+                             , powerType
+                             , meterStatus
+                             , adminMobile
+                             , meterLoc
+                             , lastCalib
+                             , memo
+                             , createBy
+                             , createDate
+                             , updateBy
+                             , updateDate)
+        values ( #{meterId}
+               , #{userCode}
+               , #{meterCode}
+               , #{meterName}
+               , #{meterOrder}
+               , #{extId}
+               , #{location}
+               , #{installDate}
+               , #{meterPulse}
+               , #{q1}
+               , #{q2}
+               , #{q3}
+               , #{q4}
+               , #{q1r}
+               , #{q2r}
+               , #{q3r}
+               , #{q4r}
+               , #{sizeId}
+               , #{sizeName}
+               , #{modelSize}
+               , #{typeId}
+               , #{userType}
+               , #{waterPrice}
+               , #{serviceArea}
+               , #{servicePopulation}
+               , #{contactNumber}
+               , #{chargable}
+               , #{firmId}
+               , #{meterBrandId}
+               , #{steelNo}
+               , #{remoteBrandId}
+               , #{rtuId}
+               , #{rtuCode}
+               , #{rtuAddr}
+               , #{rtuInstallDate}
+               , #{rtuInstallPerson}
+               , #{rtuContact}
+               , #{commCard}
+               , #{remoteModel}
+               , #{remoteMemo}
+               , #{commIsp}
+               , #{pressureRange}
+               , #{pressureMaxLimit}
+               , #{pressureMinLimit}
+               , #{powerType}
+               , #{meterStatus}
+               , #{adminMobile}
+               , #{meterLoc}
+               , #{lastCalib}
+               , #{memo}
+               , #{createBy}
+               , now()
+               , #{updateBy}
+               , now())
+    </insert>
+
+    <delete id="deleteMeter" parameterType="com.abel.bigwater.api.MeterParam">
+        DELETE FROM bw_meter
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    meterId LIKE #{meterId}
+                </when>
+                <otherwise>
+                    AND meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <update id="updateMeter" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
+        UPDATE bw_meter
+        SET userCode = #{userCode}
+        , meterCode = #{meterCode}
+        , meterName = #{meterName}
+        , meterOrder = #{meterOrder}
+        , extId = #{extId}
+        , location = #{location}
+        , installDate = #{installDate}
+        , meterPulse = #{meterPulse}
+        , q1 = #{q1}
+        , q2 = #{q2}
+        , q3 = #{q3}
+        , q4 = #{q4}
+        , q1r = #{q1r}
+        , q2r = #{q2r}
+        , q3r = #{q3r}
+        , q4r = #{q4r}
+        , sizeId = #{sizeId}
+        , sizeName = #{sizeName}
+        , modelSize = #{modelSize}
+        , typeId = #{typeId}
+        , userType = #{userType}
+        , waterPrice = #{waterPrice}
+        , serviceArea = #{serviceArea}
+        , servicePopulation = #{servicePopulation}
+        , contactNumber = #{contactNumber}
+        , chargable = #{chargable}
+        , firmId = #{firmId}
+        , meterBrandId = #{meterBrandId}
+        , steelNo = #{steelNo}
+        , remoteBrandId = #{remoteBrandId}
+        , rtuId = #{rtuId}
+        , rtuCode = #{rtuCode}
+        , rtuAddr = #{rtuAddr}
+        , rtuInstallDate = #{rtuInstallDate}
+        , rtuInstallPerson = #{rtuInstallPerson}
+        , rtuContact = #{rtuContact}
+        , commCard = #{commCard}
+        , remoteModel = #{remoteModel}
+        , remoteMemo = #{remoteMemo}
+        , commIsp = #{commIsp}
+        , pressureRange = #{pressureRange}
+        , pressureMaxLimit = #{pressureMaxLimit}
+        , pressureMinLimit = #{pressureMinLimit}
+        , powerType = #{powerType}
+        , meterStatus = #{meterStatus}
+        , adminMobile = #{adminMobile}
+        , meterLoc = st_geomFromText(#{meterLoc})::point
+        , lastCalib = #{lastCalib}
+        , memo = #{memo}
+        , updateBy = #{updateBy}
+        , updateDate = now()
+        <where>
+            meterId = #{meterId}
+        </where>
+    </update>
+
+    <update id="updateMeterLoc" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
+        UPDATE bw_meter
+        SET meterLoc = st_geomFromText(#{meterLoc})::point
+        , updateBy = #{updateBy}
+        , updateDate = now()
+        <where>
+            meterId = #{meterId}
+        </where>
+    </update>
+
+    <select id="selectMeter" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.zone.ZoneMeter">
+        SELECT m.meterId
+        , m.userCode
+        , m.meterCode
+        , m.meterName
+        , m.meterOrder
+        , m.extId
+        , d.dmaId
+        , d.dmaName
+        , m.location
+        , m.installDate
+        , m.meterPulse
+        , m.q1
+        , m.q2
+        , m.q3
+        , m.q4
+        , m.q1r
+        , m.q2r
+        , m.q3r
+        , m.q4r
+        , m.sizeId
+        , m.sizeName
+        , m.modelSize
+        , m.typeId
+        , m.userType
+        , m.waterPrice
+        , m.serviceArea
+        , m.servicePopulation
+        , m.contactNumber
+        , m.chargable
+        , m.firmId
+        , m.meterBrandId
+        , m.steelNo
+        , m.remoteBrandId
+        , m.rtuId
+        , m.rtuCode
+        , m.rtuAddr
+        , m.rtuInstallDate
+        , m.rtuInstallPerson
+        , m.rtuContact
+        , m.commCard
+        , m.remoteModel
+        , m.remoteMemo
+        , m.commIsp
+        , m.pressureRange
+        , m.pressureMaxLimit
+        , m.pressureMinLimit
+        , m.powerType
+        , m.meterStatus
+        , m.adminMobile
+        , m.meterLoc
+        , m.lastCalib
+        , m.memo
+        , m.createBy
+        , m.createDate
+        , m.updateBy
+        , m.updateDate
+        FROM bw_meter m
+        LEFT JOIN bw_dma_meter dm on m.meterid = dm.meterid
+        LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    m.meterId LIKE #{meterId}
+                </when>
+                <otherwise>
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </otherwise>
+            </choose>
+            <if test="userCode != null">
+                AND m.userCode LIKE #{userCode}
+            </if>
+            <if test="meterName != null">
+                AND m.meterName LIKE #{meterName}
+            </if>
+            <choose>
+                <when test="extId != null">
+                    AND m.extId = #{extId}
+                </when>
+                <otherwise>
+                    AND m.extId IN
+                    <foreach collection="extIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND d.dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND d.dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+            <choose>
+                <when test="typeId = 'CHECK' or typeId is null">
+                    AND m.typeId = 'CHECK'
+                </when>
+                <when test="typeId != 'ALL'">
+                    AND m.typeId = #{typeId}
+                </when>
+            </choose>
+            <choose>
+                <when test="installDate1 != null and installDate2 != null">
+                    AND m.installDate BETWEEN #{installDate1} AND #{installDate2}
+                </when>
+                <when test="installDate1 != null">
+                    AND m.installDate &gt;= #{installDate1}
+                </when>
+                <when test="installDate2 != null">
+                    AND m.installDate &lt; #{installDate2}
+                </when>
+            </choose>
+            <if test="location != null">
+                AND m.location LIKE #{location}
+            </if>
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="remoteBrandId != null">
+                AND m.remoteBrandId LIKE #{remoteBrandId}
+            </if>
+            <if test="firmId != null">
+                AND m.firmId LIKE #{firmId}
+            </if>
+        </where>
+        ORDER BY m.meterId
+        LIMIT #{index}, #{rows}
+    </select>
+
+    <select id="selectDma" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.BwDma">
+        SELECT dmaId
+        , dmaName
+        , location
+        , st_astext(dmaLoc::geometry) AS dmaLoc
+        , st_astext(dmaregion::geometry) AS dmaRegion
+        , firmId
+        , dmaType
+        , showType
+        , legalLnf
+        , status
+        , sumUser
+        , cntUser
+        , avgMonthWater
+        , devMonthWater
+        , cntMonth
+        , avgMnfTotal
+        , devMnfTotal
+        , cntMnf
+        , onlineDate
+        , memo
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
+        FROM bw_dma d
+        <where>
+            <choose>
+                <when test="dmaIdList != null">
+                    AND d.dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND d.dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND d.firmId LIKE #{firmId}
+            </if>
+        </where>
+        ORDER BY dmaId
+    </select>
+
+    <insert id="insertDma" parameterType="com.abel.bigwater.model.BwDma">
+        INSERT INTO bw_dma( dmaId
+                          , dmaName
+                          , location
+                          , dmaLoc
+                          , dmaRegion
+                          , firmId
+                          , dmaType
+                          , showType
+                          , legalLnf
+                          , status
+                          , sumUser
+                          , cntUser
+                          , avgMonthWater
+                          , devMonthWater
+                          , cntMonth
+                          , avgMnfTotal
+                          , devMnfTotal
+                          , cntMnf
+                          , onlineDate
+                          , memo
+                          , createBy
+                          , createDate
+                          , updateBy
+                          , updateDate)
+        VALUES ( #{dmaId}
+               , #{dmaName}
+               , #{location}
+               , st_geomFromText(#{dmaLoc})::point
+               , st_geomFromText(#{dmaRegion})::polygon
+               , #{firmId}
+               , #{dmaType}
+               , #{showType}
+               , #{legalLnf}
+               , #{status}
+               , #{sumUser}
+               , #{cntUser}
+               , #{avgMonthWater}
+               , #{devMonthWater}
+               , #{cntMonth}
+               , #{avgMnfTotal}
+               , #{devMnfTotal}
+               , #{cntMnf}
+               , #{onlineDate}
+               , #{memo}
+               , #{createBy}
+               , now()
+               , #{updateBy}
+               , now())
+    </insert>
+
+    <update id="updateDma" parameterType="com.abel.bigwater.model.BwDma">
+        UPDATE bw_dma
+        SET dmaName       = #{dmaName}
+          , location      = #{location}
+          , dmaLoc        = st_geomFromText(#{dmaLoc})::point
+          , dmaRegion     = st_geomfromtext(#{dmaRegion})::polygon
+          , firmId        = #{firmId}
+          , dmaType       = #{dmaType}
+          , showType      = #{showType}
+          , legalLnf      = #{legalLnf}
+          , status        = #{status}
+          , sumUser       = #{sumUser}
+          , cntUser       = #{cntUser}
+          , avgMonthWater = #{avgMonthWater}
+          , devMonthWater = #{devMonthWater}
+          , cntMonth      = #{cntMonth}
+          , avgMnfTotal   = #{avgMnfTotal}
+          , devMnfTotal   = #{devMnfTotal}
+          , cntMnf        = #{cntMnf}
+          , onlineDate    = #{onlineDate}
+          , memo          = #{memo}
+          , updateBy      = #{updateBy}
+          , updateDate    = now()
+        WHERE dmaId = #{dmaId}
+    </update>
+
+    <delete id="deleteDma" parameterType="com.abel.bigwater.model.BwDma">
+        DELETE
+        FROM bw_dma
+        WHERE dmaId = #{dmaId}
+          AND firmId = #{firmId}
+    </delete>
+
+    <insert id="linkMeterDma" parameterType="com.abel.bigwater.model.BwDma">
+        INSERT INTO bw_dma_meter(
+        dmaId
+        , meterId
+        , inOutput)
+        VALUES
+        <foreach collection="meterList" separator="," item="meter">
+            (#{dmaId}
+            , #{meter.meterId}
+            , #{meter.inOutput})
+        </foreach>
+    </insert>
+
+    <delete id="detachMeterDma" parameterType="com.abel.bigwater.model.BwDma">
+        DELETE FROM bw_dma_meter
+        USING bw_dma_meter bdm
+        JOIN bw_dma d ON d.dmaid = bdm.dmaid
+        <where>
+            bdm.dmaId = #{dmaId}
+            AND bdm.meterId IN
+            <foreach collection="meterList" open="(" close=")" separator="," item="meter">
+                #{meter.meterId}
+            </foreach>
+            <if test="firmId != null">
+                AND d.firmId LIKE #{firmId}
+            </if>
+        </where>
+    </delete>
+</mapper>
