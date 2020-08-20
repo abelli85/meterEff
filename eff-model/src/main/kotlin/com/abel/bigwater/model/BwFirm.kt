@@ -84,6 +84,11 @@ class BwFirm : BwBase() {
     var preinit: Boolean? = false
 
     /**
+     * count of meters currently.
+     */
+    var meterCount: Int? = null
+
+    /**
      * 用来在combox/listbox中显示为标题。
      */
     var title: String? = ""

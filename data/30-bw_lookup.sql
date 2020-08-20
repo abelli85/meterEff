@@ -178,6 +178,16 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('BRAND', '07', '宁波东海', 70, 'VARCHAR', true),
 ('BRAND', '08', '重庆智慧', 80, 'VARCHAR', true),
 ('BRAND', '09', '杭州水表', 90, 'VARCHAR', true);
+INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit) VALUES
+('REMOTE', '01', '宁波水表', 10, 'VARCHAR', true),
+('REMOTE', '02', '申舒斯',   20, 'VARCHAR', true),
+('REMOTE', '03', '杭州山科', 30, 'VARCHAR', true),
+('REMOTE', '04', '兴源鼎新', 40, 'VARCHAR', true),
+('REMOTE', '05', '浙江和达', 50, 'VARCHAR', true),
+('REMOTE', '06', '三川智慧', 60, 'VARCHAR', true),
+('REMOTE', '07', '宁波东海', 70, 'VARCHAR', true),
+('REMOTE', '08', '重庆智慧', 80, 'VARCHAR', true),
+('REMOTE', '09', '杭州水表', 90, 'VARCHAR', true);
 
 /**
   "01-普通机械水表

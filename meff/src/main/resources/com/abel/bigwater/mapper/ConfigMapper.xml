@@ -59,25 +59,50 @@
     </update>
 
     <delete id="deleteConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        DELETE FROM bw_config
+        DELETE
+        FROM bw_config
         WHERE configId = #{configId}
           AND firmId = #{firmId}
     </delete>
 
     <insert id="insertConfig" parameterType="com.abel.bigwater.model.BwConfig">
         INSERT INTO bw_config(configId, groupId, configName,
-            configType, configDesc, value, firmId
+                              configType, configDesc, value, firmId
             , createBy, createDate)
-        VALUES(#{configId}, #{groupId}, #{configName},
-               #{configType}, #{configDesc}, #{value}, #{firmId}
-               , #{createBy}, current_timestamp)
+        VALUES (#{configId}, #{groupId}, #{configName},
+                #{configType}, #{configDesc}, #{value}, #{firmId}
+                   , #{createBy}, current_timestamp)
     </insert>
 
     <select id="selectFirm" resultType="com.abel.bigwater.model.BwFirm">
-        SELECT firmId
-        ,firmName
-        ,firmLoc
-        ,firmRegion
+        SELECT f.firmId
+        ,f.firmName
+        ,f.firmLoc
+        ,f.firmRegion
+        ,f.grade
+        ,f.smallIcon
+        ,f.largeIcon
+        ,f.addr
+        ,f.postcode
+        ,f.contact
+        ,f.phone
+        ,f.phone2
+        ,f.fax
+        ,f.email
+        ,f.memo
+        ,f.preinit
+        , COUNT(m.meterId) meterCount
+        FROM bw_firm f
+        LEFT JOIN bw_meter m ON f.firmId = m.firmId
+        <where>
+            f.firmId LIKE #{firmId}
+        </where>
+        GROUP BY f.firmId
+    </select>
+
+    <insert id="addFirm" parameterType="com.abel.bigwater.model.BwFirm">
+        INSERT INTO bw_firm(firmId, firmName
+        <include refid="firmFields"></include>
         ,grade
         ,smallIcon
         ,largeIcon
@@ -88,46 +113,20 @@
         ,phone2
         ,fax
         ,email
-        ,memo
-        ,preinit
-        FROM bw_firm
-        <where>
-            <if test='firmId != null'>
-                firmId LIKE #{firmId}
-            </if>
-            <if test='keywords != null'>
-                AND MATCH(firmId, firmName) AGAINST (#{keywords} IN BOOLEAN MODE)
-            </if>
-        </where>
-    </select>
-
-    <insert id="addFirm" parameterType="com.abel.bigwater.model.BwFirm">
-        INSERT INTO bw_firm(firmId, firmName
-                           <include refid="firmFields"></include>
-                           ,grade
-                           ,smallIcon
-                           ,largeIcon
-                           ,addr
-                           ,postcode
-                           ,contact
-                           ,phone
-                           ,phone2
-                           ,fax
-                           ,email
-                           ,preinit)
+        ,preinit)
         VALUES(#{firmId}, #{firmName}
-              <include refid="firmValues"></include>
-              , #{grade}
-              , #{smallIcon}
-              , #{largeIcon}
-              , #{addr}
-              , #{postcode}
-              , #{contact}
-              , #{phone}
-              , #{phone2}
-              , #{fax}
-              , #{email}
-              , false)
+        <include refid="firmValues"></include>
+        , #{grade}
+        , #{smallIcon}
+        , #{largeIcon}
+        , #{addr}
+        , #{postcode}
+        , #{contact}
+        , #{phone}
+        , #{phone2}
+        , #{fax}
+        , #{email}
+        , false)
     </insert>
 
     <sql id="firmFields">
@@ -160,9 +159,10 @@
     </sql>
 
     <delete id="deleteFirm">
-        DELETE FROM bw_firm
+        DELETE
+        FROM bw_firm
         WHERE firmId = #{firmId}
-        AND preinit = false
+          AND preinit = false
     </delete>
 
     <update id="updateFirm" parameterType="com.abel.bigwater.model.BwFirm">

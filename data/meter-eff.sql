@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/20 18:15:57                           */
+/* Created on:     2020/8/20 20:07:58                           */
 /*==============================================================*/
 
 
@@ -9,6 +9,10 @@ drop table bw_config;
 drop index idx_data_time;
 
 drop table bw_data;
+
+drop index idx_dma_online;
+
+drop index idx_dma_name;
 
 drop index idx_dma_firm;
 
@@ -29,6 +33,10 @@ drop table bw_eff_detail;
 drop table bw_eff_task;
 
 drop table bw_firm;
+
+drop index idx_meter_online;
+
+drop index idx_meter_name;
 
 drop index idx_meter_steel;
 
@@ -116,6 +124,26 @@ drop index idx_verify_meter_date;
 
 drop table vc_meter_verify_result;
 
+drop index idx_rpt_point_id;
+
+drop index idx_rpt_point_aid;
+
+drop index idx_rpt_verify_point_item;
+
+drop index idx_rpt_point_meter;
+
+drop table vc_report_verify_point;
+
+drop index idx_rpt_verify;
+
+drop index idx_rpt_verify_item;
+
+drop index idx_rpt_verify_stuff;
+
+drop index idx_rpt_verify_meter_date;
+
+drop table vc_report_verify_result;
+
 drop index idx_work_holi_yr;
 
 drop index idx_work_holi_date;
@@ -184,7 +212,7 @@ extId
 /*==============================================================*/
 create table bw_dma (
    dmaId                VARCHAR(45)          not null,
-   dmaName              VARCHAR(45)          null,
+   dmaName              VARCHAR(45)          not null,
    location             VARCHAR(200)         null,
    dmaLoc               POINT                null,
    dmaRegion            POLYGON              null,
@@ -214,7 +242,24 @@ create table bw_dma (
 /* Index: idx_dma_firm                                          */
 /*==============================================================*/
 create  index idx_dma_firm on bw_dma (
-firmId
+firmId,
+dmaId
+);
+
+/*==============================================================*/
+/* Index: idx_dma_name                                          */
+/*==============================================================*/
+create  index idx_dma_name on bw_dma (
+firmId,
+dmaName
+);
+
+/*==============================================================*/
+/* Index: idx_dma_online                                        */
+/*==============================================================*/
+create  index idx_dma_online on bw_dma (
+firmId,
+onlineDate
 );
 
 /*==============================================================*/
@@ -392,11 +437,12 @@ create table bw_meter (
    meterId              VARCHAR(45)          not null,
    userCode             VARCHAR(45)          null,
    meterCode            VARCHAR(45)          null,
-   meterName            VARCHAR(45)          null,
+   meterName            VARCHAR(45)          not null,
    meterOrder           INT4                 null,
    extId                VARCHAR(45)          null,
    location             VARCHAR(200)         null,
    installDate          TIMESTAMP WITH TIME ZONE null,
+   onlineDate           TIMESTAMP WITH TIME ZONE null,
    meterPulse           DECIMAL(15,3)        null,
    q1                   DECIMAL(15,3)        null,
    q2                   DECIMAL(15,3)        null,
@@ -407,7 +453,7 @@ create table bw_meter (
    q3r                  DECIMAL(15,3)        null,
    q4r                  DECIMAL(15,3)        null,
    sizeId               VARCHAR(45)          not null,
-   sizeName             VARCHAR(45)          not null,
+   sizeName             VARCHAR(45)          null,
    modelSize            VARCHAR(45)          null,
    typeId               VARCHAR(45)          null,
    userType             VARCHAR(45)          null,
@@ -474,7 +520,8 @@ extId
 /* Index: idx_meter_firm                                        */
 /*==============================================================*/
 create  index idx_meter_firm on bw_meter (
-firmId
+firmId,
+meterId
 );
 
 /*==============================================================*/
@@ -482,6 +529,22 @@ firmId
 /*==============================================================*/
 create  index idx_meter_steel on bw_meter (
 steelNo
+);
+
+/*==============================================================*/
+/* Index: idx_meter_name                                        */
+/*==============================================================*/
+create  index idx_meter_name on bw_meter (
+firmId,
+meterName
+);
+
+/*==============================================================*/
+/* Index: idx_meter_online                                      */
+/*==============================================================*/
+create  index idx_meter_online on bw_meter (
+firmId,
+onlineDate
 );
 
 /*==============================================================*/
@@ -948,9 +1011,9 @@ itemId
 /* Index: idx_verify_point_batch                                */
 /*==============================================================*/
 create  index idx_verify_point_batch on vc_meter_verify_point (
-pointNo,
 meterId,
-batchId
+verifyDate,
+pointNo
 );
 
 /*==============================================================*/
@@ -1032,6 +1095,172 @@ verifyDate
 create  index idx_verify_item on vc_meter_verify_result (
 instrumentNo,
 itemId
+);
+
+/*==============================================================*/
+/* Table: vc_report_verify_point                                */
+/*==============================================================*/
+create table vc_report_verify_point (
+   pointId              INT8                 not null,
+   reportAid            INT8                 not null,
+   meterId              varchar(45)          not null,
+   pointIdx             INT4                 not null,
+   rptDate              TIMESTAMP WITH TIME ZONE null,
+   tempId               varchar(32)          null,
+   pointFlow            NUMERIC(15,3)        not null,
+   pointDev             NUMERIC(15,3)        null,
+   highLimit            NUMERIC(15,3)        null,
+   lowLimit             NUMERIC(15,3)        null,
+   exceed               INT4                 null,
+   verifyDate           TIMESTAMP WITH TIME ZONE not null,
+   stuffName            varchar(45)          null,
+   boardResult          varchar(100)         null,
+   pointName            varchar(20)          null,
+   startReading         NUMERIC(15,3)        null,
+   endReading           NUMERIC(15,3)        null,
+   totalVolume          NUMERIC(15,3)        null,
+   verifyDura           NUMERIC(15,3)        null,
+   avgFlow              NUMERIC(15,3)        null,
+   waterTemp            NUMERIC(15,3)        null,
+   startMass            NUMERIC(15,3)        null,
+   endMass              NUMERIC(15,3)        null,
+   standardMass         NUMERIC(15,3)        null,
+   density              NUMERIC(15,3)        null,
+   standardVolume       NUMERIC(15,3)        null,
+   standardDura         NUMERIC(15,3)        null,
+   standardFlow         NUMERIC(15,3)        null,
+   instrumentNo         varchar(100)         null,
+   batchId              varchar(100)         null,
+   boardMemo            varchar(100)         null,
+   itemId               INT8                 null,
+   constraint PK_VC_REPORT_VERIFY_POINT primary key (reportAid, meterId, pointIdx)
+);
+
+comment on column vc_report_verify_point.exceed is
+'1-超限; 0-不超限';
+
+/*==============================================================*/
+/* Index: idx_rpt_point_meter                                   */
+/*==============================================================*/
+create  index idx_rpt_point_meter on vc_report_verify_point (
+meterId,
+verifyDate
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_verify_point_item                             */
+/*==============================================================*/
+create  index idx_rpt_verify_point_item on vc_report_verify_point (
+instrumentNo,
+itemId
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_point_aid                                     */
+/*==============================================================*/
+create  index idx_rpt_point_aid on vc_report_verify_point (
+reportAid,
+pointId
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_point_id                                      */
+/*==============================================================*/
+create  index idx_rpt_point_id on vc_report_verify_point (
+pointId
+);
+
+/*==============================================================*/
+/* Table: vc_report_verify_result                               */
+/*==============================================================*/
+create table vc_report_verify_result (
+   verifyId             INT8                 not null,
+   reportAid            INT8                 not null,
+   meterId              varchar(45)          not null,
+   batchId              varchar(45)          not null,
+   certId               varchar(45)          null,
+   rptDate              TIMESTAMP WITH TIME ZONE null,
+   verifyTimes          INT4                 null,
+   tempId               varchar(32)          null,
+   verifyDate           TIMESTAMP WITH TIME ZONE not null,
+   stuffName            varchar(45)          null,
+   verifyResult         varchar(8)           null,
+   boardResult          varchar(200)         null,
+   forceVerifyNo        varchar(100)         null,
+   moduleNo             varchar(100)         null,
+   clientName           varchar(100)         null,
+   factoryName          varchar(100)         null,
+   meterName            varchar(100)         null,
+   meterType            varchar(100)         null,
+   sizeId               varchar(20)          null,
+   modelSize            varchar(100)         null,
+   portType             varchar(100)         null,
+   verifyRule           varchar(100)         null,
+   standardInstrument   varchar(100)         null,
+   standardParam        varchar(100)         null,
+   indoorTemp           DECIMAL(15,3)        null,
+   moisture             DECIMAL(15,3)        null,
+   validDate            TIMESTAMP WITH TIME ZONE null,
+   convertResult        varchar(100)         null,
+   pressResult          varchar(100)         null,
+   instrumentNo         varchar(100)         null,
+   accurateGrade        varchar(100)         null,
+   pipeTemp             DECIMAL(15,3)        null,
+   pipePressure         DECIMAL(15,3)        null,
+   pulse                DECIMAL(15,3)        null,
+   density              DECIMAL(15,3)        null,
+   displayDiff          DECIMAL(15,3)        null,
+   convertDiff          DECIMAL(15,3)        null,
+   q4                   DECIMAL(15,3)        null,
+   q3                   DECIMAL(15,3)        null,
+   q3toq1               DECIMAL(15,3)        null,
+   q4toq3               DECIMAL(15,3)        null,
+   q2toq1               DECIMAL(15,3)        null,
+   qr1                  DECIMAL(15,3)        null,
+   qr2                  DECIMAL(15,3)        null,
+   qr3                  DECIMAL(15,3)        null,
+   qr4                  DECIMAL(15,3)        null,
+   maxFlow              DECIMAL(15,3)        null,
+   minFlow              DECIMAL(15,3)        null,
+   commonFlow           DECIMAL(15,3)        null,
+   convertLimit         DECIMAL(15,3)        null,
+   verifyAgain          varchar(100)         null,
+   outerCheck           varchar(100)         null,
+   dataSrc              varchar(100)         null,
+   itemId               INT8                 null,
+   certType             varchar(45)          null,
+   constraint PK_VC_REPORT_VERIFY_RESULT primary key (reportAid, meterId)
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_verify_meter_date                             */
+/*==============================================================*/
+create  index idx_rpt_verify_meter_date on vc_report_verify_result (
+meterId,
+verifyDate
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_verify_stuff                                  */
+/*==============================================================*/
+create  index idx_rpt_verify_stuff on vc_report_verify_result (
+stuffName,
+verifyDate
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_verify_item                                   */
+/*==============================================================*/
+create  index idx_rpt_verify_item on vc_report_verify_result (
+instrumentNo,
+itemId
+);
+
+/*==============================================================*/
+/* Index: idx_rpt_verify                                        */
+/*==============================================================*/
+create  index idx_rpt_verify on vc_report_verify_result (
+verifyId
 );
 
 /*==============================================================*/

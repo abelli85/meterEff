@@ -19,8 +19,20 @@ interface MeterService {
         const val PATH_DELETE_ZONE_METER = "/delete"
         const val PATH_UPDATE_ZONE_METER = "/update"
         const val PATH_LIST_ZONE_METER = "/list"
-
         const val PATH_UPDATE_METER_LOC = "/updateMeterLoc"
+
+        const val PATH_LIST_DMA = "/listDma"
+        const val PATH_LIST_DMA_LOC = "/listDmaLoc"
+        const val PATH_INSERT_DMA = "/insertDma"
+        const val PATH_UPDATE_DMA = "/updateDma"
+        const val PATH_UPDATE_DMA_LOC = "/updateDmaLoc"
+        const val PATH_DELETE_DMA = "/deleteDma"
+
+        const val PATH_LINK_DMA_METER = "/linkMeterDma"
+        const val PATH_DETACH_DMA_METER = "/detachMeterDma"
+
+        const val PATH_ATTACH_DMA_USER = "/attachDmaUser"
+        const val PATH_DETACH_DMA_USER = "/detachDmaUser"
     }
 
     /**
@@ -28,14 +40,14 @@ interface MeterService {
      */
     @GET
     @Path(PATH_LIST_METER_BRAND)
-    fun selectMeterBrand(): List<BwMeterBrand>
+    fun selectMeterBrand(): BwResult<BwMeterBrand>
 
     /**
      * RTU品牌列表
      */
     @GET
     @Path(PATH_LIST_REMOTE_BRAND)
-    fun selectRemoteBrand(): List<BwRemoteBrand>
+    fun selectRemoteBrand(): BwResult<BwRemoteBrand>
 
     /**
      * 创建水表
@@ -80,7 +92,7 @@ interface MeterService {
      * DMA列表
      */
     @POST
-    @Path("listDma")
+    @Path(PATH_LIST_DMA)
     fun listDma(holder: BwHolder<MeterParam>): BwResult<BwDma>
 
     /**
@@ -92,21 +104,21 @@ interface MeterService {
      * 前一日的lastLoss 也是null, 则使用comments 字段的内容。
      */
     @POST
-    @Path("listDmaLoc")
+    @Path(PATH_LIST_DMA_LOC)
     fun listDmaLoc(holder: BwHolder<LocParam>): BwResult<BwDmaLoc>
 
     /**
      * 创建DMA
      */
     @POST
-    @Path("insertDma")
+    @Path(PATH_INSERT_DMA)
     fun insertDma(holder: BwHolder<BwDma>): BwResult<BwDma>
 
     /**
      * 修改DMA
      */
     @POST
-    @Path("updateDma")
+    @Path(PATH_UPDATE_DMA)
     fun updateDma(holder: BwHolder<BwDma>): BwResult<BwDma>
 
     /**
@@ -115,14 +127,14 @@ interface MeterService {
      * dmaRegion = POLYGON ((22.5 114, 23 112, 22.8 112, 22.5 114))
      */
     @POST
-    @Path("updateDmaLoc")
+    @Path(PATH_UPDATE_DMA_LOC)
     fun updateDmaLoc(holder: BwHolder<BwDmaLoc>): BwResult<BwDmaLoc>
 
     /**
      * 删除DMA
      */
     @POST
-    @Path("deleteDma")
+    @Path(PATH_DELETE_DMA)
     fun deleteDma(holder: BwHolder<MeterParam>): BwResult<BwDma>
 
     /**
@@ -130,7 +142,7 @@ interface MeterService {
      * The string value holds userId.
      */
     @POST
-    @Path("detachDmaUser")
+    @Path(PATH_DETACH_DMA_USER)
     fun detachDmaUser(holder: BwHolder<BwUser>): BwResult<String>
 
     /**
@@ -138,7 +150,7 @@ interface MeterService {
      * holder#single#dmaIdList holds the list to be attached.
      */
     @POST
-    @Path("attachDmaUser")
+    @Path(PATH_ATTACH_DMA_USER)
     fun attachDmaUser(holder: BwHolder<BwUser>): BwResult<String>
 
     /**
@@ -146,7 +158,7 @@ interface MeterService {
      * holder#single#dmaId - meterIdList
      */
     @POST
-    @Path("linkMeterDma")
+    @Path(PATH_LINK_DMA_METER)
     fun linkMeterDma(holder: BwHolder<MeterParam>): BwResult<String>
 
     /**
@@ -154,6 +166,6 @@ interface MeterService {
      * holder#single#dmaId - meterIdList
      */
     @POST
-    @Path("detachMeterDma")
+    @Path(PATH_DETACH_DMA_METER)
     fun detachMeterDma(holder: BwHolder<MeterParam>): BwResult<String>
 }

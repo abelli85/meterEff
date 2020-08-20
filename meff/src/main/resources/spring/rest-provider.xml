@@ -90,4 +90,8 @@
     <dubbo:service interface="com.abel.bigwater.api.CodeService" ref="codeService"
                    protocol="rest"
                    validation="true"/>
+
+    <dubbo:service interface="com.abel.bigwater.api.MeterService" ref="meterService"
+                   protocol="rest"
+                   validation="true"/>
 </beans>
