@@ -17,7 +17,7 @@
         , c.createDate
         , c.updateBy
         , c.updateDate
-        FROM bwconfig c LEFT JOIN bwfirm f ON c.firmid = f.firmid
+        FROM bw_config c LEFT JOIN bw_firm f ON c.firmid = f.firmid
         <where>
             <if test="configId != null">
                 c.configId = #{configId}
@@ -32,7 +32,7 @@
     </select>
 
     <update id="updateConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        UPDATE BwConfig
+        UPDATE bw_config
         <set>
             value = #{value}
             <if test="configName != null">
@@ -59,13 +59,13 @@
     </update>
 
     <delete id="deleteConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        DELETE FROM BwConfig
+        DELETE FROM bw_config
         WHERE configId = #{configId}
           AND firmId = #{firmId}
     </delete>
 
     <insert id="insertConfig" parameterType="com.abel.bigwater.model.BwConfig">
-        INSERT INTO BwConfig(configId, groupId, configName,
+        INSERT INTO bw_config(configId, groupId, configName,
             configType, configDesc, value, firmId
             , createBy, createDate)
         VALUES(#{configId}, #{groupId}, #{configName},
@@ -90,7 +90,7 @@
         ,email
         ,memo
         ,preinit
-        FROM BwFirm
+        FROM bw_firm
         <where>
             <if test='firmId != null'>
                 firmId LIKE #{firmId}
@@ -102,7 +102,7 @@
     </select>
 
     <insert id="addFirm" parameterType="com.abel.bigwater.model.BwFirm">
-        INSERT INTO BwFirm(firmId, firmName
+        INSERT INTO bw_firm(firmId, firmName
                            <include refid="firmFields"></include>
                            ,grade
                            ,smallIcon
@@ -160,13 +160,13 @@
     </sql>
 
     <delete id="deleteFirm">
-        DELETE FROM BwFirm
+        DELETE FROM bw_firm
         WHERE firmId = #{firmId}
         AND preinit = false
     </delete>
 
     <update id="updateFirm" parameterType="com.abel.bigwater.model.BwFirm">
-        UPDATE BwFirm
+        UPDATE bw_firm
         <set>
             <if test='firmName != null'>
                 firmName = #{firmName}

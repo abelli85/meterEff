@@ -27,12 +27,12 @@
         , u.updateDate
         , u.verifyStuff
         , ul.lastLoginTime
-        FROM BwUser u LEFT JOIN (
+        FROM bw_user u LEFT JOIN (
         SELECT userId, MAX(loginTime) AS lastLoginTime
-        FROM BwUserLogin
+        FROM bw_user_login
         GROUP BY userId) ul ON u.userId = ul.userId
 
-        LEFT JOIN bwFirm f ON u.firmId = f.firmId
+        LEFT JOIN bw_firm f ON u.firmId = f.firmId
 
         <where>
             u.firmId LIKE #{firmId}
@@ -66,14 +66,14 @@
              , u.updateDate
              , u.verifyStuff
              , ul.lastLoginTime
-        FROM BwUser u
+        FROM bw_user u
                  LEFT JOIN (
             SELECT userId,
                    MAX(loginTime) AS lastLoginTime
-            FROM BwUserLogin
+            FROM bw_user_login
             GROUP BY userId) ul ON u.userId = ul.userId
-                 JOIN BwUserRole ur ON u.userId = ur.userId
-                 LEFT JOIN BwFirm f ON u.firmId = f.firmId
+                 JOIN bw_user_role ur ON u.userId = ur.userId
+                 LEFT JOIN bw_firm f ON u.firmId = f.firmId
         WHERE ur.roleName = #{roleName}
     </select>
 
@@ -98,20 +98,20 @@
              , u.updateDate
              , u.verifyStuff
              , ul.lastLoginTime
-        FROM BwUser u
+        FROM bw_user u
                  LEFT JOIN (
             SELECT userId, MAX(loginTime) AS lastLoginTime
-            FROM BwUserLogin
+            FROM bw_user_login
             GROUP BY userId
         ) ul ON u.userId = ul.userId
-                 LEFT JOIN BwFirm f ON u.firmId = f.firmId
+                 LEFT JOIN bw_firm f ON u.firmId = f.firmId
         WHERE u.userId = #{userId}
            OR u.mobile = #{userId}
            OR u.email = #{userId}
     </select>
 
     <insert id="insertUser" parameterType="com.abel.bigwater.model.BwUser">
-        INSERT INTO BwUser
+        INSERT INTO bw_user
         ( userId
         , userName
         , mobile
@@ -149,7 +149,7 @@
 
     <delete id="deleteUser" parameterType="com.abel.bigwater.model.BwUser">
         DELETE
-        FROM BwUser
+        FROM bw_user
         <where>
             userId = #{userId}
             <if test="firmId != null">
@@ -160,7 +160,7 @@
 
     <update id="updateUser" parameterType="com.abel.bigwater.model.BwUser">
 
-        UPDATE BwUser
+        UPDATE bw_user
         <set>
             <if test='status != null'>
                 status = #{status},
@@ -200,7 +200,7 @@
 
     <update id="updateUserToken" parameterType="com.abel.bigwater.model.BwUser">
 
-        UPDATE BwUser
+        UPDATE bw_user
         <set>
             <if test='emailValid != null'>
                 emailValid = #{emailValid},
@@ -216,7 +216,7 @@
     </update>
 
     <insert id="insertUserLogin" parameterType="com.abel.bigwater.model.BwUserLogin">
-        INSERT INTO BwUserLogin
+        INSERT INTO bw_user_login
         (sessionId,
          userId,
          loginTime,
@@ -233,13 +233,13 @@
 
     <delete id="deleteUserLogin">
         DELETE
-        FROM BwUserLogin
+        FROM bw_user_login
         WHERE sessionId = #{sid}
     </delete>
 
     <delete id="deleteUserLoginObsolete">
         DELETE
-        FROM BwUserLogin
+        FROM bw_user_login
         WHERE loginTime &lt; now() - interval '1 month'
     </delete>
 
@@ -258,9 +258,9 @@
                u.signPic,
                u.verifyStuff,
                f.firmName
-        FROM BwUserLogin ul
-                 JOIN BwUser u ON (ul.userId = u.userId)
-                 LEFT JOIN BwFirm f ON (u.firmId = f.firmId)
+        FROM bw_user_login ul
+                 JOIN bw_user u ON (ul.userId = u.userId)
+                 LEFT JOIN bw_firm f ON (u.firmId = f.firmId)
         WHERE ul.userId = #{userId}
           AND ul.devId = #{devId}
           AND ul.sessionId = #{sessionId}
@@ -280,8 +280,8 @@
         , u.signPic
         , u.verifyStuff
         , f.firmName
-        FROM BwUserLogin ul JOIN BwUser u ON (ul.userId = u.userId)
-        LEFT JOIN BwFirm f ON (u.firmId = f.firmId)
+        FROM bw_user_login ul JOIN bw_user u ON (ul.userId = u.userId)
+        LEFT JOIN bw_firm f ON (u.firmId = f.firmId)
         WHERE f.firmId LIKE #{firmId}
         <if test='userId != null'>
             AND ul.userId LIKE #{userId}
@@ -299,9 +299,9 @@
 
     <delete id="kickUserLogin">
 
-        DELETE FROM BwUserLogin
-            USING BwUserLogin AS ul
-            LEFT JOIN BwUser u ON ul.userId = u.userId
+        DELETE FROM bw_user_login
+            USING bw_user_login AS ul
+            LEFT JOIN bw_user u ON ul.userId = u.userId
         <where>
             <choose>
                 <when test='sessionId != null'>
@@ -329,31 +329,31 @@
         SELECT rightName AS name
              , rightDesc
              , preInit
-        FROM BwRight
+        FROM bw_right
     </select>
 
     <select id="roleList" resultType="com.abel.bigwater.model.BwRole">
         SELECT roleName as name
              , roleDesc
              , preInit
-        FROM BwRole
+        FROM bw_role
     </select>
 
     <select id="userRoleList" resultType="com.abel.bigwater.model.BwRole">
         SELECT ur.userId   AS userId
              , ur.roleName as name
              , r.roleDesc
-        FROM BwUserRole ur
-                 JOIN BwRole r ON ur.roleName = r.roleName
+        FROM bw_user_role ur
+                 JOIN bw_role r ON ur.roleName = r.roleName
         WHERE ur.userId = #{userId}
     </select>
 
     <select id="userRightList" resultType="com.abel.bigwater.model.BwRight">
         SELECT DISTINCT r.rightName AS name
         , r.rightDesc
-        FROM BwUserRole ur
-        JOIN BwRoleRight rr ON ur.roleName = rr.roleName
-        JOIN BwRight r ON rr.rightName = r.rightName
+        FROM bw_user_role ur
+        JOIN bw_role_right rr ON ur.roleName = rr.roleName
+        JOIN bw_right r ON rr.rightName = r.rightName
         WHERE ur.userId = #{userId}
         <if test='rightName != null'>
             AND r.rightName = #{rightName}
@@ -363,7 +363,7 @@
 
     <select id="selectRole" resultType="com.abel.bigwater.model.BwRole">
         SELECT roleName as name, roleDesc
-        FROM BwRole
+        FROM bw_role
         WHERE roleName = #{name}
 
     </select>
@@ -371,29 +371,29 @@
     <select id="roleRightList" resultType="com.abel.bigwater.model.BwRight">
         SELECT rr.rightName as name
              , r.rightDesc
-        FROM BwRoleRight rr
-                 JOIN BwRight r ON rr.rightName = r.rightName
+        FROM bw_role_right rr
+                 JOIN bw_right r ON rr.rightName = r.rightName
         WHERE rr.roleName = #{roleName}
 
     </select>
 
     <insert id="insertRole" parameterType="com.abel.bigwater.model.BwRole">
-        INSERT into BwRole(roleName, roleDesc, preInit)
+        INSERT into bw_role(roleName, roleDesc, preInit)
         VALUES (#{name}, #{roleDesc}, false)
     </insert>
 
     <insert id="insertRoleRight">
-        INSERT INTO BwRoleRight (roleName, rightName)
+        INSERT INTO bw_role_right (roleName, rightName)
         VALUES (#{roleName}, #{rightName})
     </insert>
 
     <insert id="insertUserRole">
-        INSERT INTO BwUserRole(userId, roleName)
+        INSERT INTO bw_user_role(userId, roleName)
         VALUES (#{userId}, #{roleName})
     </insert>
 
     <update id="updateRole" parameterType="com.abel.bigwater.model.BwRole">
-        UPDATE BwRole
+        UPDATE bw_role
         set roleName = #{name},
             roleDesc = #{roleDesc}
         WHERE roleName = #{name}
@@ -402,26 +402,26 @@
 
     <delete id="deleteRole">
         DELETE
-        FROM BwRole
+        FROM bw_role
         WHERE roleName = #{roleName}
           AND preInit = false
     </delete>
 
     <delete id="deleteRoleRight">
-        DELETE FROM BwRoleRight
-            USING BwRoleRight AS rr
-            LEFT JOIN BwRole rl ON rr.rolename = rl.rolename
+        DELETE FROM bw_role_right
+            USING bw_role_right AS rr
+            LEFT JOIN bw_role rl ON rr.rolename = rl.rolename
         WHERE rr.roleName = #{roleName}
           AND rl.preInit = false
     </delete>
 
     <delete id="deleteUserRole">
-        DELETE FROM BwUserRole
+        DELETE FROM bw_user_role
         WHERE userId = #{userId}
     </delete>
 
     <update id="updateLoginCity" parameterType="com.abel.bigwater.model.BwUserLogin">
-        UPDATE BwUserLogin
+        UPDATE bw_user_login
         <set>
             loginCity = #{city}
         </set>
@@ -433,7 +433,7 @@
 
     <insert id="insertUserOper" parameterType="com.abel.bigwater.model.BwUserOper"
             keyProperty="operId" keyColumn="operid" useGeneratedKeys="true">
-        INSERT INTO BwUserOper
+        INSERT INTO bw_user_oper
         (userId,
          operTime,
          returnTime,
@@ -463,7 +463,7 @@
     </insert>
 
     <update id="updateUserOper" parameterType="com.abel.bigwater.model.BwUserOper">
-        UPDATE BwUserOper
+        UPDATE bw_user_oper
         <set>
             <if test="operCity != null">
                 operCity = #{operCity},
@@ -489,7 +489,7 @@
         , operRight
         , operResult
         , operDesc
-        FROM BwUserOper
+        FROM bw_user_oper
         <where>
             <if test='firmId != null'>
                 firmId LIKE #{firmId}
@@ -514,7 +514,7 @@
         SELECT userId AS userId
         , operCase
         , COUNT(1) AS operCount
-        FROM BwUserOper
+        FROM bw_user_oper
         <where>
             <if test='firmId != null'>
                 firmId LIKE #{firmId}

@@ -13,7 +13,7 @@ import org.junit.Assert
 import org.springframework.util.DigestUtils
 
 object TestHelper {
-    const val URL_BASE = "http://bwsvr:8899/meff"
+    const val URL_BASE = "http://localhost:8899/meff"
     const val URL_LOGIN = "$URL_BASE/user/login"
 
     class BwUserLoginResult : BwResult<BwUserLogin>()

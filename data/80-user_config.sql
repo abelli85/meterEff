@@ -2,28 +2,28 @@
 
 /*
 -- 测试时初始化
-TRUNCATE TABLE BwUserRole;
+TRUNCATE TABLE bw_user_role;
 TRUNCATE TABLE bw_role_right;
 TRUNCATE TABLE bw_role;
 TRUNCATE TABLE bw_right;
-TRUNCATE TABLE BwConfig;
+TRUNCATE TABLE bw_config;
 
 TRUNCATE TABLE bw_firm;
 
 
-TRUNCATE TABLE BwUserRole;
-TRUNCATE TABLE BwUser;
+TRUNCATE TABLE bw_user_role;
+TRUNCATE TABLE bw_user;
 
 */
 
-DELETE FROM BwUserRole ur
+DELETE FROM bw_user_role ur
 WHERE userId IN ('admin', 'abel', 'scott');
 
-DELETE FROM BwUser u
+DELETE FROM bw_user u
 WHERE userId IN ('admin', 'abel', 'scott');
 
 -- admin/world
-INSERT INTO BwUser (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
+INSERT INTO bw_user (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
 VALUES('abel', '高级用户', '27', '098f6bcd4621d373cade4e832627b4f6', 'abelli5@126.com', '13510012001'
 , 'http://localhost:8080/docs/images/tomcat.png'
 , 'http://localhost:8080/docs/images/asf-logo.svg'
@@ -37,16 +37,16 @@ VALUES('abel', '高级用户', '27', '098f6bcd4621d373cade4e832627b4f6', 'abelli
 , 'http://localhost:8080/docs/images/asf-logo.svg'
 , 'http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg');
 
-INSERT INTO BwUserRole (userId, roleName) VALUES('admin', '管理员');
-INSERT INTO BwUserRole (userId, roleName) VALUES('admin', 'ADMINISTRATOR');
+INSERT INTO bw_user_role (userId, roleName) VALUES('admin', '管理员');
+INSERT INTO bw_user_role (userId, roleName) VALUES('admin', 'ADMINISTRATOR');
 -- abel/test
-INSERT INTO BwUserRole (userId, roleName) VALUES('abel', 'POWER_USER');
-INSERT INTO BwUserRole (userId, roleName) VALUES('abel', 'BACK_USER');
-INSERT INTO BwUserRole (userId, roleName) VALUES('abel', '管理员');
-INSERT INTO BwUserRole (userId, roleName) VALUES('abel', 'ADMINISTRATOR');
+INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'POWER_USER');
+INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'BACK_USER');
+INSERT INTO bw_user_role (userId, roleName) VALUES('abel', '管理员');
+INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'ADMINISTRATOR');
 
 -- 库房
-INSERT INTO BwUser (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
+INSERT INTO bw_user (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
 VALUES('luowq', '罗文强', '27', 'e10adc3949ba59abbe56e057f20f883e', 'abelli5@126.com', '13510012001'
       , 'http://localhost:8080/docs/images/tomcat.png'
       , 'http://localhost:8080/docs/images/asf-logo.svg'
@@ -80,7 +80,7 @@ VALUES('luowq', '罗文强', '27', 'e10adc3949ba59abbe56e057f20f883e', 'abelli5@
       , 'http://localhost:8080/docs/images/asf-logo.svg'
       , 'http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg');
 
-INSERT INTO BwUser (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
+INSERT INTO bw_user (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
 VALUES('huangjw', '黄俊威', '27', 'e10adc3949ba59abbe56e057f20f883e', 'abelli5@126.com', '13510012001'
        , 'http://localhost:8080/docs/images/tomcat.png'
        , 'http://localhost:8080/docs/images/asf-logo.svg'
@@ -110,7 +110,7 @@ VALUES('huangjw', '黄俊威', '27', 'e10adc3949ba59abbe56e057f20f883e', 'abelli
        , 'http://localhost:8080/docs/images/asf-logo.svg'
        , 'http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg');
 
-INSERT INTO BwUserRole (userId, roleName)
+INSERT INTO bw_user_role (userId, roleName)
 VALUES('luowq',		'WARE_JIANDING'),
       ('wengdb',	'WARE_JIANDING'),
       ('linzh',		'WARE_JIANDING'),
@@ -120,7 +120,7 @@ VALUES('luowq',		'WARE_JIANDING'),
       ('luoq',		'WARE_JIANDING'),
       ('k08',		'WARE_JIANDING');
 
-INSERT INTO BwUserRole (userId, roleName)
+INSERT INTO bw_user_role (userId, roleName)
 VALUES
   ('huangjw', 'WARE_AUDIT')
 , ('huangjw', 'POWER_USER')
@@ -145,24 +145,24 @@ VALUES
 ;
 
 -- scott/test
--- INSERT INTO BwUserRole (userId, roleName) VALUES('scott', 'DMA_USER');
+-- INSERT INTO bw_user_role (userId, roleName) VALUES('scott', 'DMA_USER');
 
 
-DELETE FROM BwConfig c
+DELETE FROM bw_config c
 WHERE configId IN ('LOSS_R', 'LOSS_LAST_DATE', 'RTU_STATUS_MAIL_LIST', 'LOSS_MINQ_START_HOUR', 'LOSS_MINQ_END_HOUR'
 , 'START_WORK_TIME', 'END_WORK_TIME');
 
-INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_R', 'DATA', '1', '7', 'sys', current_timestamp);
-INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_LAST_DATE', 'DATA', '1', '2014-12-29', 'sys', current_timestamp);
+INSERT INTO bw_config (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_R', 'DATA', '1', '7', 'sys', current_timestamp);
+INSERT INTO bw_config (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_LAST_DATE', 'DATA', '1', '2014-12-29', 'sys', current_timestamp);
 
 -- RTU status notify users.
--- DELETE FROM BwConfig WHERE configId = 'RTU_STATUS_MAIL_LIST' AND groupId = 'DATA';
--- INSERT INTO BwConfig (configId, groupId, value) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', 'abelli5@126.com;abelli@139.com;')
-INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', '1', 'abelli5@126.com;8963095@qq.com;334862512@qq.com;', 'sys', current_timestamp);
+-- DELETE FROM bw_config WHERE configId = 'RTU_STATUS_MAIL_LIST' AND groupId = 'DATA';
+-- INSERT INTO bw_config (configId, groupId, value) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', 'abelli5@126.com;abelli@139.com;')
+INSERT INTO bw_config (configId, groupId, firmId, value, createBy, createDate) VALUES('RTU_STATUS_MAIL_LIST', 'DATA', '1', 'abelli5@126.com;8963095@qq.com;334862512@qq.com;', 'sys', current_timestamp);
 -- for loss calculating.
-INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_START_HOUR', 'DATA', '1', '2', 'sys', current_timestamp);
-INSERT INTO BwConfig (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_END_HOUR', 'DATA', '1', '5', 'sys', current_timestamp);
+INSERT INTO bw_config (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_START_HOUR', 'DATA', '1', '2', 'sys', current_timestamp);
+INSERT INTO bw_config (configId, groupId, firmId, value, createBy, createDate) VALUES('LOSS_MINQ_END_HOUR', 'DATA', '1', '5', 'sys', current_timestamp);
 
-INSERT INTO BwConfig (configId, groupId, firmId, value, configName, configType, createBy, createDate)
+INSERT INTO bw_config (configId, groupId, firmId, value, configName, configType, createBy, createDate)
 VALUES('START_WORK_TIME', 'VERIFY', '27', '9:00', '上班时间', '时间', 'sys', current_timestamp),
 ('END_WORK_TIME', 'VERIFY', '27', '18:00', '下班时间', '时间', 'sys', current_timestamp);

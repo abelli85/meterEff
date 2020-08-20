@@ -1,30 +1,30 @@
 ﻿
 -- \c eff;
 
--- TRUNCATE TABLE BwFirm;
+-- TRUNCATE TABLE bw_firm;
 
-DELETE FROM BwFirm WHERE firmId = '1';
-INSERT INTO BwFirm(firmId, firmName) VALUES(1, '智能水务');
+DELETE FROM bw_firm WHERE firmId = '1';
+INSERT INTO bw_firm(firmId, firmName) VALUES(1, '智能水务');
 
-UPDATE BwFirm SET firmName = '深圳水投' WHERE firmId = '21';
+UPDATE bw_firm SET firmName = '深圳水投' WHERE firmId = '21';
 /*if @@ROWCOUNT < 1 begin
-	INSERT INTO BwFirm(firmId, firmName) VALUES('21', '深圳水投');
+	INSERT INTO bw_firm(firmId, firmName) VALUES('21', '深圳水投');
 end;
 */
-DELETE FROM BwFirm WHERE firmId LIKE '210_';
-INSERT INTO BwFirm(firmId, firmName) VALUES('2103', '焦作水司');
-INSERT INTO BwFirm(firmId, firmName) VALUES('2105', '池州水司');
-INSERT INTO BwFirm(firmId, firmName) VALUES('2106', '坪地水司');
-INSERT INTO BwFirm(firmId, firmName) VALUES('2107', '宣城水司');
-INSERT INTO BwFirm(firmId, firmName) VALUES('2108', '安吉水司');
-INSERT INTO BwFirm(firmId, firmName) VALUES('2109', '宁国水司');
+DELETE FROM bw_firm WHERE firmId LIKE '210_';
+INSERT INTO bw_firm(firmId, firmName) VALUES('2103', '焦作水司');
+INSERT INTO bw_firm(firmId, firmName) VALUES('2105', '池州水司');
+INSERT INTO bw_firm(firmId, firmName) VALUES('2106', '坪地水司');
+INSERT INTO bw_firm(firmId, firmName) VALUES('2107', '宣城水司');
+INSERT INTO bw_firm(firmId, firmName) VALUES('2108', '安吉水司');
+INSERT INTO bw_firm(firmId, firmName) VALUES('2109', '宁国水司');
 
-DELETE FROM BwFirm WHERE firmId LIKE '26';
-INSERT INTO BwFirm(firmId, firmName) VALUES('26', '大工业区水务有限公司');
+DELETE FROM bw_firm WHERE firmId LIKE '26';
+INSERT INTO bw_firm(firmId, firmName) VALUES('26', '大工业区水务有限公司');
 
 -- szwg
-DELETE FROM BwFirm WHERE firmId LIKE '27%';
-INSERT INTO BwFirm(firmId, firmName, firmLoc,
+DELETE FROM bw_firm WHERE firmId LIKE '27%';
+INSERT INTO bw_firm(firmId, firmName, firmLoc,
 smallIcon, largeIcon,
 addr, contact, phone, phone2, fax, email, memo)
 VALUES('27', '深圳水务集团', st_geomFromText('POINT (114.1025009 22.5397596)')::point,
@@ -40,7 +40,7 @@ VALUES('27', '深圳水务集团', st_geomFromText('POINT (114.1025009 22.539759
 05-深水莲塘
 06-大工业区水务"
  */
-INSERT INTO BwFirm(firmId, firmName, firmLoc, grade)
+INSERT INTO bw_firm(firmId, firmName, firmLoc, grade)
 VALUES
 -- ('27',  '深圳水务集团', 'POINT(114.1025009 22.5397596)', 0),  '0'),
 ('2703',  '深水-沙井水司',   st_geomFromText('POINT(113.834827 22.724587)')::point,  '0'),
@@ -63,16 +63,16 @@ VALUES
 ('2713',  '深水-龙岗分公司', NULL,  '0')
 ;
 
-DELETE FROM BwFirm WHERE firmId LIKE '29%';
-INSERT INTO BwFirm(firmId, firmName, firmLoc)
+DELETE FROM bw_firm WHERE firmId LIKE '29%';
+INSERT INTO bw_firm(firmId, firmName, firmLoc)
 VALUES('29', '东莞市水务集团', st_geomFromText('POINT(113.6983740000 22.9912870000)')::point);
-INSERT INTO BwFirm(firmId, firmName, firmLoc)
+INSERT INTO bw_firm(firmId, firmName, firmLoc)
 VALUES('2901', '东江自来水公司', st_geomFromText('POINT(113.7563000000 23.0276300000)')::point);
-INSERT INTO BwFirm(firmId, firmName, firmLoc)
+INSERT INTO bw_firm(firmId, firmName, firmLoc)
 VALUES('290101', '东江-万江分公司', st_geomFromText('POINT(113.7350600000 23.0576800000)')::point);
 
-DELETE FROM BwFirm WHERE firmId LIKE '71';
-INSERT INTO BwFirm
+DELETE FROM bw_firm WHERE firmId LIKE '71';
+INSERT INTO bw_firm
 (firmId,
 firmName,
 firmLoc,
@@ -87,11 +87,11 @@ st_geomFromText('POINT (112.6985100000 22.3763800000)')::point,
 
 /*
 
-TRUNCATE TABLE BwFirm;
+TRUNCATE TABLE bw_firm;
 
-SELECT * FROM BwFirm;
+SELECT * FROM bw_firm;
 
-SELECT firmId, firmName, firmLoc.STAsText() firmLoc FROM BwFirm
+SELECT firmId, firmName, firmLoc.STAsText() firmLoc FROM bw_firm
 where firmId like '27%';
 
 */

@@ -1,28 +1,28 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/19 18:14:57                           */
+/* Created on:     2020/8/20 10:00:53                           */
 /*==============================================================*/
 
 
-drop table BwConfig;
+drop table bw_config;
 
 drop index idx_data_time;
 
-drop table BwData;
+drop table bw_data;
 
 drop index idx_dma_firm;
 
-drop table BwDma;
+drop table bw_dma;
 
-drop table BwDmaMeter;
+drop table bw_dma_meter;
 
-drop table BwEffDecay;
+drop table bw_eff_decay;
 
-drop table BwEffDetail;
+drop table bw_eff_detail;
 
-drop table BwEffTask;
+drop table bw_eff_task;
 
-drop table BwFirm;
+drop table bw_firm;
 
 drop index idx_meter_steel;
 
@@ -34,21 +34,21 @@ drop index idx_meter_user;
 
 drop index idx_meter_code;
 
-drop table BwMeter;
+drop table bw_meter;
 
-drop table BwRight;
+drop table bw_right;
 
-drop table BwRole;
+drop table bw_role;
 
-drop table BwRoleRight;
+drop table bw_role_right;
 
-drop table BwUser;
+drop table bw_user;
 
 drop index idx_login_user;
 
 drop index idx_sid;
 
-drop table BwUserLogin;
+drop table bw_user_login;
 
 drop index idx_oper_time;
 
@@ -58,15 +58,15 @@ drop index idx_oper_ip;
 
 drop index idx_oper_user;
 
-drop table BwUserOper;
+drop table bw_user_oper;
 
-drop table BwUserRole;
+drop table bw_user_role;
 
 drop index idx_zone_firm;
 
-drop table BwZone;
+drop table bw_zone;
 
-drop table BwZoneMeter;
+drop table bw_zone_meter;
 
 drop table vc_code;
 
@@ -101,9 +101,9 @@ drop index idx_work_holi_date;
 drop table vc_workday_holiday;
 
 /*==============================================================*/
-/* Table: BwConfig                                              */
+/* Table: bw_config                                             */
 /*==============================================================*/
-create table BwConfig (
+create table bw_config (
    firmId               VARCHAR(45)          not null,
    groupId              VARCHAR(45)          not null,
    configId             VARCHAR(45)          not null,
@@ -115,13 +115,13 @@ create table BwConfig (
    createDate           TIMESTAMP WITH TIME ZONE not null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWCONFIG primary key (firmId, configId, groupId)
+   constraint PK_BW_CONFIG primary key (firmId, configId, groupId)
 );
 
 /*==============================================================*/
-/* Table: BwData                                                */
+/* Table: bw_data                                               */
 /*==============================================================*/
-create table BwData (
+create table bw_data (
    extId                VARCHAR(45)          not null,
    sampleTime           TIMESTAMP WITH TIME ZONE not null,
    endTime              TIMESTAMP WITH TIME ZONE null,
@@ -146,21 +146,21 @@ create table BwData (
    q4Sum                DECIMAL(15,3)        null,
    firmId               VARCHAR(45)          null,
    rssi                 INT4                 null,
-   constraint PK_BWDATA primary key (extId, sampleTime)
+   constraint PK_BW_DATA primary key (extId, sampleTime)
 );
 
 /*==============================================================*/
 /* Index: idx_data_time                                         */
 /*==============================================================*/
-create  index idx_data_time on BwData (
+create  index idx_data_time on bw_data (
 sampleTime,
 extId
 );
 
 /*==============================================================*/
-/* Table: BwDma                                                 */
+/* Table: bw_dma                                                */
 /*==============================================================*/
-create table BwDma (
+create table bw_dma (
    dmaId                VARCHAR(45)          not null,
    dmaName              VARCHAR(45)          null,
    location             VARCHAR(200)         null,
@@ -185,30 +185,30 @@ create table BwDma (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWDMA primary key (dmaId)
+   constraint PK_BW_DMA primary key (dmaId)
 );
 
 /*==============================================================*/
 /* Index: idx_dma_firm                                          */
 /*==============================================================*/
-create  index idx_dma_firm on BwDma (
+create  index idx_dma_firm on bw_dma (
 firmId
 );
 
 /*==============================================================*/
-/* Table: BwDmaMeter                                            */
+/* Table: bw_dma_meter                                          */
 /*==============================================================*/
-create table BwDmaMeter (
+create table bw_dma_meter (
    dmaId                VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
    inOutput             INT4                 not null,
-   constraint PK_BWDMAMETER primary key (dmaId, meterId)
+   constraint PK_BW_DMA_METER primary key (dmaId, meterId)
 );
 
 /*==============================================================*/
-/* Table: BwEffDecay                                            */
+/* Table: bw_eff_decay                                          */
 /*==============================================================*/
-create table BwEffDecay (
+create table bw_eff_decay (
    wid                  SERIAL not null,
    sizeId               VARCHAR(45)          not null,
    sizeName             VARCHAR(45)          not null,
@@ -220,13 +220,13 @@ create table BwEffDecay (
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
    deprecated           BOOL                 null,
-   constraint PK_BWEFFDECAY primary key (wid)
+   constraint PK_BW_EFF_DECAY primary key (wid)
 );
 
 /*==============================================================*/
-/* Table: BwEffDetail                                           */
+/* Table: bw_eff_detail                                         */
 /*==============================================================*/
-create table BwEffDetail (
+create table bw_eff_detail (
    wid                  INT8                 not null,
    meterId              VARCHAR(45)          not null,
    taskName             VARCHAR(45)          not null,
@@ -259,13 +259,13 @@ create table BwEffDetail (
    qr2                  DECIMAL(15,3)        null,
    qr3                  DECIMAL(15,3)        null,
    qr4                  DECIMAL(15,3)        null,
-   constraint PK_BWEFFDETAIL primary key (wid, meterId)
+   constraint PK_BW_EFF_DETAIL primary key (wid, meterId)
 );
 
 /*==============================================================*/
-/* Table: BwEffTask                                             */
+/* Table: bw_eff_task                                           */
 /*==============================================================*/
-create table BwEffTask (
+create table bw_eff_task (
    wid                  SERIAL not null,
    taskName             VARCHAR(45)          not null,
    createBy             VARCHAR(45)          null,
@@ -283,13 +283,13 @@ create table BwEffTask (
    totalEff             DECIMAL(15,3)        null,
    realWater            DECIMAL(15,3)        null,
    deprecated           BOOL                 null,
-   constraint PK_BWEFFTASK primary key (wid)
+   constraint PK_BW_EFF_TASK primary key (wid)
 );
 
 /*==============================================================*/
-/* Table: BwFirm                                                */
+/* Table: bw_firm                                               */
 /*==============================================================*/
-create table BwFirm (
+create table bw_firm (
    firmId               VARCHAR(45)          not null,
    firmName             VARCHAR(45)          not null,
    firmLoc              POINT                null,
@@ -310,13 +310,13 @@ create table BwFirm (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWFIRM primary key (firmId)
+   constraint PK_BW_FIRM primary key (firmId)
 );
 
 /*==============================================================*/
-/* Table: BwMeter                                               */
+/* Table: bw_meter                                              */
 /*==============================================================*/
-create table BwMeter (
+create table bw_meter (
    meterId              VARCHAR(45)          not null,
    userCode             VARCHAR(45)          null,
    meterCode            VARCHAR(45)          null,
@@ -371,13 +371,13 @@ create table BwMeter (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWMETER primary key (meterId)
+   constraint PK_BW_METER primary key (meterId)
 );
 
 /*==============================================================*/
 /* Index: idx_meter_code                                        */
 /*==============================================================*/
-create  index idx_meter_code on BwMeter (
+create  index idx_meter_code on bw_meter (
 firmId,
 meterCode
 );
@@ -385,7 +385,7 @@ meterCode
 /*==============================================================*/
 /* Index: idx_meter_user                                        */
 /*==============================================================*/
-create  index idx_meter_user on BwMeter (
+create  index idx_meter_user on bw_meter (
 firmId,
 userCode
 );
@@ -393,7 +393,7 @@ userCode
 /*==============================================================*/
 /* Index: idx_meter_ext                                         */
 /*==============================================================*/
-create  index idx_meter_ext on BwMeter (
+create  index idx_meter_ext on bw_meter (
 firmId,
 extId
 );
@@ -401,50 +401,50 @@ extId
 /*==============================================================*/
 /* Index: idx_meter_firm                                        */
 /*==============================================================*/
-create  index idx_meter_firm on BwMeter (
+create  index idx_meter_firm on bw_meter (
 firmId
 );
 
 /*==============================================================*/
 /* Index: idx_meter_steel                                       */
 /*==============================================================*/
-create  index idx_meter_steel on BwMeter (
+create  index idx_meter_steel on bw_meter (
 steelNo
 );
 
 /*==============================================================*/
-/* Table: BwRight                                               */
+/* Table: bw_right                                              */
 /*==============================================================*/
-create table BwRight (
+create table bw_right (
    rightName            VARCHAR(45)          not null,
    rightDesc            VARCHAR(45)          null,
    preInit              BOOL                 null,
-   constraint PK_BWRIGHT primary key (rightName)
+   constraint PK_BW_RIGHT primary key (rightName)
 );
 
 /*==============================================================*/
-/* Table: BwRole                                                */
+/* Table: bw_role                                               */
 /*==============================================================*/
-create table BwRole (
+create table bw_role (
    roleName             VARCHAR(45)          not null,
    roleDesc             VARCHAR(45)          null,
    preInit              BOOL                 null,
-   constraint PK_BWROLE primary key (roleName)
+   constraint PK_BW_ROLE primary key (roleName)
 );
 
 /*==============================================================*/
-/* Table: BwRoleRight                                           */
+/* Table: bw_role_right                                         */
 /*==============================================================*/
-create table BwRoleRight (
+create table bw_role_right (
    roleName             VARCHAR(45)          not null,
    rightName            VARCHAR(45)          not null,
-   constraint PK_BWROLERIGHT primary key (roleName, rightName)
+   constraint PK_BW_ROLE_RIGHT primary key (roleName, rightName)
 );
 
 /*==============================================================*/
-/* Table: BwUser                                                */
+/* Table: bw_user                                               */
 /*==============================================================*/
-create table BwUser (
+create table bw_user (
    userId               VARCHAR(45)          not null,
    userName             VARCHAR(45)          not null,
    verifyStuff          VARCHAR(45)          null,
@@ -470,13 +470,13 @@ create table BwUser (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWUSER primary key (userId)
+   constraint PK_BW_USER primary key (userId)
 );
 
 /*==============================================================*/
-/* Table: BwUserLogin                                           */
+/* Table: bw_user_login                                         */
 /*==============================================================*/
-create table BwUserLogin (
+create table bw_user_login (
    wid                  SERIAL not null,
    sessionId            VARCHAR(200)         not null,
    userId               VARCHAR(45)          not null,
@@ -491,28 +491,28 @@ create table BwUserLogin (
    ipAddr               VARCHAR(200)         null,
    devId                VARCHAR(200)         null,
    shareSalt            VARCHAR(45)          null,
-   constraint PK_BWUSERLOGIN primary key (wid)
+   constraint PK_BW_USER_LOGIN primary key (wid)
 );
 
 /*==============================================================*/
 /* Index: idx_sid                                               */
 /*==============================================================*/
-create  index idx_sid on BwUserLogin (
+create  index idx_sid on bw_user_login (
 sessionId
 );
 
 /*==============================================================*/
 /* Index: idx_login_user                                        */
 /*==============================================================*/
-create  index idx_login_user on BwUserLogin (
+create  index idx_login_user on bw_user_login (
 userId,
 loginTime
 );
 
 /*==============================================================*/
-/* Table: BwUserOper                                            */
+/* Table: bw_user_oper                                          */
 /*==============================================================*/
-create table BwUserOper (
+create table bw_user_oper (
    operId               SERIAL not null,
    userId               VARCHAR(45)          not null,
    operTime             TIMESTAMP WITH TIME ZONE not null,
@@ -532,13 +532,13 @@ create table BwUserOper (
    operResult           VARCHAR(45)          null,
    operCount            INT4                 null,
    operDesc             VARCHAR(200)         null,
-   constraint PK_BWUSEROPER primary key (operId)
+   constraint PK_BW_USER_OPER primary key (operId)
 );
 
 /*==============================================================*/
 /* Index: idx_oper_user                                         */
 /*==============================================================*/
-create  index idx_oper_user on BwUserOper (
+create  index idx_oper_user on bw_user_oper (
 firmId,
 userId,
 operTime
@@ -547,7 +547,7 @@ operTime
 /*==============================================================*/
 /* Index: idx_oper_ip                                           */
 /*==============================================================*/
-create  index idx_oper_ip on BwUserOper (
+create  index idx_oper_ip on bw_user_oper (
 operCity,
 loginIp,
 operTime
@@ -556,7 +556,7 @@ operTime
 /*==============================================================*/
 /* Index: idx_oper_role                                         */
 /*==============================================================*/
-create  index idx_oper_role on BwUserOper (
+create  index idx_oper_role on bw_user_oper (
 operCase,
 operRole,
 operTime
@@ -565,7 +565,7 @@ operTime
 /*==============================================================*/
 /* Index: idx_oper_time                                         */
 /*==============================================================*/
-create  index idx_oper_time on BwUserOper (
+create  index idx_oper_time on bw_user_oper (
 operTime,
 firmId,
 operRole,
@@ -573,18 +573,18 @@ loginIp
 );
 
 /*==============================================================*/
-/* Table: BwUserRole                                            */
+/* Table: bw_user_role                                          */
 /*==============================================================*/
-create table BwUserRole (
+create table bw_user_role (
    userId               VARCHAR(45)          not null,
    roleName             VARCHAR(45)          not null,
-   constraint PK_BWUSERROLE primary key (userId, roleName)
+   constraint PK_BW_USER_ROLE primary key (userId, roleName)
 );
 
 /*==============================================================*/
-/* Table: BwZone                                                */
+/* Table: bw_zone                                               */
 /*==============================================================*/
-create table BwZone (
+create table bw_zone (
    zoneId               VARCHAR(45)          not null,
    zoneName             VARCHAR(45)          not null,
    zoneType             VARCHAR(45)          not null,
@@ -604,24 +604,24 @@ create table BwZone (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
-   constraint PK_BWZONE primary key (zoneId)
+   constraint PK_BW_ZONE primary key (zoneId)
 );
 
 /*==============================================================*/
 /* Index: idx_zone_firm                                         */
 /*==============================================================*/
-create  index idx_zone_firm on BwZone (
+create  index idx_zone_firm on bw_zone (
 firmId
 );
 
 /*==============================================================*/
-/* Table: BwZoneMeter                                           */
+/* Table: bw_zone_meter                                         */
 /*==============================================================*/
-create table BwZoneMeter (
+create table bw_zone_meter (
    zoneId               VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
    inOutput             INT4                 not null,
-   constraint PK_BWZONEMETER primary key (zoneId, meterId)
+   constraint PK_BW_ZONE_METER primary key (zoneId, meterId)
 );
 
 /*==============================================================*/
