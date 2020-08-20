@@ -17,19 +17,18 @@ class MeterServiceTest {
     }
 
     @Test
-    fun testInsertMeter() {
+    fun testListMeter() {
         val ul = TestHelper.login()
 
-        val meter = ZoneMeter().apply {
+        val meter = MeterParam().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
-            sizeId = "100"
             userCode = "123456"
             meterCode = "12345678"
         }
         val holder = BwHolder(TestHelper.buildLoginRequest(ul.single!!), meter)
 
-        val post = HttpPost(TestHelper.URL_BASE + MeterService.BASE_PATH + MeterService.PATH_LINK_DMA_METER).apply {
+        val post = HttpPost(TestHelper.URL_BASE + MeterService.BASE_PATH + MeterService.PATH_LIST_ZONE_METER).apply {
             entity = StringEntity(JSON.toJSONString(holder), ContentType.APPLICATION_JSON)
         }
 

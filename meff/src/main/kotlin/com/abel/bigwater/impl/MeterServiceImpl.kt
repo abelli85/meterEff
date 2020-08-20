@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service("meterService")
-class MeterServiceImpl : MeterService {
+open class MeterServiceImpl : MeterService {
     @Autowired
     var meterMapper: MeterMapper? = null
 
