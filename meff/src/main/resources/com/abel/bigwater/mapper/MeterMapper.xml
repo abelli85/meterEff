@@ -122,7 +122,7 @@
                , #{powerType}
                , #{meterStatus}
                , #{adminMobile}
-               , #{meterLoc}
+               , st_geomFromText(#{meterLoc})::point
                , #{lastCalib}
                , #{memo}
                , #{createBy}
@@ -203,6 +203,9 @@
         , updateDate = now()
         <where>
             meterId = #{meterId}
+            <if test="firmId != null">
+                AND firmId = #{firmId}
+            </if>
         </where>
     </update>
 
@@ -213,6 +216,9 @@
         , updateDate = now()
         <where>
             meterId = #{meterId}
+            <if test="firmId != null">
+                AND firmId = #{firmId}
+            </if>
         </where>
     </update>
 
@@ -267,7 +273,7 @@
         , m.powerType
         , m.meterStatus
         , m.adminMobile
-        , m.meterLoc
+        , st_asText(m.meterLoc::geometry) AS meterLoc
         , m.lastCalib
         , m.memo
         , m.createBy

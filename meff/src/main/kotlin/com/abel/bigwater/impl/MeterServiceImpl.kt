@@ -41,6 +41,17 @@ open class MeterServiceImpl : MeterService {
             return BwResult(2, ERR_PARAM)
         }
 
+        val list = if (holder.single?.meterId.isNullOrBlank())
+            holder.list.orEmpty()
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach {
+            if (it.meterId.isNullOrBlank() || it.meterName.isNullOrBlank()
+                    || it.sizeId.isNullOrBlank() || it.sizeName.isNullOrBlank()) {
+                return BwResult(2, "水表ID/名称/口径不能为空: ${it.meterId}")
+            }
+        }
+
         lgr.info("${holder.lr?.userId} try to add meter: ${JSON.toJSONString(holder.single)}")
 
         val rightName = MeterService.BASE_PATH + MeterService.PATH_INSERT_ZONE_METER
@@ -49,11 +60,6 @@ open class MeterServiceImpl : MeterService {
             if (login.code != 0) {
                 return BwResult(login.code, login.error!!)
             }
-
-            val list = if (holder.single?.meterId.isNullOrBlank())
-                holder.list.orEmpty()
-            else
-                holder.list.orEmpty().plus(holder.single!!)
 
             list.forEach {
                 // 只能更新 所在机构及分公司
@@ -84,19 +90,22 @@ open class MeterServiceImpl : MeterService {
             return BwResult(2, ERR_PARAM)
         }
 
+        val list = if (holder.single?.meterId.isNullOrBlank())
+            holder.list.orEmpty()
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach { if (it.meterId.isNullOrBlank()) {
+            return BwResult(2,"水表ID不能为空")
+        } }
+
         lgr.info("${holder.lr?.userId} try to add meter: ${JSON.toJSONString(holder.single)}")
 
-        val rightName = MeterService.BASE_PATH + MeterService.PATH_INSERT_ZONE_METER
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_DELETE_ZONE_METER
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
             if (login.code != 0) {
                 return BwResult(login.code, login.error!!)
             }
-
-            val list = if (holder.single?.meterId.isNullOrBlank())
-                holder.list.orEmpty()
-            else
-                holder.list.orEmpty().plus(holder.single!!)
 
             var cnt = 0
             list.forEach {
@@ -129,19 +138,25 @@ open class MeterServiceImpl : MeterService {
             return BwResult(2, ERR_PARAM)
         }
 
+        val list = if (holder.single?.meterId.isNullOrBlank())
+            holder.list.orEmpty()
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach {
+            if (it.meterId.isNullOrBlank() || it.meterName.isNullOrBlank()
+                    || it.sizeId.isNullOrBlank() || it.sizeName.isNullOrBlank()) {
+                return BwResult(2, "水表ID/名称/口径不能为空: ${it.meterId}")
+            }
+        }
+
         lgr.info("${holder.lr?.userId} try to add meter: ${JSON.toJSONString(holder.single)}")
 
-        val rightName = MeterService.BASE_PATH + MeterService.PATH_INSERT_ZONE_METER
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_UPDATE_ZONE_METER
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
             if (login.code != 0) {
                 return BwResult(login.code, login.error!!)
             }
-
-            val list = if (holder.single?.meterId.isNullOrBlank())
-                holder.list.orEmpty()
-            else
-                holder.list.orEmpty().plus(holder.single!!)
 
             var cnt = 0
             list.forEach {
@@ -166,7 +181,47 @@ open class MeterServiceImpl : MeterService {
      * meterLoc为点坐标的WKT格式，如：POINT (22.5 114)
      */
     override fun updateMeterLoc(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank() || (
+                        holder.single?.meterId.isNullOrBlank()
+                                && holder.list.isNullOrEmpty())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val list = if (holder.single?.meterId.isNullOrBlank())
+            holder.list.orEmpty()
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach {
+            if (it.meterId.isNullOrBlank() || it.meterLoc.isNullOrBlank()) {
+                return BwResult(2, "水表ID/坐标不能为空: ${it.meterId}")
+            }
+        }
+
+        lgr.info("${holder.lr?.userId} try to add meter: ${JSON.toJSONString(holder.single)}")
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_UPDATE_METER_LOC
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var cnt = 0
+            list.forEach {
+                // 只能更新 所在机构及分公司
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                cnt += meterMapper!!.updateMeterLoc(it)
+            }
+
+            return BwResult(holder.single!!).apply {
+                error = "更新水表： $cnt"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
