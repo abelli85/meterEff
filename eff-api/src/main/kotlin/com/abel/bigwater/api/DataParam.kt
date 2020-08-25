@@ -70,6 +70,11 @@ data class DataParam(
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
+    var sampleTime: Date? = null
+
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
     var sampleTime1: Date? = null
 
     /**

@@ -22,15 +22,15 @@
                             , forwardDigits
                             , revertDigits
                             , literPulse
-                            , q0sum
-                            , q1sum
-                            , q2sum
-                            , q3sum
-                            , q4sum
+                            , q0Sum
+                            , q1Sum
+                            , q2Sum
+                            , q3Sum
+                            , q4Sum
                             , rssi
                             , firmId)
         values ( #{extId}
-               , #{sampletime}
+               , #{sampleTime}
                , #{endTime}
                , #{durationSecond}
                , #{forwardSum}
@@ -46,11 +46,11 @@
                , #{forwardDigits}
                , #{revertDigits}
                , #{literPulse}
-               , #{q0sum}
-               , #{q1sum}
-               , #{q2sum}
-               , #{q3sum}
-               , #{q4sum}
+               , #{q0Sum}
+               , #{q1Sum}
+               , #{q2Sum}
+               , #{q3Sum}
+               , #{q4Sum}
                , #{rssi}
                , #{firmId})
     </insert>
@@ -72,11 +72,11 @@
           , forwardDigits  = #{forwardDigits}
           , revertDigits   = #{revertDigits}
           , literPulse     = #{literPulse}
-          , q0sum          = #{q0sum}
-          , q1sum          = #{q1sum}
-          , q2sum          = #{q2sum}
-          , q3sum          = #{q3sum}
-          , q4sum          = #{q4sum}
+          , q0sum          = #{q0Sum}
+          , q1sum          = #{q1Sum}
+          , q2sum          = #{q2Sum}
+          , q3sum          = #{q3Sum}
+          , q4sum          = #{q4Sum}
           , rssi           = #{rssi}
           , firmId         = #{firmId}
         WHERE extId = #{extId}
@@ -135,7 +135,8 @@
                 </when>
             </choose>
         </where>
-        ) r JOIN bw_meter m ON r.extId = m.extId
+        ) r
+        LEFT JOIN bw_meter m ON r.extId = m.extId
         LEFT JOIN bw_dma_meter dm ON r.extId = dm.dmaId
         LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
         <where>
@@ -164,11 +165,11 @@
             </choose>
 
             <if test="firmId != null">
-                AND m.firmId LIKE #{firmId}
+                AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
             </if>
         </where>
         ORDER BY m.meterId, r.extId, r.sampleTime
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectMeterRealtime" parameterType="com.abel.bigwater.api.DataParam"
@@ -714,8 +715,17 @@
     <delete id="deleteRealtime" parameterType="com.abel.bigwater.api.DataParam">
         DELETE
         FROM bw_data
-        WHERE extId = #{extId}
-          AND sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+        <where>
+            extId = #{extId}
+            <choose>
+                <when test="sampleTime1 != null and sampleTime2 != null">
+                    AND sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+                </when>
+                <otherwise>
+                    AND sampleTime = #{sampleTime}
+                </otherwise>
+            </choose>
+        </where>
     </delete>
 
     <select id="realtimeDateRange" parameterType="com.abel.bigwater.api.DataParam"
