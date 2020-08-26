@@ -1,6 +1,5 @@
 package com.abel.bigwater.api
 
-import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
