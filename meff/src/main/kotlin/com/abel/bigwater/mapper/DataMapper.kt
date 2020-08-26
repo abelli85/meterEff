@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper
 //@Component(value = "dataMapper")
 interface DataMapper {
 
-    fun insertRealtime(data: BwData): Int
+    fun insertRealtime(dp: DataParam): Int
 
     fun updateRealtime(data: BwData): Int
 
@@ -60,6 +60,22 @@ interface DataMapper {
     fun selectRealtimeHourly(mp: DataParam): List<BwData>
 
     /**
+     * This method will retrieve realtime data hourly.
+     *
+     * @param map
+     * @return
+     */
+    fun selectRealtimeHalf(mp: DataParam): List<BwData>
+
+    /**
+     * This method will retrieve realtime data hourly.
+     *
+     * @param map
+     * @return
+     */
+    fun selectRealtimeQuarter(mp: DataParam): List<BwData>
+
+    /**
      * This method querys data list for specified zone.
      * order by meterId, extId, sampleTime (all ASC)
      *
@@ -101,7 +117,7 @@ interface DataMapper {
      * @param map
      * @return - map: minDate, maxDate
      */
-    fun realtimeDateRange(dp: DataParam): DataRange
+    fun realtimeDateRange(dp: DataParam): List<DataRange>
 
     /**
      * check realtime range for specified zone.

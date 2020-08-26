@@ -1,5 +1,6 @@
 package com.abel.bigwater.api
 
+import com.abel.bigwater.model.BwData
 import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
@@ -63,15 +64,22 @@ data class DataParam(
      */
     @JsonIgnore
     var duration: DataDuration? = DataDuration.DURATION_0
+        get() = DataDuration.findByPeriod(durationInt ?: 0)
 
     /** 时间间隔，默认为原始数据 */
     var durationInt: Int? = 0
 
+    /**
+     * 用来选择单条数据.
+     */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
     var sampleTime: Date? = null
 
+    /**
+     * 用来选择一段时间内的数据, {@link sampleTime1} 为开始时间, {@link sampleTime2} 为结束时间.
+     */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
@@ -84,6 +92,9 @@ data class DataParam(
         get() = if (sampleTime1 == null) null
         else SimpleDateFormat(JsonHelper.LOCAL_DATE_SECOND_FORMAT_AREA).format(sampleTime1)
 
+    /**
+     * 用来选择一段时间内的数据, {@link sampleTime1} 为开始时间, {@link sampleTime2} 为结束时间.
+     */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
@@ -107,6 +118,12 @@ data class DataParam(
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
     var logTime2: Date? = null
+
+    /**
+     * 仅供后台构造参数使用.
+     */
+    @JsonIgnore
+    var dataList: List<BwData>? = null
 }
 
 /**
@@ -121,5 +138,12 @@ enum class DataDuration(var period: Int = 60) {
 
     override fun toString(): String {
         return period.toString()
+    }
+
+    companion object {
+        /**
+         * 根据间隔查找枚举对象
+         */
+        fun findByPeriod(_period: Int) = values().find { it.period == _period } ?: DURATION_0
     }
 }

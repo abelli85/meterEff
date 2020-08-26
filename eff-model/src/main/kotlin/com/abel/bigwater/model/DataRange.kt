@@ -47,6 +47,14 @@ class DataRange : BwBase() {
     var meterName: String? = null
 
     /**
+     * 外来水表标示，主要用在数据中。
+     */
+    var extId: String? = null
+        get() {
+            return if (field != null) field else meterId
+        }
+
+    /**
      * 最小时标
      * @return the minTime
      */

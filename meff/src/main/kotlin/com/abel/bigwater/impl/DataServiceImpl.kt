@@ -43,7 +43,19 @@ class DataServiceImpl : DataService {
             if (!dp.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                 dp.firmId = login.single!!.firmId!!.plus("%")
             }
-            val list = dataMapper!!.selectRealtime(dp)
+            val list = when (dp.duration) {
+                DataDuration.DURATION_60_MIN ->
+                    dataMapper!!.selectRealtimeHourly(dp)
+
+                DataDuration.DURATION_30_MIN ->
+                    dataMapper!!.selectRealtimeHalf(dp)
+
+                DataDuration.DURATION_15_MIN ->
+                    dataMapper!!.selectRealtimeQuarter(dp)
+
+                else -> dataMapper!!.selectRealtime(dp)
+            }
+
             return BwResult(list).apply {
                 error = "数据条数： ${list.size}"
             }
@@ -69,7 +81,28 @@ class DataServiceImpl : DataService {
      * 2nd: end date-time.
      */
     override fun realtimeDateRange(holder: BwHolder<DataParam>): BwResult<DataRange> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val dp = holder.single!!
+        lgr.info("${holder.lr?.userId} try to list data range: ${JSON.toJSONString(dp)}")
+
+        val rightName = DataService.BASE_PATH + DataService.PATH_REALTIME_DATE_RANGE
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            val list = dataMapper!!.realtimeDateRange(dp)
+            return BwResult(list).apply {
+                error = "数据条数： ${list.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
@@ -97,7 +130,7 @@ class DataServiceImpl : DataService {
             return BwResult(2, ERR_PARAM)
         }
 
-        val list = if (holder.single?.extId.isNullOrBlank())
+        var list = if (holder.single?.extId.isNullOrBlank())
             holder.list.orEmpty()
         else
             holder.list.orEmpty().plus(holder.single!!)
@@ -109,6 +142,7 @@ class DataServiceImpl : DataService {
 
         lgr.info("${holder.lr?.userId} try to add data: ${JSON.toJSONString(holder.single)}")
 
+        var cnt = 0
         val rightName = DataService.BASE_PATH + DataService.PATH_ADD_REALTIME_USER
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
@@ -116,19 +150,27 @@ class DataServiceImpl : DataService {
                 return BwResult(login.code, login.error!!)
             }
 
-            list.forEach {
-                // 只能更新 所在机构及分公司
-                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
-                    it.firmId = login.single!!.firmId
+            do {
+                list.take(100).also { subList ->
+                    // 只能更新 所在机构及分公司
+                    subList.forEach {
+                        if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                            it.firmId = login.single!!.firmId
+                        }
+                    }
+
+                    cnt += dataMapper!!.insertRealtime(DataParam().apply {
+                        dataList = subList
+                    })
                 }
 
-                dataMapper!!.insertRealtime(it)
-            }
+                list = list.drop(100)
+            } while (list.isNotEmpty())
 
-            return BwResult(0, "增加数据： ${list.size}")
+            return BwResult(0, "增加数据： ${cnt}")
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
-            return BwResult(1, "内部错误: ${ex.message}")
+            return BwResult(1, "增加数据: $cnt, 内部错误: ${ex.message}")
         }
     }
 
