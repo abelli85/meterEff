@@ -5,7 +5,7 @@ import java.io.Serializable
 /**
  * Request holder.
  */
-class BwHolder<T : Serializable> : Serializable {
+open class BwHolder<T : Serializable> : Serializable {
 
     var lr: LoginRequest? = null
 

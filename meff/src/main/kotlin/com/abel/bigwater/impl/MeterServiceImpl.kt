@@ -42,7 +42,7 @@ open class MeterServiceImpl : MeterService {
         }
 
         val list = if (holder.single?.meterId.isNullOrBlank())
-            holder.list.orEmpty()
+            holder.list!!
         else
             holder.list.orEmpty().plus(holder.single!!)
         list.forEach {

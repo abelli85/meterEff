@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.locationtech.jts.io.WKTReader
 import java.util.*
 
 // import org.springframework.format.annotation.DateTimeFormat;
@@ -177,7 +178,10 @@ open class BwMeter : BwBase() {
      * 是否计量表
      * 1 - true, 0 - false.
      */
-    var chargable: Char = ' '
+    var chargable: Char = '0'
+        set(value) {
+            if (value < 1.toChar()) field = '0'
+        }
 
     /** 0: IN; 1: OUT. Default to 0.  */
     var inOutput: Int = 0
@@ -334,6 +338,18 @@ open class BwMeter : BwBase() {
      * the meterLoc to set
      */
     var meterLoc: String? = null
+        set(value) {
+            field = if (!meterLoc.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value!!)
+                    if ("Point".equals(g.geometryType, true)) {
+                        value
+                    } else null
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 最后校准日期
