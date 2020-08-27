@@ -28,7 +28,7 @@ class MeterServiceTest {
             userCode = "123456"
             meterCode = "12345678"
         }
-        val holder = BwHolder(TestHelper.buildLoginRequest(ul.single!!), meter)
+        val holder = BwHolder(TestHelper.buildLoginRequest(ul.single!!), MeterParam())
 
         val post = HttpPost(TestHelper.URL_BASE + MeterService.BASE_PATH + MeterService.PATH_LIST_ZONE_METER).apply {
             entity = StringEntity(JSON.toJSONString(holder), ContentType.APPLICATION_JSON)

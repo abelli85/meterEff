@@ -94,9 +94,11 @@ open class MeterServiceImpl : MeterService {
             holder.list.orEmpty()
         else
             holder.list.orEmpty().plus(holder.single!!)
-        list.forEach { if (it.meterId.isNullOrBlank()) {
-            return BwResult(2,"水表ID不能为空")
-        } }
+        list.forEach {
+            if (it.meterId.isNullOrBlank()) {
+                return BwResult(2, "水表ID不能为空")
+            }
+        }
 
         lgr.info("${holder.lr?.userId} try to add meter: ${JSON.toJSONString(holder.single)}")
 
@@ -245,6 +247,9 @@ open class MeterServiceImpl : MeterService {
             holder.single?.also {
                 if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                     it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
                 }
             }
             return BwResult(meterMapper!!.selectMeter(holder.single!!).map { it as BwMeter }).apply {
