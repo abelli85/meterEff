@@ -11,6 +11,11 @@ class ZoneMeter : BwMeter() {
     /** 片区标示 */
     var zoneId: String? = null
 
+    /**
+     * 片区名称
+     */
+    var zoneName: String = ""
+
     /** 流入/流出标示，默认流入，即消费水量；流出~供水量 */
     var flowOut: Int = 0
 }

@@ -81,12 +81,18 @@ interface MeterService {
     fun updateMeterLoc(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter>
 
     /**
-     * 大表列表
+     * 大表列表.
+     * 如果填充了如下字段, 则返回的水表包含DMA信息:
+     * @see MeterParam.dmaId
+     * @see MeterParam.dmaName
+     * @see MeterParam.dmaIdList
+     * 否则, 返回的水表包含片区信息(Zone)
+     *
      * result#list holds the list of meters.
      */
     @POST
     @Path(PATH_LIST_ZONE_METER)
-    fun listMeter(holder: BwHolder<MeterParam>): BwResult<BwMeter>
+    fun listMeter(holder: BwHolder<MeterParam>): BwResult<ZoneMeter>
 
     /**
      * DMA列表

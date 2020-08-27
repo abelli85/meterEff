@@ -16,9 +16,21 @@ data class MeterParam(var meterId: String? = null,
                       var userCode: String? = null,
                       var extId: String? = null,
                       var extIdList: List<String>? = null,
+
+                      /**
+                       * DMA
+                       */
                       var dmaId: String? = null,
                       var dmaName: String? = null,
                       var dmaIdList: List<String>? = null,
+
+                      /**
+                       * 片区
+                       */
+                      var zoneId: String? = null,
+                      var zoneName: String? = null,
+                      var zoneIdList: List<String>? = null,
+
                       var typeId: String? = null,
                       var location: String? = null,
 
