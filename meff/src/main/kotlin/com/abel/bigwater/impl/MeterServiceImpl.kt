@@ -228,14 +228,21 @@ open class MeterServiceImpl : MeterService {
 
     /**
      * 大表列表
+     * 如果填充了如下字段, 则返回的水表包含DMA信息:
+     * @see MeterParam.dmaId
+     * @see MeterParam.dmaName
+     * @see MeterParam.dmaIdList
+     * 否则, 返回的水表包含片区信息(Zone)
+     *
      * result#list holds the list of meters.
      */
-    override fun listMeter(holder: BwHolder<MeterParam>): BwResult<BwMeter> {
+    override fun listMeter(holder: BwHolder<MeterParam>): BwResult<ZoneMeter> {
         if (holder.lr?.sessionId.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
         lgr.info("${holder.lr?.userId} try to list meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
 
         val rightName = MeterService.BASE_PATH + MeterService.PATH_LIST_ZONE_METER
         try {
@@ -244,7 +251,7 @@ open class MeterServiceImpl : MeterService {
                 return BwResult(login.code, login.error!!)
             }
 
-            holder.single?.also {
+            dp.also {
                 if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                     it.firmId = login.single!!.firmId
                 }
@@ -252,7 +259,13 @@ open class MeterServiceImpl : MeterService {
                     it.firmId = it.firmId + "%"
                 }
             }
-            return BwResult(meterMapper!!.selectMeter(holder.single!!).map { it as BwMeter }).apply {
+
+            return BwResult(
+                    if (dp.dmaId.isNullOrBlank() && dp.dmaName.isNullOrBlank() && dp.dmaIdList.isNullOrEmpty())
+                        meterMapper!!.selectMeterZone(dp)
+                    else
+                        meterMapper!!.selectMeterDma(dp)
+            ).apply {
                 error = "水表数量： ${list?.size}"
             }
         } catch (ex: Exception) {

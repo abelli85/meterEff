@@ -222,7 +222,7 @@
         </where>
     </update>
 
-    <select id="selectMeter" parameterType="com.abel.bigwater.api.MeterParam"
+    <select id="selectMeterDma" parameterType="com.abel.bigwater.api.MeterParam"
             resultType="com.abel.bigwater.model.zone.ZoneMeter">
         SELECT m.meterId
         , m.userCode
@@ -280,6 +280,7 @@
         , m.createDate
         , m.updateBy
         , m.updateDate
+        , dm.inOutput
         FROM bw_meter m
         LEFT JOIN bw_dma_meter dm on m.meterid = dm.meterid
         LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
@@ -312,6 +313,7 @@
                     AND m.extId = #{extId}
                 </when>
             </choose>
+
             <choose>
                 <when test="dmaIdList != null and dmaIdList.size != 0">
                     AND d.dmaId IN
@@ -323,6 +325,155 @@
                     AND d.dmaId LIKE #{dmaId}
                 </when>
             </choose>
+
+            <if test="dmaName != null">
+                AND d.dmaName LIKE #{dmaName}
+            </if>
+
+            <choose>
+                <when test="typeId == 'CHECK'">
+                    AND m.typeId = 'CHECK'
+                </when>
+                <when test="typeId != null">
+                    AND m.typeId = #{typeId}
+                </when>
+            </choose>
+            <choose>
+                <when test="installDate1 != null and installDate2 != null">
+                    AND m.installDate BETWEEN #{installDate1} AND #{installDate2}
+                </when>
+                <when test="installDate1 != null">
+                    AND m.installDate &gt;= #{installDate1}
+                </when>
+                <when test="installDate2 != null">
+                    AND m.installDate &lt; #{installDate2}
+                </when>
+            </choose>
+            <if test="location != null">
+                AND m.location LIKE #{location}
+            </if>
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="remoteBrandId != null">
+                AND m.remoteBrandId LIKE #{remoteBrandId}
+            </if>
+            <if test="firmId != null">
+                AND m.firmId LIKE #{firmId}
+            </if>
+        </where>
+        ORDER BY m.meterId
+        LIMIT #{rows} OFFSET #{index}
+    </select>
+
+    <select id="selectMeterZone" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.zone.ZoneMeter">
+        SELECT m.meterId
+        , m.userCode
+        , m.meterCode
+        , m.meterName
+        , m.meterOrder
+        , m.extId
+        , z.zoneId
+        , z.zoneName
+        , m.location
+        , m.installDate
+        , m.meterPulse
+        , m.q1
+        , m.q2
+        , m.q3
+        , m.q4
+        , m.q1r
+        , m.q2r
+        , m.q3r
+        , m.q4r
+        , m.sizeId
+        , m.sizeName
+        , m.modelSize
+        , m.typeId
+        , m.userType
+        , m.waterPrice
+        , m.serviceArea
+        , m.servicePopulation
+        , m.contactNumber
+        , m.chargable
+        , m.firmId
+        , m.meterBrandId
+        , m.steelNo
+        , m.remoteBrandId
+        , m.rtuId
+        , m.rtuCode
+        , m.rtuAddr
+        , m.rtuInstallDate
+        , m.rtuInstallPerson
+        , m.rtuContact
+        , m.commCard
+        , m.remoteModel
+        , m.remoteMemo
+        , m.commIsp
+        , m.pressureRange
+        , m.pressureMaxLimit
+        , m.pressureMinLimit
+        , m.powerType
+        , m.meterStatus
+        , m.adminMobile
+        , st_asText(m.meterLoc::geometry) AS meterLoc
+        , m.lastCalib
+        , m.memo
+        , m.createBy
+        , m.createDate
+        , m.updateBy
+        , m.updateDate
+        , zm.inOutput
+        FROM bw_meter m
+        LEFT JOIN bw_zone_meter zm on m.meterId = zm.meterId
+        LEFT JOIN bw_zone z on z.zoneId = zm.zoneId
+        <where>
+            <choose>
+                <when test="meterIdList != null and meterIdList.size != 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+            <if test="userCode != null">
+                AND m.userCode LIKE #{userCode}
+            </if>
+            <if test="meterName != null">
+                AND m.meterName LIKE #{meterName}
+            </if>
+            <choose>
+                <when test="extIdList != null and extIdList.size != 0">
+                    AND m.extId IN
+                    <foreach collection="extIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="extId != null">
+                    AND m.extId = #{extId}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="zoneIdList != null and zoneIdList.size != 0">
+                    AND z.zoneId IN
+                    <foreach collection="zoneIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="zoneId != null">
+                    AND z.zoneId LIKE #{zoneId}
+                </when>
+            </choose>
+
+            <if test="zoneName != null">
+                AND z.zoneName LIKE #{zoneName}
+            </if>
+
             <choose>
                 <when test="typeId == 'CHECK'">
                     AND m.typeId = 'CHECK'

@@ -191,6 +191,28 @@ class MeterServiceImplTest {
     }
 
     @Test
+    fun testListMeterZone() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam())
+
+        meterService!!.listMeter(holder).also { r1 ->
+            lgr.info("zone-meter list: {}", JSON.toJSONString(r1, true))
+        }
+    }
+
+    @Test
+    fun testListMeterDma() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().also {
+            it.dmaId = "%"
+        })
+
+        meterService!!.listMeter(holder).also { r1 ->
+            lgr.info("dma-meter list: {}", JSON.toJSONString(r1, true))
+        }
+    }
+
+    @Test
     fun insertMeterJson() {
         val json = """{"lr":{"userId":"abel","timestamp":"13:43:24","clientHash":"d31d71d44bf59f751bed1ffeb19b6c79","devId":"junit","sessionId":"e235c43d-7393-436b-8a58-8be23971a08b"},"param1":null,"param2":null,"single":{"zoneId":"123","flowOut":0,"meterId":"05600","userCode":"123","meterCode":"123123123","meterName":"123","meterOrder":null,"extId":null,"location":"123","installDate":"2020-08-20T00:00:00","meterPulse":null,"q1":null,"q2":null,"q3":null,"q4":null,"q1r":null,"q2r":null,"q3r":null,"q4r":null,"sizeId":"123","sizeName":"123","modelSize":"312","typeId":null,"userType":null,"waterPrice":null,"serviceArea":null,"servicePopulation":null,"contactNumber":null,"chargable":0,"inOutput":null,"dmaId":null,"firmId":"2705","meterBrandId":"123","steelNo":"123","remoteBrandId":"213","rtuId":"23","rtuCode":null,"rtuAddr":null,"rtuInstallDate":null,"rtuInstallPerson":null,"rtuContact":null,"commCard":null,"remoteModel":null,"remoteMemo":null,"commIsp":null,"pressureRange":null,"pressureMaxLimit":null,"pressureMinLimit":null,"powerType":0,"meterStatus":0,"adminMobile":null,"meterLoc":"213","lastCalib":null,"memo":"123","createBy":null,"createDate":null,"updateBy":null,"updateDate":null},"list":null}"""
         val h = ObjectMapper().readValue(json, HolderMeter::class.java)

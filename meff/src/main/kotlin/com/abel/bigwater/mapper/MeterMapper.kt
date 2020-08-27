@@ -45,7 +45,9 @@ interface MeterMapper {
      * @param map
      * @return
      */
-    fun selectMeter(mp: MeterParam): List<ZoneMeter>
+    fun selectMeterDma(mp: MeterParam): List<ZoneMeter>
+
+    fun selectMeterZone(mp: MeterParam): List<ZoneMeter>
 
     fun selectMeterText(mp: MeterParam): List<ZoneMeter>
 
