@@ -5,6 +5,8 @@ import com.abel.bigwater.model.BwDma
 import com.abel.bigwater.model.BwMeterBrand
 import com.abel.bigwater.model.BwRemoteBrand
 import com.abel.bigwater.model.BwUser
+import com.abel.bigwater.model.stat.MeterFirmStat
+import com.abel.bigwater.model.stat.MeterSizeStat
 import com.abel.bigwater.model.zone.ZoneMeter
 import org.apache.ibatis.annotations.*
 
@@ -80,5 +82,9 @@ interface MeterMapper {
     fun linkMeterDma(dma: BwDma): Int
 
     fun detachMeterDma(dma: BwDma): Int
+
+    fun statMeterSize(dp: MeterParam): List<MeterSizeStat>
+
+    fun statMeterFirm(dp: MeterParam): List<MeterFirmStat>
 
 }

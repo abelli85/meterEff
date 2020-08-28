@@ -98,4 +98,8 @@
     <dubbo:service interface="com.abel.bigwater.api.DataService" ref="dataService"
                    protocol="rest"
                    validation="true"/>
+
+    <dubbo:service interface="com.abel.bigwater.api.StatService" ref="statService"
+                   protocol="rest"
+                   validation="true"/>
 </beans>
