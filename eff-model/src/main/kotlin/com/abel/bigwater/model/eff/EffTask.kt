@@ -16,7 +16,7 @@ data class EffTask(
         /**
          * 自增量
          */
-        var wid: Long? = null,
+        var taskId: Long? = null,
 
         /**
          * 任务名称
@@ -101,5 +101,10 @@ data class EffTask(
      * 是否失效
      */
     var deprecated: Boolean? = null
+
+    /**
+     * 任务包括的水表计量效率
+     */
+    var meterList: List<EffMeter>? = null
 
 }

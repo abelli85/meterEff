@@ -9,16 +9,25 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
-data class EffDetail(
+/**
+ * 水表的计量效率
+ */
+data class EffMeter(
         /**
-         * 自增量
+         * 任务自增量
          */
-        var wid: Long? = null,
+        var taskId: Long? = null,
 
         /**
          * 水表ID
          */
         var meterId: String? = null,
+
+        /**
+         * 水表名称
+         * the name to set
+         */
+        var meterName: String? = null,
 
         /**
          * 任务名称
@@ -163,4 +172,14 @@ data class EffDetail(
     var qr2: Double? = null
     var qr3: Double? = null
     var qr4: Double? = null
+
+    /**
+     * 用水模式
+     */
+    var pointEffList: List<EffMeterPoint>? = null
+
+    /**
+     * 记录点检定结果
+     */
+    var pointList: List<VcMeterVerifyPoint>? = null
 }
