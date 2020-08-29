@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/20 20:07:58                           */
+/* Created on:     2020/8/29 18:39:19                           */
 /*==============================================================*/
 
 
@@ -28,7 +28,17 @@ drop table bw_dma_meter;
 
 drop table bw_eff_decay;
 
-drop table bw_eff_detail;
+drop index idx_meter_eff_size_model;
+
+drop index idx_meter_eff_time;
+
+drop index idx_meter_eff_firm;
+
+drop table bw_eff_meter;
+
+drop index idx_eff_time;
+
+drop index idx_eff_firm;
 
 drop table bw_eff_task;
 
@@ -49,6 +59,10 @@ drop index idx_meter_user;
 drop index idx_meter_code;
 
 drop table bw_meter;
+
+drop index idx_eff_meter_flow;
+
+drop table bw_meter_eff_point;
 
 drop table bw_right;
 
@@ -341,11 +355,12 @@ create table bw_eff_decay (
 );
 
 /*==============================================================*/
-/* Table: bw_eff_detail                                         */
+/* Table: bw_eff_meter                                          */
 /*==============================================================*/
-create table bw_eff_detail (
-   wid                  INT8                 not null,
+create table bw_eff_meter (
+   taskId               INT8                 not null,
    meterId              VARCHAR(45)          not null,
+   meterName            VARCHAR(45)          not null,
    taskName             VARCHAR(45)          not null,
    taskStart            TIMESTAMP WITH TIME ZONE not null,
    taskEnd              TIMESTAMP WITH TIME ZONE not null,
@@ -376,14 +391,41 @@ create table bw_eff_detail (
    qr2                  DECIMAL(15,3)        null,
    qr3                  DECIMAL(15,3)        null,
    qr4                  DECIMAL(15,3)        null,
-   constraint PK_BW_EFF_DETAIL primary key (wid, meterId)
+   constraint PK_BW_EFF_METER primary key (meterId, taskId)
+);
+
+/*==============================================================*/
+/* Index: idx_meter_eff_firm                                    */
+/*==============================================================*/
+create  index idx_meter_eff_firm on bw_eff_meter (
+meterId,
+taskStart,
+taskEnd
+);
+
+/*==============================================================*/
+/* Index: idx_meter_eff_time                                    */
+/*==============================================================*/
+create  index idx_meter_eff_time on bw_eff_meter (
+meterId,
+runTime
+);
+
+/*==============================================================*/
+/* Index: idx_meter_eff_size_model                              */
+/*==============================================================*/
+create  index idx_meter_eff_size_model on bw_eff_meter (
+sizeId,
+modelSize,
+sizeName,
+meterId
 );
 
 /*==============================================================*/
 /* Table: bw_eff_task                                           */
 /*==============================================================*/
 create table bw_eff_task (
-   wid                  SERIAL not null,
+   taskId               SERIAL not null,
    taskName             VARCHAR(45)          not null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
@@ -400,7 +442,24 @@ create table bw_eff_task (
    totalEff             DECIMAL(15,3)        null,
    realWater            DECIMAL(15,3)        null,
    deprecated           BOOL                 null,
-   constraint PK_BW_EFF_TASK primary key (wid)
+   constraint PK_BW_EFF_TASK primary key (taskId)
+);
+
+/*==============================================================*/
+/* Index: idx_eff_firm                                          */
+/*==============================================================*/
+create  index idx_eff_firm on bw_eff_task (
+firmId,
+taskStart,
+taskEnd
+);
+
+/*==============================================================*/
+/* Index: idx_eff_time                                          */
+/*==============================================================*/
+create  index idx_eff_time on bw_eff_task (
+firmId,
+runTime
 );
 
 /*==============================================================*/
@@ -545,6 +604,33 @@ meterName
 create  index idx_meter_online on bw_meter (
 firmId,
 onlineDate
+);
+
+/*==============================================================*/
+/* Table: bw_meter_eff_point                                    */
+/*==============================================================*/
+create table bw_meter_eff_point (
+   wid                  SERIAL not null,
+   meterId              VARCHAR(45)          not null,
+   taskId               INT8                 not null,
+   pointName            varchar(20)          not null,
+   pointNo              INT4                 not null,
+   pointFlow            DECIMAL(15,3)        not null,
+   pointDev             DECIMAL(15,3)        null,
+   highLimit            DECIMAL(15,3)        null,
+   lowLimit             DECIMAL(15,3)        null,
+   pointWater           DECIMAL(15,3)        null,
+   realWater            DECIMAL(15,3)        null,
+   constraint PK_BW_METER_EFF_POINT primary key (wid)
+);
+
+/*==============================================================*/
+/* Index: idx_eff_meter_flow                                    */
+/*==============================================================*/
+create  index idx_eff_meter_flow on bw_meter_eff_point (
+taskId,
+meterId,
+pointNo
 );
 
 /*==============================================================*/
