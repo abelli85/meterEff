@@ -102,4 +102,8 @@
     <dubbo:service interface="com.abel.bigwater.api.StatService" ref="statService"
                    protocol="rest"
                    validation="true"/>
+
+    <dubbo:service interface="com.abel.bigwater.api.EffService" ref="effService"
+                   protocol="rest"
+                   validation="true"/>
 </beans>

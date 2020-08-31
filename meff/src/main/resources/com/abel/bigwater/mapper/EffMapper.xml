@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了
+,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.EffMapper">
+    <select id="listEffTask" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.EffTask">
+        SELECT taskId
+        , taskName
+        , createBy
+        , createDate
+        , firmId
+        , firmName
+        , meterCount
+        , taskMemo
+        , taskStart
+        , taskEnd
+        , runTime
+        , runDuration
+        , taskResult
+        , totalWater
+        , totalEff
+        , realWater
+        , deprecated
+        FROM bw_eff_task t
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND t.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND t.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="createEffTask" parameterType="com.abel.bigwater.model.eff.EffTask"
+            useGeneratedKeys="true" keyProperty="taskId" keyColumn="taskId">
+        INSERT INTO bw_eff_task( taskName
+                               , createBy
+                               , createDate
+                               , firmId
+                               , firmName
+                               , meterCount
+                               , taskMemo
+                               , taskStart
+                               , taskEnd
+                               , runTime
+                               , runDuration
+                               , taskResult
+                               , totalWater
+                               , totalEff
+                               , realWater
+                               , deprecated)
+        VALUES ( #{taskName}
+               , #{createBy}
+               , #{createDate}
+               , #{firmId}
+               , #{firmName}
+               , #{meterCount}
+               , #{taskMemo}
+               , #{taskStart}
+               , #{taskEnd}
+               , #{runTime}
+               , #{runDuration}
+               , #{taskResult}
+               , #{totalWater}
+               , #{totalEff}
+               , #{realWater}
+               , #{deprecated})
+    </insert>
+
+    <delete id="deleteEffTask" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE FROM bw_eff_task
+        USING bw_eff_task t
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+        </where>
+    </delete>
+
+    <select id="listEffMeter" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.EffMeter">
+        SELECT m.taskId
+        , t.taskName
+        , m.meterId
+        , m.meterName
+        , m.taskName
+        , m.taskStart
+        , m.taskEnd
+        , m.runTime
+        , m.runDuration
+        , m.taskResult
+        , m.meterWater
+        , m.q0v
+        , m.q1v
+        , m.q2v
+        , m.q3v
+        , m.q4v
+        , m.qtv
+        , m.meterEff
+        , m.realWater
+        , m.startFwd
+        , m.endFwd
+        , m.sizeId
+        , m.sizeName
+        , m.modelSize
+        , m.decayEff
+        , m.q4
+        , m.q3
+        , m.q3toq1
+        , m.q4toq3
+        , m.q2toq1
+        , m.qr1
+        , m.qr2
+        , m.qr3
+        , m.qr4
+        FROM bw_eff_meter m
+        JOIN bw_eff_task t on m.taskId = t.taskId
+
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND t.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND t.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="insertEffMeter" parameterType="com.abel.bigwater.api.EffParam">
+        INSERT INTO bw_eff_meter( taskId
+        , meterId
+        , meterName
+        , taskName
+        , taskStart
+        , taskEnd
+        , runTime
+        , runDuration
+        , taskResult
+        , meterWater
+        , q0v
+        , q1v
+        , q2v
+        , q3v
+        , q4v
+        , qtv
+        , meterEff
+        , realWater
+        , startFwd
+        , endFwd
+        , sizeId
+        , sizeName
+        , modelSize
+        , decayEff
+        , q4
+        , q3
+        , q3toq1
+        , q4toq3
+        , q2toq1
+        , qr1
+        , qr2
+        , qr3
+        , qr4)
+        VALUES
+        <foreach collection="meterList != null and meterList.size > 0" item="m1" open="(" close=")" separator=",">
+            #{m1.taskId}
+            , #{m1.meterId}
+            , #{m1.meterName}
+            , #{m1.taskName}
+            , #{m1.taskStart}
+            , #{m1.taskEnd}
+            , #{m1.runTime}
+            , #{m1.runDuration}
+            , #{m1.taskResult}
+            , #{m1.meterWater}
+            , #{m1.q0v}
+            , #{m1.q1v}
+            , #{m1.q2v}
+            , #{m1.q3v}
+            , #{m1.q4v}
+            , #{m1.qtv}
+            , #{m1.meterEff}
+            , #{m1.realWater}
+            , #{m1.startFwd}
+            , #{m1.endFwd}
+            , #{m1.sizeId}
+            , #{m1.sizeName}
+            , #{m1.modelSize}
+            , #{m1.decayEff}
+            , #{m1.q4}
+            , #{m1.q3}
+            , #{m1.q3toq1}
+            , #{m1.q4toq3}
+            , #{m1.q2toq1}
+            , #{m1.qr1}
+            , #{m1.qr2}
+            , #{m1.qr3}
+            , #{m1.qr4}
+        </foreach>
+    </insert>
+
+    <delete id="deleteEffMeter" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE
+        FROM bw_eff_meter
+        USING bw_eff_meter m
+        JOIN bw_eff_task t on m.taskId = t.taskId
+
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND t.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND t.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+    </delete>
+
+    <select id="listEffPoint" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.EffMeterPoint">
+        SELECT p.meterId
+        , p.taskId
+        , p.pointName
+        , p.pointNo
+        , p.pointFlow
+        , p.pointDev
+        , p.highLimit
+        , p.lowLimit
+        , p.pointWater
+        , p.realWater
+        FROM bw_meter_eff_point p
+        JOIN bw_eff_meter m on p.meterId = m.meterId
+        JOIN bw_eff_task t on m.taskId = t.taskId
+
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND t.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND t.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+
+    </select>
+
+    <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam">
+        INSERT INTO
+        bw_meter_eff_point(
+        meterId
+        , taskId
+        , pointName
+        , pointNo
+        , pointFlow
+        , pointDev
+        , highLimit
+        , lowLimit
+        , pointWater
+        , realWater
+        ) VALUES
+        <foreach collection="pointList.size > 0" item="pt" open="(" close=")" separator=",">
+            #{pt.meterId}
+            , #{pt.taskId}
+            , #{pt.pointName}
+            , #{pt.pointNo}
+            , #{pt.pointFlow}
+            , #{pt.pointDev}
+            , #{pt.highLimit}
+            , #{pt.lowLimit}
+            , #{pt.pointWater}
+            , #{pt.realWater}
+        </foreach>
+    </insert>
+
+    <delete id="deleteEffPoint" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE
+        FROM bw_meter_eff_point
+        USING bw_meter_eff_point p
+        JOIN bw_eff_meter m on p.meterId = m.meterId
+        JOIN bw_eff_task t on m.taskId = t.taskId
+
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND t.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND t.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND t.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+    </delete>
+</mapper>

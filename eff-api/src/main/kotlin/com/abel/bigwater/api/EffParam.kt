@@ -3,7 +3,10 @@ package com.abel.bigwater.api
 import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
+import com.abel.bigwater.model.eff.EffMeter
+import com.abel.bigwater.model.eff.EffMeterPoint
 import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
@@ -82,5 +85,22 @@ class EffParam : BaseParam() {
      * the model to set
      */
     var modelSize: String? = null
+
+    /**
+     * 水表ID列表
+     */
+    var meterIdList: List<String>? = null
+
+    /**
+     * 批量添加
+     */
+    @JsonIgnore
+    var meterList: List<EffMeter>? = null
+
+    /**
+     * 批量添加
+     */
+    @JsonIgnore
+    var pointList: List<EffMeterPoint>? = null
 
 }
