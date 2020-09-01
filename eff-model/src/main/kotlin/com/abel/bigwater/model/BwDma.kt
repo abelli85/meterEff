@@ -153,6 +153,11 @@ class BwDma : BwBase() {
     var onlineDate: Date? = null
 
     /**
+     * 备注
+     */
+    var memo: String? = null
+
+    /**
      * 水表列表, 仅在获取单个DMA分区时填充
      */
     var meterList: List<BwMeter>? = null

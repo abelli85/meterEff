@@ -68,7 +68,7 @@
                              , powerType
                              , meterStatus
                              , adminMobile
-                             , meterLoc
+                             <include refid="meterLocFields"></include>
                              , lastCalib
                              , memo
                              , createBy
@@ -122,7 +122,7 @@
                , #{powerType}
                , #{meterStatus}
                , #{adminMobile}
-               , st_geomFromText(#{meterLoc})::point
+               <include refid="meterLocValues"></include>
                , #{lastCalib}
                , #{memo}
                , #{createBy}
@@ -130,6 +130,17 @@
                , #{updateBy}
                , now())
     </insert>
+
+    <sql id="meterLocFields">
+        <if test="meterLoc != null">
+            , meterLoc
+        </if>
+    </sql>
+    <sql id="meterLocValues">
+        <if test="meterLoc != null">
+            , st_geomFromText(#{meterLoc})::point
+        </if>
+    </sql>
 
     <delete id="deleteMeter" parameterType="com.abel.bigwater.api.MeterParam">
         DELETE FROM bw_meter
@@ -752,8 +763,7 @@
         INSERT INTO bw_dma( dmaId
                           , dmaName
                           , location
-                          , dmaLoc
-                          , dmaRegion
+                          <include refid="dmaGeom"></include>
                           , firmId
                           , dmaType
                           , showType
@@ -776,8 +786,7 @@
         VALUES ( #{dmaId}
                , #{dmaName}
                , #{location}
-               , st_geomFromText(#{dmaLoc})::point
-               , st_geomFromText(#{dmaRegion})::polygon
+               <include refid="dmaValues"></include>
                , #{firmId}
                , #{dmaType}
                , #{showType}
@@ -798,6 +807,24 @@
                , #{updateBy}
                , now())
     </insert>
+
+    <sql id="dmaGeom">
+        <if test="dmaLoc != null">
+            , dmaLoc
+        </if>
+        <if test="dmaRegion != null">
+            , dmaRegion
+        </if>
+    </sql>
+
+    <sql id="dmaValues">
+        <if test="dmaLoc != null">
+            , st_geomFromText(#{dmaLoc})::point
+        </if>
+        <if test="dmaRegion != null">
+            , st_geomFromText(#{dmaRegion})::polygon
+        </if>
+    </sql>
 
     <update id="updateDma" parameterType="com.abel.bigwater.model.BwDma">
         UPDATE bw_dma

@@ -6,6 +6,7 @@ import com.abel.bigwater.api.MeterParam
 import com.abel.bigwater.api.MeterService
 import com.abel.bigwater.api.UserService
 import com.abel.bigwater.mapper.MeterMapper
+import com.abel.bigwater.model.BwDma
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -220,6 +221,34 @@ class MeterServiceImplTest {
         meterService!!.insertMeter(h).also { r1 ->
             lgr.info("insert meter result: {}", JSON.toJSONString(r1, true))
         }
+    }
+
+    @Test
+    fun listDma() {
+        val d = BwDma().apply {
+            dmaId = "test-dma01"
+            dmaName = "测试DMA01"
+        }
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), d)
+
+            meterService!!.insertDma(holder).also {
+                lgr.info("insert dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.listDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("list dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            val cnt = meterMapper!!.deleteDma(MeterParam(dmaId = d.dmaId))
+            lgr.info("cleared dma: {}, {}", cnt, d.dmaId)
+        }
+
     }
 
     companion object {

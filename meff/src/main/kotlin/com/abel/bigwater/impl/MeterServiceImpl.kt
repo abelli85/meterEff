@@ -278,7 +278,36 @@ open class MeterServiceImpl : MeterService {
      * DMA列表
      */
     override fun listDma(holder: BwHolder<MeterParam>): BwResult<BwDma> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to list meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_LIST_DMA
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            return BwResult(meterMapper!!.selectDma(dp)).apply {
+                error = "DMA数量： ${list?.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
@@ -297,7 +326,47 @@ open class MeterServiceImpl : MeterService {
      * 创建DMA
      */
     override fun insertDma(holder: BwHolder<BwDma>): BwResult<BwDma> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank() || (
+                        holder.single?.dmaId.isNullOrBlank()
+                                && holder.list.isNullOrEmpty())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val list = if (holder.single?.dmaId.isNullOrBlank())
+            holder.list!!
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach {
+            if (it.dmaId.isNullOrBlank() || it.dmaName.isNullOrBlank()) {
+                return BwResult(2, "DMA-ID/名称不能为空: ${it.dmaId}")
+            }
+        }
+
+        lgr.info("${holder.lr?.userId} try to add DMA: ${JSON.toJSONString(holder.single)}")
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_INSERT_DMA
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            list.forEach {
+                // 只能更新 所在机构及分公司
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+
+                meterMapper!!.insertDma(it)
+            }
+
+            return BwResult(holder.single!!).apply {
+                error = "增加DMA： ${list.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
