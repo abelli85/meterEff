@@ -16,12 +16,23 @@ interface EffService {
     companion object {
         const val BASE_PATH = "/eff"
 
+        const val PATH_CREATE_TASK = "/createEffTask"
+
         const val PATH_LIST_TASK = "/listEffTask"
 
         const val PATH_FETCH_TASK = "/fetchEffTask"
 
         const val PATH_LIST_METER_EFF = "/listMeterEff"
+
+        const val PATH_FETCH_METER_EFF = "/fetchMeterEff"
     }
+
+    /**
+     * 创建计量效率分析任务
+     */
+    @POST
+    @Path(PATH_CREATE_TASK)
+    fun createEffTask(holder: BwHolder<EffTask>): BwResult<EffTask>
 
     /**
      * 列出计量效率分析任务
@@ -48,6 +59,6 @@ interface EffService {
      * 获取单个水表的分析详情
      */
     @POST
-    @Path(PATH_LIST_METER_EFF)
+    @Path(PATH_FETCH_METER_EFF)
     fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 }

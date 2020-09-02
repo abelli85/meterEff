@@ -17,14 +17,18 @@ TRUNCATE TABLE bw_user;
 */
 
 DELETE FROM bw_user_role ur
-WHERE userId IN ('admin', 'abel', 'scott');
+WHERE userId IN ('admin', 'abel', 'scott', 'fuzhou');
 
 DELETE FROM bw_user u
-WHERE userId IN ('admin', 'abel', 'scott');
+WHERE userId IN ('admin', 'abel', 'scott', 'fuzhou');
 
 -- admin/world
 INSERT INTO bw_user (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)
 VALUES('abel', '高级用户', '27', '098f6bcd4621d373cade4e832627b4f6', 'abelli5@126.com', '13510012001'
+, 'http://localhost:8080/docs/images/tomcat.png'
+, 'http://localhost:8080/docs/images/asf-logo.svg'
+, 'http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg'),
+('fuzhou', '高级用户', '76', '098f6bcd4621d373cade4e832627b4f6', 'abelli5@126.com', '13510012001'
 , 'http://localhost:8080/docs/images/tomcat.png'
 , 'http://localhost:8080/docs/images/asf-logo.svg'
 , 'http://localhost:8080/examples/jsp/jsp2/jspx/textRotate.jpg'),
@@ -40,10 +44,16 @@ VALUES('abel', '高级用户', '27', '098f6bcd4621d373cade4e832627b4f6', 'abelli
 INSERT INTO bw_user_role (userId, roleName) VALUES('admin', '管理员');
 INSERT INTO bw_user_role (userId, roleName) VALUES('admin', 'ADMINISTRATOR');
 -- abel/test
-INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'POWER_USER');
-INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'BACK_USER');
-INSERT INTO bw_user_role (userId, roleName) VALUES('abel', '管理员');
-INSERT INTO bw_user_role (userId, roleName) VALUES('abel', 'ADMINISTRATOR');
+INSERT INTO bw_user_role (userId, roleName) VALUES
+('abel', 'POWER_USER'),
+('abel', 'BACK_USER'),
+('abel', '管理员'),
+('abel', 'ADMINISTRATOR');
+INSERT INTO bw_user_role (userId, roleName) VALUES
+('fuzhou', 'POWER_USER'),
+('fuzhou', 'BACK_USER'),
+('fuzhou', '管理员'),
+('fuzhou', 'ADMINISTRATOR');
 
 -- 库房
 INSERT INTO bw_user (userId, userName, firmId, passHash, email, mobile, smallIcon, bigIcon, signPic)

@@ -346,6 +346,14 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/listUnregMeter'	, '列�
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/createReg'	, '备案一批水表');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/removeReg'	, '取消一次备案');
 
+-- 计量效率
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/createEffTask'	    , '任务详情');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listEffTask'	    , '列出任务');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/fetchEffTask'	    , '列出任务详情');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listMeterEff'	    , '列出水表效率');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/fetchMeterEff'	    , '列出水表效率详情');
+
+
 -- </editor-fold>
 
 -- ===========================================================================
@@ -827,6 +835,12 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/list
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/listUnregMeter');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/createReg');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/removeReg');
+
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listEffTask'	);
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/fetchEffTask'	);
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listMeterEff'	);
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/fetchMeterEff'  );
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/createEffTask'  );
 
 -- </editor-fold>
 
