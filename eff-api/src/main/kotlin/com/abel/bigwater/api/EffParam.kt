@@ -5,8 +5,8 @@ import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.alibaba.fastjson.annotation.JSONField
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
@@ -94,13 +94,16 @@ class EffParam : BaseParam() {
     /**
      * 批量添加
      */
-    @JsonIgnore
     var meterList: List<EffMeter>? = null
 
     /**
-     * 批量添加
+     * 用水模式
      */
-    @JsonIgnore
-    var pointList: List<EffMeterPoint>? = null
+    var pointEffList: List<EffMeterPoint>? = null
+
+    /**
+     * 记录点检定结果
+     */
+    var pointList: List<VcMeterVerifyPoint>? = null
 
 }

@@ -7,6 +7,11 @@ import com.abel.bigwater.model.BwBase
  */
 class EffMeterPoint : BwBase() {
     /**
+     * 自增量
+     */
+    var wid: Long? = null
+
+    /**
      * 任务自增量
      */
     var taskId: Long? = null

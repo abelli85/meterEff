@@ -98,7 +98,7 @@ interface EffService {
      * 修改单个水表的分析详情
      * @see EffParam.taskId
      * @see EffParam.meterId
-     * @see EffParam.pointList
+     * @see EffParam.pointEffList
      */
     @POST
     @Path(PATH_REPLACE_METER_EFF)
