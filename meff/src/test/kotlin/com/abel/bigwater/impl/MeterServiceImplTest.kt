@@ -7,9 +7,12 @@ import com.abel.bigwater.api.MeterService
 import com.abel.bigwater.api.UserService
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.BwDma
+import com.abel.bigwater.model.eff.VcMeterVerify
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,7 +56,24 @@ class MeterServiceImplTest {
             meterName = "测试水表01"
             sizeId = 100
             sizeName = "DN100"
+
+            verifyList = listOf(
+                    VcMeterVerify().also {
+                        it.meterId = meterId
+                        it.batchId = meterId
+                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
+                    }
+            )
+
+            pointList = listOf(
+                    VcMeterVerifyPoint().also {
+                        it.meterId = meterId
+                        it.pointFlow = 1.25
+                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
+                    }
+            )
         }
+
         try {
             val login = TestHelper.login(loginService).single ?: fail("fail to login")
             val holder = BwHolder(TestHelper.buildLoginRequest(login), meter)
@@ -62,6 +82,8 @@ class MeterServiceImplTest {
             lgr.info("insert result: {}", JSON.toJSONString(r1, true))
             assertEquals(0, r1.code)
         } finally {
+            meterMapper!!.deleteVerifyPoint(MeterParam(meterId = meter.meterId))
+            meterMapper!!.deleteMeterVerify(MeterParam(meterId = meter.meterId))
             val cnt = meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
             lgr.info("cleared meter: {}, {}", cnt, meter.meterId)
         }
@@ -210,6 +232,57 @@ class MeterServiceImplTest {
 
         meterService!!.listMeter(holder).also { r1 ->
             lgr.info("dma-meter list: {}", JSON.toJSONString(r1, true))
+        }
+    }
+
+    @Test
+    fun testFetchMeterZone() {
+        val meter = ZoneMeter().apply {
+            meterId = "test-meterId"
+            meterName = "测试水表01"
+            sizeId = 100
+            sizeName = "DN100"
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            meterMapper!!.insertMeter(meter.also { it.firmId = login.firmId })
+
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam(meterId = meter.meterId))
+
+            meterService!!.fetchMeter(holder).also { r1 ->
+                lgr.info("zone-meter detail: {}", JSON.toJSONString(r1, true))
+                assertEquals(0, r1.code)
+            }
+        } finally {
+            meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
+        }
+    }
+
+    @Test
+    fun testFetchMeterDma() {
+        val meter = ZoneMeter().apply {
+            meterId = "test-meterId"
+            meterName = "测试水表01"
+            sizeId = 100
+            sizeName = "DN100"
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            meterMapper!!.insertMeter(meter.also { it.firmId = login.firmId })
+
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().also {
+                it.meterId = meter.meterId
+                it.dmaId = "%"
+            })
+
+            meterService!!.fetchMeter(holder).also { r1 ->
+                lgr.info("dma-meter list: {}", JSON.toJSONString(r1, true))
+                assertEquals(0, r1.code)
+            }
+        } finally {
+            meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
         }
     }
 

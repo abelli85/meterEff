@@ -5,6 +5,8 @@ import com.abel.bigwater.model.BwDma
 import com.abel.bigwater.model.BwMeterBrand
 import com.abel.bigwater.model.BwRemoteBrand
 import com.abel.bigwater.model.BwUser
+import com.abel.bigwater.model.eff.VcMeterVerify
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.stat.MeterFirmStat
 import com.abel.bigwater.model.stat.MeterSizeStat
 import com.abel.bigwater.model.zone.ZoneMeter
@@ -50,6 +52,18 @@ interface MeterMapper {
     fun selectMeterDma(mp: MeterParam): List<ZoneMeter>
 
     fun selectMeterZone(mp: MeterParam): List<ZoneMeter>
+
+    fun listMeterVerify(mp: MeterParam): List<VcMeterVerify>
+
+    fun insertMeterVerify(mp: ZoneMeter): Int
+
+    fun deleteMeterVerify(mp: MeterParam): Int
+
+    fun listVerifyPoint(mp: MeterParam): List<VcMeterVerifyPoint>
+
+    fun insertVerifyPoint(mp: ZoneMeter): Int
+
+    fun deleteVerifyPoint(mp: MeterParam): Int
 
     fun selectMeterText(mp: MeterParam): List<ZoneMeter>
 

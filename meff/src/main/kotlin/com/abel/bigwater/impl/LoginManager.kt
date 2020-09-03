@@ -138,6 +138,7 @@ open class LoginManager {
                 uo.apply {
                     operResult = CODE_INVALID_AUTHORIZE
                     operDesc = INVALID_AUTHORIZE
+                    devId = this.devId ?: "dummy"
                 }
 
                 userMapper!!.insertUserOper(uo)

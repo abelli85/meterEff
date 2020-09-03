@@ -22,113 +22,113 @@
 
     <insert id="insertMeter" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
         INSERT INTO bw_meter ( meterId
-                             , userCode
-                             , meterCode
-                             , meterName
-                             , meterOrder
-                             , extId
-                             , location
-                             , installDate
-                             , meterPulse
-                             , q1
-                             , q2
-                             , q3
-                             , q4
-                             , q1r
-                             , q2r
-                             , q3r
-                             , q4r
-                             , sizeId
-                             , sizeName
-                             , modelSize
-                             , typeId
-                             , userType
-                             , waterPrice
-                             , serviceArea
-                             , servicePopulation
-                             , contactNumber
-                             , chargable
-                             , firmId
-                             , meterBrandId
-                             , steelNo
-                             , remoteBrandId
-                             , rtuId
-                             , rtuCode
-                             , rtuAddr
-                             , rtuInstallDate
-                             , rtuInstallPerson
-                             , rtuContact
-                             , commCard
-                             , remoteModel
-                             , remoteMemo
-                             , commIsp
-                             , pressureRange
-                             , pressureMaxLimit
-                             , pressureMinLimit
-                             , powerType
-                             , meterStatus
-                             , adminMobile
-                             <include refid="meterLocFields"></include>
-                             , lastCalib
-                             , memo
-                             , createBy
-                             , createDate
-                             , updateBy
-                             , updateDate)
+        , userCode
+        , meterCode
+        , meterName
+        , meterOrder
+        , extId
+        , location
+        , installDate
+        , meterPulse
+        , q1
+        , q2
+        , q3
+        , q4
+        , q1r
+        , q2r
+        , q3r
+        , q4r
+        , sizeId
+        , sizeName
+        , modelSize
+        , typeId
+        , userType
+        , waterPrice
+        , serviceArea
+        , servicePopulation
+        , contactNumber
+        , chargable
+        , firmId
+        , meterBrandId
+        , steelNo
+        , remoteBrandId
+        , rtuId
+        , rtuCode
+        , rtuAddr
+        , rtuInstallDate
+        , rtuInstallPerson
+        , rtuContact
+        , commCard
+        , remoteModel
+        , remoteMemo
+        , commIsp
+        , pressureRange
+        , pressureMaxLimit
+        , pressureMinLimit
+        , powerType
+        , meterStatus
+        , adminMobile
+        <include refid="meterLocFields"></include>
+        , lastCalib
+        , memo
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate)
         values ( #{meterId}
-               , #{userCode}
-               , #{meterCode}
-               , #{meterName}
-               , #{meterOrder}
-               , #{extId}
-               , #{location}
-               , #{installDate}
-               , #{meterPulse}
-               , #{q1}
-               , #{q2}
-               , #{q3}
-               , #{q4}
-               , #{q1r}
-               , #{q2r}
-               , #{q3r}
-               , #{q4r}
-               , #{sizeId}
-               , #{sizeName}
-               , #{modelSize}
-               , #{typeId}
-               , #{userType}
-               , #{waterPrice}
-               , #{serviceArea}
-               , #{servicePopulation}
-               , #{contactNumber}
-               , #{chargable}
-               , #{firmId}
-               , #{meterBrandId}
-               , #{steelNo}
-               , #{remoteBrandId}
-               , #{rtuId}
-               , #{rtuCode}
-               , #{rtuAddr}
-               , #{rtuInstallDate}
-               , #{rtuInstallPerson}
-               , #{rtuContact}
-               , #{commCard}
-               , #{remoteModel}
-               , #{remoteMemo}
-               , #{commIsp}
-               , #{pressureRange}
-               , #{pressureMaxLimit}
-               , #{pressureMinLimit}
-               , #{powerType}
-               , #{meterStatus}
-               , #{adminMobile}
-               <include refid="meterLocValues"></include>
-               , #{lastCalib}
-               , #{memo}
-               , #{createBy}
-               , now()
-               , #{updateBy}
-               , now())
+        , #{userCode}
+        , #{meterCode}
+        , #{meterName}
+        , #{meterOrder}
+        , #{extId}
+        , #{location}
+        , #{installDate}
+        , #{meterPulse}
+        , #{q1}
+        , #{q2}
+        , #{q3}
+        , #{q4}
+        , #{q1r}
+        , #{q2r}
+        , #{q3r}
+        , #{q4r}
+        , #{sizeId}
+        , #{sizeName}
+        , #{modelSize}
+        , #{typeId}
+        , #{userType}
+        , #{waterPrice}
+        , #{serviceArea}
+        , #{servicePopulation}
+        , #{contactNumber}
+        , #{chargable}
+        , #{firmId}
+        , #{meterBrandId}
+        , #{steelNo}
+        , #{remoteBrandId}
+        , #{rtuId}
+        , #{rtuCode}
+        , #{rtuAddr}
+        , #{rtuInstallDate}
+        , #{rtuInstallPerson}
+        , #{rtuContact}
+        , #{commCard}
+        , #{remoteModel}
+        , #{remoteMemo}
+        , #{commIsp}
+        , #{pressureRange}
+        , #{pressureMaxLimit}
+        , #{pressureMinLimit}
+        , #{powerType}
+        , #{meterStatus}
+        , #{adminMobile}
+        <include refid="meterLocValues"></include>
+        , #{lastCalib}
+        , #{memo}
+        , #{createBy}
+        , now()
+        , #{updateBy}
+        , now())
     </insert>
 
     <sql id="meterLocFields">
@@ -219,6 +219,412 @@
             </if>
         </where>
     </update>
+
+    <select id="listMeterVerify" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.eff.VcMeterVerify">
+        SELECT wid AS verifyId
+        , meterId
+        , batchId
+        , tempId
+        , verifyDate
+        , stuffName
+        , verifyResult
+        , boardResult
+        , forceVerifyNo
+        , moduleNo
+        , clientName
+        , factoryName
+        , meterName
+        , meterType
+        , sizeId
+        , modelSize
+        , portType
+        , verifyRule
+        , standardInstrument
+        , standardParam
+        , indoorTemp
+        , moisture
+        , validDate
+        , convertResult
+        , pressResult
+        , instrumentno
+        , accurateGrade
+        , pipeTemp
+        , pipePressure
+        , pulse
+        , density
+        , displayDiff
+        , convertDiff
+        , q4
+        , q3
+        , q3toq1
+        , q4toq3
+        , q2toq1
+        , qr1
+        , qr2
+        , qr3
+        , qr4
+        , maxFlow
+        , minFlow
+        , commonFlow
+        , convertLimit
+        , verifyAgain
+        , outerCheck
+        , dataSrc
+        , itemId
+        FROM vc_meter_verify_result v
+        <where>
+            <if test="batchId != null">
+                (v.batchId IS NULL OR v.batchId LIKE #{batchId})
+            </if>
+
+            <choose>
+                <when test="meterId != null">
+                    AND v.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND v.meterId IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="instrumentNo != null">
+                AND v.instrumentNo LIKE #{instrumentNo}
+            </if>
+
+            <choose>
+                <when test="verifyDate != null">
+                    AND v.verifyDate = #{verifyDate}
+                </when>
+                <when test="verifyDateStart != null and verifyDateEnd != null">
+                    AND v.verifyDate BETWEEN #{verifyDateStart} AND #{verifyDateEnd}
+                </when>
+                <when test="verifyDateStart != null">
+                    AND v.verifyDate &gt;= #{verifyDateStart}
+                </when>
+                <when test="verifyDateEnd != null">
+                    AND v.verifyDate &lt;= #{verifyDateEnd}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="insertMeterVerify" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
+        INSERT INTO vc_meter_verify_result( meterId
+        , batchId
+        , tempId
+        , verifyDate
+        , stuffName
+        , verifyResult
+        , boardResult
+        , forceVerifyNo
+        , moduleNo
+        , clientName
+        , factoryName
+        , meterName
+        , meterType
+        , sizeId
+        , modelSize
+        , portType
+        , verifyRule
+        , standardInstrument
+        , standardParam
+        , indoorTemp
+        , moisture
+        , validDate
+        , convertResult
+        , pressResult
+        , instrumentNo
+        , accurateGrade
+        , pipeTemp
+        , pipePressure
+        , pulse
+        , density
+        , displayDiff
+        , convertDiff
+        , q4
+        , q3
+        , q3toq1
+        , q4toq3
+        , q2toq1
+        , qr1
+        , qr2
+        , qr3
+        , qr4
+        , maxFlow
+        , minFlow
+        , commonFlow
+        , convertLimit
+        , verifyAgain
+        , outerCheck
+        , dataSrc
+        , itemId)
+        VALUES
+        <foreach collection="verifyList" separator="," item="v1">
+            (#{v1.meterId}
+            , #{v1.batchId}
+            , #{v1.tempId}
+            , #{v1.verifyDate}
+            , #{v1.stuffName}
+            , #{v1.verifyResult}
+            , #{v1.boardResult}
+            , #{v1.forceVerifyNo}
+            , #{v1.moduleNo}
+            , #{v1.clientName}
+            , #{v1.factoryName}
+            , #{v1.meterName}
+            , #{v1.meterType}
+            , #{v1.sizeId}
+            , #{v1.modelSize}
+            , #{v1.portType}
+            , #{v1.verifyRule}
+            , #{v1.standardInstrument}
+            , #{v1.standardParam}
+            , #{v1.indoorTemp}
+            , #{v1.moisture}
+            , #{v1.validDate}
+            , #{v1.convertResult}
+            , #{v1.pressResult}
+            , #{v1.instrumentNo}
+            , #{v1.accurateGrade}
+            , #{v1.pipeTemp}
+            , #{v1.pipePressure}
+            , #{v1.pulse}
+            , #{v1.density}
+            , #{v1.displayDiff}
+            , #{v1.convertDiff}
+            , #{v1.q4}
+            , #{v1.q3}
+            , #{v1.q3toq1}
+            , #{v1.q4toq3}
+            , #{v1.q2toq1}
+            , #{v1.qr1}
+            , #{v1.qr2}
+            , #{v1.qr3}
+            , #{v1.qr4}
+            , #{v1.maxFlow}
+            , #{v1.minFlow}
+            , #{v1.commonFlow}
+            , #{v1.convertLimit}
+            , #{v1.verifyAgain}
+            , #{v1.outerCheck}
+            , #{v1.dataSrc}
+            , #{v1.itemId}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteMeterVerify" parameterType="com.abel.bigwater.api.MeterParam">
+        DELETE
+        FROM vc_meter_verify_result v
+        <where>
+            <if test="batchId != null">
+                (v.batchId IS NULL OR v.batchId LIKE #{batchId})
+            </if>
+
+            <choose>
+                <when test="meterId != null">
+                    AND v.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND v.meterId IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="instrumentNo != null">
+                AND v.instrumentNo LIKE #{instrumentNo}
+            </if>
+
+            <choose>
+                <when test="verifyDate != null">
+                    AND v.verifyDate = #{verifyDate}
+                </when>
+                <when test="verifyDateStart != null and verifyDateEnd != null">
+                    AND v.verifyDate BETWEEN #{verifyDateStart} AND #{verifyDateEnd}
+                </when>
+                <when test="verifyDateStart != null">
+                    AND v.verifyDate &gt;= #{verifyDateStart}
+                </when>
+                <when test="verifyDateEnd != null">
+                    AND v.verifyDate &lt;= #{verifyDateEnd}
+                </when>
+            </choose>
+        </where>
+    </delete>
+
+    <select id="listVerifyPoint" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.eff.VcMeterVerifyPoint">
+        SELECT p.wid AS pointId
+        ,p.pointName
+        ,p.pointNo
+        ,p.pointFlow
+        ,p.pointDev
+        ,p.lowLimit
+        ,p.highLimit
+        ,p.meterId
+
+        ,p.startReading
+        ,p.endReading
+        ,p.totalVolume
+        ,p.verifyDura
+        ,p.avgFlow
+        ,p.waterTemp
+        ,p.startMass
+        ,p.endMass
+        ,p.standardMass
+        ,p.density
+        ,p.standardVolume
+        ,p.standardDura
+        ,p.standardFlow
+        ,p.verifyDate
+        ,p.boardResult
+        ,p.instrumentNo
+        ,v.batchId
+        ,p.boardMemo
+        ,p.itemId
+        FROM vc_meter_verify_point p
+        LEFT JOIN vc_meter_verify_result v ON (p.meterId = v.meterId)
+        <where>
+            <if test="batchId != null">
+                (v.batchId IS NULL OR v.batchId LIKE #{batchId})
+            </if>
+
+            <choose>
+                <when test="meterId != null">
+                    AND p.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.meterId IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="instrumentNo != null">
+                AND p.instrumentNo LIKE #{instrumentNo}
+            </if>
+
+            <choose>
+                <when test="verifyDate != null">
+                    AND p.verifyDate = #{verifyDate}
+                </when>
+                <when test="verifyDateStart != null and verifyDateEnd != null">
+                    AND p.verifyDate BETWEEN #{verifyDateStart} AND #{verifyDateEnd}
+                </when>
+                <when test="verifyDateStart != null">
+                    AND p.verifyDate &gt;= #{verifyDateStart}
+                </when>
+                <when test="verifyDateEnd != null">
+                    AND p.verifyDate &lt;= #{verifyDateEnd}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="insertVerifyPoint" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
+        INSERT INTO vc_meter_verify_point( pointName
+        , pointNo
+        , pointFlow
+        , pointDev
+        , lowLimit
+        , highLimit
+        , meterId
+        , startReading
+        , endReading
+        , totalVolume
+        , verifyDura
+        , avgFlow
+        , waterTemp
+        , startMass
+        , endMass
+        , standardMass
+        , density
+        , standardVolume
+        , standardDura
+        , standardFlow
+        , verifyDate
+        , boardResult
+        , instrumentNo
+        , batchId
+        , boardMemo
+        , itemId
+        )
+        VALUES
+        <foreach collection="pointList" item="pt" separator=",">
+            ( #{pt.pointName}
+            , #{pt.pointNo}
+            , #{pt.pointFlow}
+            , #{pt.pointDev}
+            , #{pt.lowLimit}
+            , #{pt.highLimit}
+            , #{pt.meterId}
+            , #{pt.startReading}
+            , #{pt.endReading}
+            , #{pt.totalVolume}
+            , #{pt.verifyDura}
+            , #{pt.avgFlow}
+            , #{pt.waterTemp}
+            , #{pt.startMass}
+            , #{pt.endMass}
+            , #{pt.standardMass}
+            , #{pt.density}
+            , #{pt.standardVolume}
+            , #{pt.standardDura}
+            , #{pt.standardFlow}
+            , #{pt.verifyDate}
+            , #{pt.boardResult}
+            , #{pt.instrumentNo}
+            , #{pt.batchId}
+            , #{pt.boardMemo}
+            , #{pt.itemId}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteVerifyPoint" parameterType="com.abel.bigwater.api.MeterParam">
+        DELETE
+        FROM vc_meter_verify_point p
+        USING vc_meter_verify_result v
+        <where>
+            p.meterId = v.meterId
+            <if test="batchId != null">
+                AND (v.batchId IS NULL OR v.batchId LIKE #{batchId})
+            </if>
+
+            <choose>
+                <when test="meterId != null">
+                    AND p.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.meterId IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="instrumentNo != null">
+                AND p.instrumentNo LIKE #{instrumentNo}
+            </if>
+
+            <choose>
+                <when test="verifyDate != null">
+                    AND p.verifyDate = #{verifyDate}
+                </when>
+                <when test="verifyDateStart != null and verifyDateEnd != null">
+                    AND p.verifyDate BETWEEN #{verifyDateStart} AND #{verifyDateEnd}
+                </when>
+                <when test="verifyDateStart != null">
+                    AND p.verifyDate &gt;= #{verifyDateStart}
+                </when>
+                <when test="verifyDateEnd != null">
+                    AND p.verifyDate &lt;= #{verifyDateEnd}
+                </when>
+            </choose>
+        </where>
+    </delete>
 
     <update id="updateMeterLoc" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
         UPDATE bw_meter
@@ -327,18 +733,19 @@
 
             <choose>
                 <when test="dmaIdList != null and dmaIdList.size != 0">
-                    AND d.dmaId IN
+                    AND (d.dmaId IS NULL OR d.dmaId IN
                     <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
                         #{did}
                     </foreach>
+                    )
                 </when>
                 <when test="dmaId != null">
-                    AND d.dmaId LIKE #{dmaId}
+                    AND (d.dmaId IS NULL OR d.dmaId LIKE #{dmaId})
                 </when>
             </choose>
 
             <if test="dmaName != null">
-                AND d.dmaName LIKE #{dmaName}
+                AND (d.dmaName IS NULL OR d.dmaName LIKE #{dmaName})
             </if>
 
             <choose>
@@ -761,51 +1168,51 @@
 
     <insert id="insertDma" parameterType="com.abel.bigwater.model.BwDma">
         INSERT INTO bw_dma( dmaId
-                          , dmaName
-                          , location
-                          <include refid="dmaGeom"></include>
-                          , firmId
-                          , dmaType
-                          , showType
-                          , legalLnf
-                          , status
-                          , sumUser
-                          , cntUser
-                          , avgMonthWater
-                          , devMonthWater
-                          , cntMonth
-                          , avgMnfTotal
-                          , devMnfTotal
-                          , cntMnf
-                          , onlineDate
-                          , memo
-                          , createBy
-                          , createDate
-                          , updateBy
-                          , updateDate)
+        , dmaName
+        , location
+        <include refid="dmaGeom"></include>
+        , firmId
+        , dmaType
+        , showType
+        , legalLnf
+        , status
+        , sumUser
+        , cntUser
+        , avgMonthWater
+        , devMonthWater
+        , cntMonth
+        , avgMnfTotal
+        , devMnfTotal
+        , cntMnf
+        , onlineDate
+        , memo
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate)
         VALUES ( #{dmaId}
-               , #{dmaName}
-               , #{location}
-               <include refid="dmaValues"></include>
-               , #{firmId}
-               , #{dmaType}
-               , #{showType}
-               , #{legalLnf}
-               , #{status}
-               , #{sumUser}
-               , #{cntUser}
-               , #{avgMonthWater}
-               , #{devMonthWater}
-               , #{cntMonth}
-               , #{avgMnfTotal}
-               , #{devMnfTotal}
-               , #{cntMnf}
-               , #{onlineDate}
-               , #{memo}
-               , #{createBy}
-               , now()
-               , #{updateBy}
-               , now())
+        , #{dmaName}
+        , #{location}
+        <include refid="dmaValues"></include>
+        , #{firmId}
+        , #{dmaType}
+        , #{showType}
+        , #{legalLnf}
+        , #{status}
+        , #{sumUser}
+        , #{cntUser}
+        , #{avgMonthWater}
+        , #{devMonthWater}
+        , #{cntMonth}
+        , #{avgMnfTotal}
+        , #{devMnfTotal}
+        , #{cntMnf}
+        , #{onlineDate}
+        , #{memo}
+        , #{createBy}
+        , now()
+        , #{updateBy}
+        , now())
     </insert>
 
     <sql id="dmaGeom">

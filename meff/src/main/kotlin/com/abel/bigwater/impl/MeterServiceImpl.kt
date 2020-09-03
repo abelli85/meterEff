@@ -68,6 +68,8 @@ open class MeterServiceImpl : MeterService {
                 }
 
                 meterMapper!!.insertMeter(it)
+                meterMapper!!.insertMeterVerify(it)
+                meterMapper!!.insertVerifyPoint(it)
             }
 
             return BwResult(holder.single!!).apply {
@@ -115,6 +117,10 @@ open class MeterServiceImpl : MeterService {
                 if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                     it.firmId = login.single!!.firmId
                 }
+
+                meterMapper!!.deleteMeterVerify(MeterParam(meterId = it.meterId))
+                meterMapper!!.deleteVerifyPoint(MeterParam(meterId = it.meterId))
+
                 cnt += meterMapper!!.deleteMeter(MeterParam(
                         meterId = it.meterId,
                         firmId = it.firmId))
@@ -268,6 +274,56 @@ open class MeterServiceImpl : MeterService {
             ).apply {
                 error = "水表数量： ${list?.size}"
             }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 大表列表.
+     * 如果填充了如下字段, 则返回的水表包含DMA信息:
+     * @see MeterParam.dmaId
+     * @see MeterParam.dmaName
+     * @see MeterParam.dmaIdList
+     * 否则, 返回的水表包含片区信息(Zone)
+     *
+     * result#list holds the list of meters.
+     */
+    override fun fetchMeter(holder: BwHolder<MeterParam>): BwResult<ZoneMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.meterId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to fetch meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_FETCH_ZONE_METER
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val meter = if (dp.dmaId.isNullOrBlank() && dp.dmaName.isNullOrBlank() && dp.dmaIdList.isNullOrEmpty())
+                meterMapper!!.selectMeterZone(dp).firstOrNull()
+            else
+                meterMapper!!.selectMeterDma(dp).firstOrNull() ?: return BwResult(3, "水表不存在: ${dp.meterId}")
+
+            meter!!.verifyList = meterMapper!!.listMeterVerify(dp)
+            meter.pointList = meterMapper!!.listVerifyPoint(dp)
+
+            return BwResult(meter)
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
             return BwResult(1, "内部错误: ${ex.message}")
