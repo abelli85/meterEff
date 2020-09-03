@@ -350,8 +350,12 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/removeReg'	, '取消一
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/createEffTask'	    , '任务详情');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listEffTask'	    , '列出任务');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/fetchEffTask'	    , '列出任务详情');
-INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listMeterEff'	    , '列出水表效率');
-INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/fetchMeterEff'	    , '列出水表效率详情');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listMeterEff'	    , '列出水表效率'),
+                                                  ('/eff/fetchMeterEff'	    , '获取单个水表效率详情'),
+                                                  ('/eff/replaceMeterEff', '修改单个水表的分析详情');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/addMeterEff'	    , '添加水表效率'),
+                                                  ('/eff/deleteMeterEff'	    , '删除水表效率'),
+                                                  ('/eff/updateMeterEff'	    , '修改水表效率');
 
 
 -- </editor-fold>
@@ -836,11 +840,15 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/list
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/createReg');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/reg/removeReg');
 
-INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listEffTask'	);
-INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/fetchEffTask'	);
-INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listMeterEff'	);
-INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/fetchMeterEff'  );
-INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/createEffTask'  );
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/createEffTask'  ),
+                                                      ('POWER_USER',  '/eff/listEffTask'	),
+                                                      ('POWER_USER',  '/eff/fetchEffTask'	);
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listMeterEff'	),
+                                                      ('POWER_USER',  '/eff/fetchMeterEff'),
+                                                      ('POWER_USER',  '/eff/replaceMeterEff');
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/addMeterEff'),
+                                                      ('POWER_USER',  '/eff/deleteMeterEff'),
+                                                      ('POWER_USER',  '/eff/updateMeterEff');
 
 -- </editor-fold>
 

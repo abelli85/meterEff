@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/8/29 18:39:19                           */
+/* Created on:     2020/9/3 15:45:30                            */
 /*==============================================================*/
 
 
@@ -341,7 +341,7 @@ create table bw_dma_meter (
 /*==============================================================*/
 create table bw_eff_decay (
    wid                  SERIAL not null,
-   sizeId               VARCHAR(45)          not null,
+   sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
    totalFwd             DECIMAL(15,3)        null,
@@ -378,7 +378,7 @@ create table bw_eff_meter (
    realWater            DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
-   sizeId               VARCHAR(45)          not null,
+   sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
    decayEff             VARCHAR(20)          null,
@@ -511,7 +511,7 @@ create table bw_meter (
    q2r                  DECIMAL(15,3)        null,
    q3r                  DECIMAL(15,3)        null,
    q4r                  DECIMAL(15,3)        null,
-   sizeId               VARCHAR(45)          not null,
+   sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          null,
    modelSize            VARCHAR(45)          null,
    typeId               VARCHAR(45)          null,
@@ -1120,7 +1120,7 @@ create table vc_meter_verify_result (
    factoryName          varchar(100)         null,
    meterName            varchar(100)         null,
    meterType            varchar(100)         null,
-   sizeId               varchar(20)          null,
+   sizeId               INT4                 null,
    modelSize            varchar(100)         null,
    portType             varchar(100)         null,
    verifyRule           varchar(100)         null,
@@ -1278,7 +1278,7 @@ create table vc_report_verify_result (
    factoryName          varchar(100)         null,
    meterName            varchar(100)         null,
    meterType            varchar(100)         null,
-   sizeId               varchar(20)          null,
+   sizeId               INT4                 null,
    modelSize            varchar(100)         null,
    portType             varchar(100)         null,
    verifyRule           varchar(100)         null,

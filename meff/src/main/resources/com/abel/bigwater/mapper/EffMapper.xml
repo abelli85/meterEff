@@ -114,8 +114,7 @@
     </insert>
 
     <delete id="deleteEffTask" parameterType="com.abel.bigwater.api.EffParam">
-        DELETE FROM bw_eff_task
-        USING bw_eff_task t
+        DELETE FROM bw_eff_task t
         <where>
             <if test="firmId != null">
                 t.firmId LIKE #{firmId}
@@ -170,7 +169,7 @@
                 t.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
-                AND t.taskId = #{taskId}
+                AND m.taskId = #{taskId}
             </if>
 
             <choose>
@@ -309,18 +308,133 @@
         </foreach>
     </insert>
 
+    <update id="updateEffMeter" parameterType="com.abel.bigwater.api.EffParam">
+        UPDATE bw_eff_meter
+        <set>
+            meterName = tmp.meterName
+            , taskName = tmp.taskName
+            , taskStart = tmp.taskStart
+            , taskEnd = tmp.taskEnd
+            , runTime = tmp.runTime
+            , runDuration = tmp.runDuration
+            , taskResult = tmp.taskResult
+            , meterWater = tmp.meterWater
+            , q0v = tmp.q0v
+            , q1v = tmp.q1v
+            , q2v = tmp.q2v
+            , q3v = tmp.q3v
+            , q4v = tmp.q4v
+            , qtv = tmp.qtv
+            , meterEff = tmp.meterEff
+            , realWater = tmp.realWater
+            , startFwd = tmp.startFwd
+            , endFwd = tmp.endFwd
+            , sizeId = tmp.sizeId
+            , sizeName = tmp.sizeName
+            , modelSize = tmp.modelSize
+            , decayEff = tmp.decayEff
+            , q4 = tmp.q4
+            , q3 = tmp.q3
+            , q3toq1 = tmp.q3toq1
+            , q4toq3 = tmp.q4toq3
+            , q2toq1 = tmp.q2toq1
+            , qr1 = tmp.qr1
+            , qr2 = tmp.qr2
+            , qr3 = tmp.qr3
+            , qr4 = tmp.qr4
+        </set>
+        FROM (
+        VALUES
+        <foreach collection="meterList" item="m1" separator=",">
+            (#{m1.taskId}
+            , #{m1.meterId}
+            , #{m1.meterName}
+            , #{m1.taskName}
+            , #{m1.taskStart}
+            , #{m1.taskEnd}
+            , #{m1.runTime}
+            , #{m1.runDuration}
+            , #{m1.taskResult}
+            , #{m1.meterWater}
+            , #{m1.q0v}
+            , #{m1.q1v}
+            , #{m1.q2v}
+            , #{m1.q3v}
+            , #{m1.q4v}
+            , #{m1.qtv}
+            , #{m1.meterEff}
+            , #{m1.realWater}
+            , #{m1.startFwd}
+            , #{m1.endFwd}
+            , #{m1.sizeId}
+            , #{m1.sizeName}
+            , #{m1.modelSize}
+            , #{m1.decayEff}
+            , #{m1.q4}
+            , #{m1.q3}
+            , #{m1.q3toq1}
+            , #{m1.q4toq3}
+            , #{m1.q2toq1}
+            , #{m1.qr1}
+            , #{m1.qr2}
+            , #{m1.qr3}
+            , #{m1.qr4})
+            )
+        </foreach>
+        AS tmp (
+        taskId
+        , meterId
+        , meterName
+        , taskName
+        , taskStart
+        , taskEnd
+        , runTime
+        , runDuration
+        , taskResult
+        , meterWater
+        , q0v
+        , q1v
+        , q2v
+        , q3v
+        , q4v
+        , qtv
+        , meterEff
+        , realWater
+        , startFwd
+        , endFwd
+        , sizeId
+        , sizeName
+        , modelSize
+        , decayEff
+        , q4
+        , q3
+        , q3toq1
+        , q4toq3
+        , q2toq1
+        , qr1
+        , qr2
+        , qr3
+        , qr4
+        )
+        <where>
+            bw_eff_meter.taskId = tmp.taskId
+            AND bw_eff_meter.meterId = tmp.meterId
+        </where>
+    </update>
+
     <delete id="deleteEffMeter" parameterType="com.abel.bigwater.api.EffParam">
         DELETE
-        FROM bw_eff_meter
-        USING bw_eff_meter m
-        JOIN bw_eff_task t on m.taskId = t.taskId
+        FROM bw_eff_meter m
+        USING bw_eff_task t
 
         <where>
+            m.taskId = t.taskId
+
             <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                AND t.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
-                AND t.taskId = #{taskId}
+                AND m.taskId = #{taskId}
             </if>
 
             <choose>
@@ -476,7 +590,7 @@
 
     </select>
 
-    <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam">
+    <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam" keyColumn="wid" keyProperty="wid">
         INSERT INTO
         bw_meter_eff_point(
         meterId
@@ -490,8 +604,8 @@
         , pointWater
         , realWater
         ) VALUES
-        <foreach collection="pointList.size > 0" item="pt" open="(" close=")" separator=",">
-            #{pt.meterId}
+        <foreach collection="pointEffList" item="pt" separator=",">
+            (#{pt.meterId}
             , #{pt.taskId}
             , #{pt.pointName}
             , #{pt.pointNo}
@@ -500,20 +614,21 @@
             , #{pt.highLimit}
             , #{pt.lowLimit}
             , #{pt.pointWater}
-            , #{pt.realWater}
+            , #{pt.realWater})
         </foreach>
     </insert>
 
     <delete id="deleteEffPoint" parameterType="com.abel.bigwater.api.EffParam">
         DELETE
-        FROM bw_meter_eff_point
-        USING bw_meter_eff_point p
-        JOIN bw_eff_meter m on p.meterId = m.meterId
+        FROM bw_meter_eff_point p
+        USING bw_eff_meter m
         JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
+            p.meterId = m.meterId
+
             <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                AND t.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
                 AND t.taskId = #{taskId}

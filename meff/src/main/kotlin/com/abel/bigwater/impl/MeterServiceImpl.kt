@@ -47,7 +47,7 @@ open class MeterServiceImpl : MeterService {
             holder.list.orEmpty().plus(holder.single!!)
         list.forEach {
             if (it.meterId.isNullOrBlank() || it.meterName.isNullOrBlank()
-                    || it.sizeId.isNullOrBlank() || it.sizeName.isNullOrBlank()) {
+                    || it.sizeId == null || it.sizeName.isNullOrBlank()) {
                 return BwResult(2, "水表ID/名称/口径不能为空: ${it.meterId}")
             }
         }
@@ -146,7 +146,7 @@ open class MeterServiceImpl : MeterService {
             holder.list.orEmpty().plus(holder.single!!)
         list.forEach {
             if (it.meterId.isNullOrBlank() || it.meterName.isNullOrBlank()
-                    || it.sizeId.isNullOrBlank() || it.sizeName.isNullOrBlank()) {
+                    || it.sizeId == null || it.sizeName.isNullOrBlank()) {
                 return BwResult(2, "水表ID/名称/口径不能为空: ${it.meterId}")
             }
         }

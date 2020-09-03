@@ -51,7 +51,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
-            sizeId = "100"
+            sizeId = 100
             sizeName = "DN100"
         }
         try {
@@ -72,7 +72,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
-            sizeId = "100"
+            sizeId = 100
             sizeName = "DN100"
         }
         try {
@@ -103,7 +103,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
-            sizeId = "100"
+            sizeId = 100
             sizeName = "DN100"
         }
         try {
@@ -119,7 +119,7 @@ class MeterServiceImplTest {
             }
 
             meter.apply {
-                sizeId = "150"
+                sizeId = 150
                 userCode = "123456"
                 meterCode = "12345678"
             }
@@ -149,7 +149,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
-            sizeId = "100"
+            sizeId = 100
             sizeName = "DN100"
             meterLoc = GeometryFactory().createPoint(Coordinate(22.1, 123.67)).toText()
         }
@@ -166,7 +166,7 @@ class MeterServiceImplTest {
             }
 
             meter.apply {
-                sizeId = "150"
+                sizeId = 150
                 userCode = "123456"
                 meterCode = "12345678"
             }

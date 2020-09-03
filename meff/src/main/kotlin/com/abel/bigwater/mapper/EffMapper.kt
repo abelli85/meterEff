@@ -19,6 +19,8 @@ interface EffMapper {
 
     fun insertEffMeter(p: EffParam): Int
 
+    fun updateEffMeter(p: EffParam): Int
+
     fun deleteEffMeter(p: EffParam): Int
 
     fun listEffPoint(p: EffParam): List<EffMeterPoint>

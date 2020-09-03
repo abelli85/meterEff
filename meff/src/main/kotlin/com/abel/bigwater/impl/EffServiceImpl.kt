@@ -108,6 +108,7 @@ class EffServiceImpl : EffService {
 
     /**
      * 获取单个计量效率分析任务的详情
+     * @see EffParam.taskId
      */
     override fun fetchEffTask(holder: BwHolder<EffParam>): BwResult<EffTask> {
         if (holder.lr?.sessionId.isNullOrBlank() || holder.single?.taskId == null) {
@@ -148,42 +149,262 @@ class EffServiceImpl : EffService {
      * 列出水表的分析结果
      */
     override fun listMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to list eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_LIST_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val ms = effMapper!!.listEffMeter(dp)
+            return BwResult(ms).apply {
+                error = "水表计量效率列表： ${ms.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 列出水表的分析结果
+     * 添加水表的分析结果
+     * @see EffParam.meterList
      */
     override fun addMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.meterList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to add eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        dp.meterList!!.forEach {
+            if (it.taskId == null || it.meterId.isNullOrBlank()
+                    || it.taskName.isNullOrBlank() || it.meterName.isNullOrBlank()
+                    || it.taskStart == null || it.taskEnd == null
+                    || it.sizeId == null || it.sizeName.isNullOrBlank()) {
+                return BwResult(2, "任务ID/水表ID/任务名称/水表名称/起至日期/口径 不能为空: ${it.meterId}")
+            }
+        }
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_ADD_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var mlist = dp.meterList!!
+            do {
+                val bp = EffParam().apply {
+                    meterList = mlist.take(50)
+                }
+                mlist = mlist.drop(50)
+
+                effMapper!!.insertEffMeter(bp)
+            } while (mlist.isNotEmpty())
+
+            return BwResult(0, "添加水表计量效率： ${dp.meterList?.size}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 列出水表的分析结果
+     * 删除水表的分析结果
+     * @see EffParam.taskId
+     * @see EffParam.meterId 或
+     * @see EffParam.meterIdList
      */
     override fun deleteMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to delete eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_DELETE_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var mlist = if (dp.meterId.isNullOrBlank()) dp.meterIdList!!
+            else dp.meterIdList.orEmpty().plus(dp.meterId!!)
+
+            var cnt = 0
+            do {
+                val bp = EffParam().apply {
+                    taskId = dp.taskId
+                    meterIdList = mlist.take(500)
+                }
+                mlist = mlist.drop(500)
+
+                cnt += effMapper!!.deleteEffMeter(bp)
+            } while (mlist.isNotEmpty())
+
+            return BwResult(0, "删除水表计量效率： ${cnt}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 列出水表的分析结果
+     * 修改水表的分析结果
+     * @see EffParam.taskId
+     * @see EffParam.meterList
      */
     override fun updateMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.taskId == null || holder.single?.meterList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+        holder.single?.meterList!!.forEach {
+            if (it.taskId == null || it.meterId.isNullOrBlank()
+                    || it.meterName.isNullOrBlank() || it.taskName.isNullOrBlank()
+                    || it.taskStart == null || it.taskEnd == null
+                    || it.sizeId == null || it.sizeName.isNullOrBlank()) {
+                return BwResult(2, "$ERR_PARAM: ${it.meterId}")
+            }
+        }
+
+        lgr.info("${holder.lr?.userId} try to update eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_UPDATE_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var mlist = dp.meterList!!
+            var cnt = 0
+            do {
+                val bp = EffParam().apply {
+                    taskId = dp.taskId
+                    meterList = mlist.take(50)
+                    meterIdList = meterList!!.map { it.meterId!! }
+                }
+                mlist = mlist.drop(50)
+
+                cnt += effMapper!!.deleteEffMeter(bp)
+                effMapper!!.insertEffMeter(bp)
+            } while (mlist.isNotEmpty())
+
+            return BwResult(0, "修改水表计量效率： ${cnt}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
      * 获取单个水表的分析详情
+     * @see EffParam.taskId
+     * @see EffParam.meterId
      */
     override fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.taskId == null || holder.single?.meterId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to fetch eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_FETCH_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val em = effMapper!!.listEffMeter(dp).firstOrNull()?.apply {
+                pointEffList = effMapper!!.listEffPoint(dp)
+            } ?: return BwResult(3, "水表计量效率未找到:${dp.taskId} / ${dp.meterId}")
+
+            return BwResult(em)
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 单个水表的分析详情
+     * 修改单个水表的分析详情
+     * @see EffParam.taskId
+     * @see EffParam.meterId
+     * @see EffParam.pointEffList
      */
     override fun replaceMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.taskId == null || holder.single?.meterId.isNullOrBlank()
+                || holder.single?.pointEffList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to replace eff-meter point-list: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_REPLACE_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            effMapper!!.listEffMeter(EffParam().apply {
+                taskId = dp.taskId
+                meterId = dp.meterId
+            }).firstOrNull() ?: return BwResult(3, "水表计量效率不存在: ${dp.taskId}/${dp.meterId}")
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+            val cnt1 = effMapper!!.deleteEffPoint(dp)
+            val cnt2 = effMapper!!.insertEffPoint(dp)
+            return BwResult(0, "水表计量效率修改:$cnt1 / $cnt2 / ${dp.taskId} / ${dp.meterId}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     companion object {
