@@ -152,9 +152,37 @@ class EffServiceImpl : EffService {
     }
 
     /**
+     * 列出水表的分析结果
+     */
+    override fun addMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * 列出水表的分析结果
+     */
+    override fun deleteMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * 列出水表的分析结果
+     */
+    override fun updateMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        TODO("Not yet implemented")
+    }
+
+    /**
      * 获取单个水表的分析详情
      */
     override fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * 单个水表的分析详情
+     */
+    override fun replaceMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
         TODO("Not yet implemented")
     }
 

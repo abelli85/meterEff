@@ -100,8 +100,8 @@ DELETE FROM bw_firm WHERE firmId LIKE '76%';
 INSERT INTO bw_firm(firmId, firmName, firmLoc)
 VALUES('76', '福州市自来水公司', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point);
 INSERT INTO bw_firm(firmId, firmName, firmLoc) VALUES
-('7620', '20所', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
-('7621', '21所', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
-('7622', '22所', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
-('7623', '23所', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
-('7625', '25所', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point);
+('7620', '供水服务一公司（鼓楼-20）', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
+('7621', '供水服务三公司（晋安-21）', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
+('7622', '供水服务四公司（仓山-22）', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
+('7623', '供水服务五公司（金山-23）', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point),
+('7625', '供水服务二公司（台江-25）', st_geomFromText('POINT(119.31145882543946 26.07921305191548)')::point);

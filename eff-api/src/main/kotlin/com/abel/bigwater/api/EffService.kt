@@ -17,14 +17,16 @@ interface EffService {
         const val BASE_PATH = "/eff"
 
         const val PATH_CREATE_TASK = "/createEffTask"
-
         const val PATH_LIST_TASK = "/listEffTask"
-
         const val PATH_FETCH_TASK = "/fetchEffTask"
 
         const val PATH_LIST_METER_EFF = "/listMeterEff"
+        const val PATH_ADD_METER_EFF = "/addMeterEff"
+        const val PATH_DELETE_METER_EFF = "/deleteMeterEff"
+        const val PATH_UPDATE_METER_EFF = "/updateMeterEff"
 
         const val PATH_FETCH_METER_EFF = "/fetchMeterEff"
+        const val PATH_REPLACE_METER_EFF = "/replaceMeterEff"
     }
 
     /**
@@ -56,9 +58,37 @@ interface EffService {
     fun listMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
+     * 列出水表的分析结果
+     */
+    @POST
+    @Path(PATH_ADD_METER_EFF)
+    fun addMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 列出水表的分析结果
+     */
+    @POST
+    @Path(PATH_DELETE_METER_EFF)
+    fun deleteMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 列出水表的分析结果
+     */
+    @POST
+    @Path(PATH_UPDATE_METER_EFF)
+    fun updateMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
      * 获取单个水表的分析详情
      */
     @POST
     @Path(PATH_FETCH_METER_EFF)
     fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 单个水表的分析详情
+     */
+    @POST
+    @Path(PATH_REPLACE_METER_EFF)
+    fun replaceMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 }
