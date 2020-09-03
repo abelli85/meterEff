@@ -142,7 +142,7 @@ open class VcMeterVerify : BwBase() {
      * @see VcCode
      * @see VcCodeValue
      */
-    var sizeId: String? = null
+    var sizeId: Int? = null
 
     /**
      * 口径名称

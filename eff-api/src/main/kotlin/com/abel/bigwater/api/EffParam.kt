@@ -72,7 +72,7 @@ class EffParam : BaseParam() {
      * 口径
      * the size to set
      */
-    var sizeId: String? = null
+    var sizeId: Int? = null
 
     /**
      * 口径

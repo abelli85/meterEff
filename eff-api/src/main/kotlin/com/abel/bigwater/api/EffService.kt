@@ -45,6 +45,7 @@ interface EffService {
 
     /**
      * 获取单个计量效率分析任务的详情
+     * @see EffParam.taskId
      */
     @POST
     @Path(PATH_FETCH_TASK)
@@ -58,21 +59,27 @@ interface EffService {
     fun listMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
-     * 列出水表的分析结果
+     * 添加水表的分析结果
+     * @see EffParam.meterList
      */
     @POST
     @Path(PATH_ADD_METER_EFF)
     fun addMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
-     * 列出水表的分析结果
+     * 删除水表的分析结果
+     * @see EffParam.taskId
+     * @see EffParam.meterId 或
+     * @see EffParam.meterIdList
      */
     @POST
     @Path(PATH_DELETE_METER_EFF)
     fun deleteMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
-     * 列出水表的分析结果
+     * 修改水表的分析结果
+     * @see EffParam.taskId
+     * @see EffParam.meterList
      */
     @POST
     @Path(PATH_UPDATE_METER_EFF)
@@ -80,13 +87,18 @@ interface EffService {
 
     /**
      * 获取单个水表的分析详情
+     * @see EffParam.taskId
+     * @see EffParam.meterId
      */
     @POST
     @Path(PATH_FETCH_METER_EFF)
     fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
-     * 单个水表的分析详情
+     * 修改单个水表的分析详情
+     * @see EffParam.taskId
+     * @see EffParam.meterId
+     * @see EffParam.pointList
      */
     @POST
     @Path(PATH_REPLACE_METER_EFF)
