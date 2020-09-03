@@ -34,7 +34,7 @@ open class VcMeterVerifyPoint : BwBase() {
     /**
      * 流量点编号, 1~9.
      */
-    var pointIdx: Int? = null
+    var pointNo: Int? = null
 
     /**
      * 流量点

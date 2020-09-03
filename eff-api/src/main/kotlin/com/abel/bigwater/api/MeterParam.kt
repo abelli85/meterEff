@@ -55,6 +55,28 @@ data class MeterParam(var meterId: String? = null,
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
     var installDate2: Date? = null
 
+    var instrumentNo: String? = null
+
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
+    var verifyDate: Date? = null
+
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
+    var verifyDateStart: Date? = null
+
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
+    var verifyDateEnd: Date? = null
+
+    /**
+     * 委托编号
+     */
+    var batchId: String? = null
+
     var index: Int = 0
     var rows: Int = 20000
 

@@ -410,6 +410,8 @@ open class VcMeterVerify : BwBase() {
     @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var deliverDate: Date? = null
 
+    var dataSrc: String? = null
+
     /**
      * 不合格原因，包括外观、机电转换、压力、示值 4类
      */

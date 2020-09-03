@@ -1,5 +1,7 @@
 package com.abel.bigwater.model
 
+import com.abel.bigwater.model.eff.VcMeterVerify
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -363,6 +365,16 @@ open class BwMeter : BwBase() {
      * 水表描述.
      */
     var memo: String? = null
+
+    /**
+     * 记录检定结果
+     */
+    var verifyList: List<VcMeterVerify>? = null
+
+    /**
+     * 记录检定点
+     */
+    var pointList: List<VcMeterVerifyPoint>? = null
 
     override fun hashCode(): Int {
         return meterId?.hashCode() ?: 0

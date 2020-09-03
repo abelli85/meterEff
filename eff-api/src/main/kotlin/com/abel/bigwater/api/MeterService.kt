@@ -19,6 +19,7 @@ interface MeterService {
         const val PATH_DELETE_ZONE_METER = "/delete"
         const val PATH_UPDATE_ZONE_METER = "/update"
         const val PATH_LIST_ZONE_METER = "/list"
+        const val PATH_FETCH_ZONE_METER = "/fetchMeter"
         const val PATH_UPDATE_METER_LOC = "/updateMeterLoc"
 
         const val PATH_LIST_DMA = "/listDma"
@@ -93,6 +94,20 @@ interface MeterService {
     @POST
     @Path(PATH_LIST_ZONE_METER)
     fun listMeter(holder: BwHolder<MeterParam>): BwResult<ZoneMeter>
+
+    /**
+     * 大表详情.
+     * 如果填充了如下字段, 则返回的水表包含DMA信息:
+     * @see MeterParam.dmaId
+     * @see MeterParam.dmaName
+     * @see MeterParam.dmaIdList
+     * 否则, 返回的水表包含片区信息(Zone)
+     *
+     * result#list holds the list of meters.
+     */
+    @POST
+    @Path(PATH_FETCH_ZONE_METER)
+    fun fetchMeter(holder: BwHolder<MeterParam>): BwResult<ZoneMeter>
 
     /**
      * DMA列表
