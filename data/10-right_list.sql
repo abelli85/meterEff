@@ -202,7 +202,9 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/delete', '删除水�
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/update', '修改水表');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/updateMeterLoc', '修改水表坐标');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/list', '列举水表'),
-                                                  ('/meter/fetchMeter', '大表详情');
+                                                  ('/meter/fetchMeter', '大表详情'),
+                                                  ('/meter/addMeterPoint', '增加检定点'),
+                                                  ('/meter/removeMeterPoint', '删除检定点');
 
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/listDma', '列举DMA');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/insertDma', '创建DMA');
@@ -715,7 +717,9 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/del
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/update');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/updateMeterLoc');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/list'),
-                                                      ('POWER_USER', '/meter/fetchMeter');
+                                                      ('POWER_USER', '/meter/fetchMeter'),
+                                                      ('POWER_USER', '/meter/addMeterPoint'),
+                                                      ('POWER_USER', '/meter/removeMeterPoint');
 
 -- dma
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/listDma');

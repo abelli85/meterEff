@@ -68,8 +68,8 @@ open class MeterServiceImpl : MeterService {
                 }
 
                 meterMapper!!.insertMeter(it)
-                meterMapper!!.insertMeterVerify(it)
-                meterMapper!!.insertVerifyPoint(it)
+                if (!it.verifyList.isNullOrEmpty()) meterMapper!!.insertMeterVerify(it)
+                if (!it.pointList.isNullOrEmpty()) meterMapper!!.insertVerifyPoint(it)
             }
 
             return BwResult(holder.single!!).apply {
@@ -177,6 +177,115 @@ open class MeterServiceImpl : MeterService {
 
             return BwResult(holder.single!!).apply {
                 error = "更新水表： $cnt"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 增加检定点
+     * holder#single holds the meter to be updated.
+     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.pointList
+     */
+    override fun addMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank() || (
+                        holder.single?.meterId.isNullOrBlank())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to add verify: ${JSON.toJSONString(holder.single)}")
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_ADD_METER_POINT
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var cnt1 = 0
+            var cnt2 = 0
+            holder.single?.also {
+                // 只能更新 所在机构及分公司
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+
+                val meter = meterMapper!!.selectMeterDma(MeterParam(
+                        meterId = it.meterId,
+                        firmId = it.firmId
+                )).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
+
+                if (!it.verifyList.isNullOrEmpty()) {
+                    cnt1 = meterMapper!!.insertMeterVerify(it)
+                }
+                if (!it.pointList.isNullOrEmpty()) {
+                    cnt2 = meterMapper!!.insertVerifyPoint(it)
+                }
+            }
+
+            return BwResult(holder.single!!).apply {
+                error = "增加检定点： ${cnt1} / ${cnt2}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 删除检定点
+     * holder#single holds the meter to be updated.
+     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.pointList
+     */
+    override fun removeMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank() || (
+                        holder.single?.meterId.isNullOrBlank())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to add verify: ${JSON.toJSONString(holder.single)}")
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_ADD_METER_POINT
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var cnt1 = 0
+            var cnt2 = 0
+            holder.single?.also {
+                // 只能更新 所在机构及分公司
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+
+                val meter = meterMapper!!.selectMeterDma(MeterParam(
+                        meterId = it.meterId,
+                        firmId = it.firmId
+                )).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
+
+                if (!it.pointList.isNullOrEmpty()) {
+                    cnt2 = meterMapper!!.deleteVerifyPoint(MeterParam().apply {
+                        meterId = it.meterId
+                        pointIdList = it.pointList?.map { p -> p.pointId ?: 0 }
+                    })
+                }
+
+                if (!it.verifyList.isNullOrEmpty()) {
+                    cnt1 = meterMapper!!.deleteMeterVerify(MeterParam().apply {
+                        meterId = it.meterId
+                        verifyIdList = it.verifyList?.map { v -> v.verifyId ?: 0 }
+                    })
+                }
+            }
+
+            return BwResult(holder.single!!).apply {
+                error = "移除检定点： ${cnt1} / ${cnt2}"
             }
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);

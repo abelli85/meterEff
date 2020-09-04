@@ -12,6 +12,7 @@ import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.sun.xml.internal.ws.server.EndpointFactory
 import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.Test
@@ -51,29 +52,6 @@ class MeterServiceImplTest {
 
     @Test
     fun testInsertMeter() {
-        val meter = ZoneMeter().apply {
-            meterId = "test-meterId"
-            meterName = "测试水表01"
-            sizeId = 100
-            sizeName = "DN100"
-
-            verifyList = listOf(
-                    VcMeterVerify().also {
-                        it.meterId = meterId
-                        it.batchId = meterId
-                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
-                    }
-            )
-
-            pointList = listOf(
-                    VcMeterVerifyPoint().also {
-                        it.meterId = meterId
-                        it.pointFlow = 1.25
-                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
-                    }
-            )
-        }
-
         try {
             val login = TestHelper.login(loginService).single ?: fail("fail to login")
             val holder = BwHolder(TestHelper.buildLoginRequest(login), meter)
@@ -318,16 +296,96 @@ class MeterServiceImplTest {
                 assertEquals(0, it.code)
             }
         } finally {
-            val cnt = meterMapper!!.deleteDma(MeterParam(dmaId = d.dmaId))
+            val cnt = meterMapper!!.deleteDma(MeterParam(dmaId = d.dmaId,
+                    firmId = "%"))
             lgr.info("cleared dma: {}, {}", cnt, d.dmaId)
         }
 
+    }
+
+    @Test
+    fun changeMeterPoint() {
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), meter)
+
+            meterService!!.insertMeter(holder).also { r1 ->
+                lgr.info("insert result: {}", JSON.toJSONString(r1, true))
+                assertEquals(0, r1.code)
+            }
+
+            meterService!!.addMeterPoint(BwHolder(TestHelper.buildLoginRequest(login), ZoneMeter().apply {
+                meterId = meter.meterId
+                verifyList = listOf(VcMeterVerify().also {
+                    it.meterId = meter.meterId
+                    it.batchId = meter.meterId
+                    it.verifyDate = LocalDate(2020, 8, 1).toDate()
+                })
+
+                pointList = listOf(
+                        VcMeterVerifyPoint().also {
+                            it.meterId = meter.meterId
+                            it.pointFlow = 2.0
+                            it.verifyDate = LocalDate(2020, 8, 1).toDate()
+                        },
+                        VcMeterVerifyPoint().also {
+                            it.meterId = meter.meterId
+                            it.pointFlow = 2.5
+                            it.verifyDate = LocalDate(2020, 8, 1).toDate()
+                        }
+                )
+            }))
+
+            meterService!!.fetchMeter(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                meterId = meter.meterId
+            })).also {
+                lgr.info("meter detail: {}", JSON.toJSONString(it))
+                assertEquals(0, it.code)
+
+                meterService!!.removeMeterPoint(BwHolder(TestHelper.buildLoginRequest(login), ZoneMeter().apply {
+                    meterId = meter.meterId
+                    verifyList = it.single?.verifyList
+                    pointList = it.single?.pointList
+                })).also { r2 ->
+                    lgr.info("remove point: {}", JSON.toJSONString(r2, true))
+                    assertEquals(0, r2.code)
+                }
+            }
+        } finally {
+            meterMapper!!.deleteVerifyPoint(MeterParam(meterId = meter.meterId))
+            meterMapper!!.deleteMeterVerify(MeterParam(meterId = meter.meterId))
+            val cnt = meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
+            lgr.info("cleared meter: {}, {}", cnt, meter.meterId)
+        }
     }
 
     companion object {
         open class HolderMeter : BwHolder<ZoneMeter>()
 
         private val lgr = LoggerFactory.getLogger(MeterServiceImplTest::class.java)
+
+        private val meter = ZoneMeter().apply {
+            meterId = "test-meterId"
+            meterName = "测试水表01"
+            sizeId = 100
+            sizeName = "DN100"
+
+            verifyList = listOf(
+                    VcMeterVerify().also {
+                        it.meterId = meterId
+                        it.batchId = meterId
+                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
+                    }
+            )
+
+            pointList = listOf(
+                    VcMeterVerifyPoint().also {
+                        it.meterId = meterId
+                        it.pointFlow = 1.25
+                        it.verifyDate = LocalDate(2020, 7, 1).toDate()
+                    }
+            )
+        }
 
         @BeforeClass
         @JvmStatic

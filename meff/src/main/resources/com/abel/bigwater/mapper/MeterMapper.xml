@@ -156,6 +156,10 @@
                     </foreach>
                 </otherwise>
             </choose>
+
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
         </where>
     </delete>
 
@@ -419,8 +423,20 @@
         DELETE
         FROM vc_meter_verify_result v
         <where>
+            <choose>
+                <when test="verifyIdList != null">
+                    AND v.wid IN
+                    <foreach collection="verifyIdList" item="vid" open="(" separator="," close=")">
+                        #{vid}
+                    </foreach>
+                </when>
+                <when test="verifyId != null">
+                    AND v.wid = #{verifyId}
+                </when>
+            </choose>
+
             <if test="batchId != null">
-                (v.batchId IS NULL OR v.batchId LIKE #{batchId})
+                AND (v.batchId IS NULL OR v.batchId LIKE #{batchId})
             </if>
 
             <choose>
@@ -486,7 +502,7 @@
         ,p.boardMemo
         ,p.itemId
         FROM vc_meter_verify_point p
-        LEFT JOIN vc_meter_verify_result v ON (p.meterId = v.meterId)
+        LEFT JOIN vc_meter_verify_result v ON (p.meterId = v.meterId AND p.verifyDate = v.verifyDate)
         <where>
             <if test="batchId != null">
                 (v.batchId IS NULL OR v.batchId LIKE #{batchId})
@@ -587,12 +603,18 @@
     <delete id="deleteVerifyPoint" parameterType="com.abel.bigwater.api.MeterParam">
         DELETE
         FROM vc_meter_verify_point p
-        USING vc_meter_verify_result v
         <where>
-            p.meterId = v.meterId
-            <if test="batchId != null">
-                AND (v.batchId IS NULL OR v.batchId LIKE #{batchId})
-            </if>
+            <choose>
+                <when test="pointIdList != null">
+                    AND p.wid IN
+                    <foreach collection="pointIdList" item="ptid" separator="," open="(" close=")">
+                        #{ptid}
+                    </foreach>
+                </when>
+                <when test="pointId != null">
+                    AND p.wid = #{pointId}
+                </when>
+            </choose>
 
             <choose>
                 <when test="meterId != null">
@@ -1263,7 +1285,7 @@
         DELETE
         FROM bw_dma
         WHERE dmaId = #{dmaId}
-          AND firmId = #{firmId}
+          AND firmId LIKE #{firmId}
     </delete>
 
     <insert id="linkMeterDma" parameterType="com.abel.bigwater.model.BwDma">
