@@ -77,6 +77,26 @@ data class MeterParam(var meterId: String? = null,
      */
     var batchId: String? = null
 
+    /**
+     * 检定自动编号
+     */
+    var verifyId: Long? = null
+
+    /**
+     * 检定自动编号
+     */
+    var verifyIdList: List<Long>? = null
+
+    /**
+     * 自动标示编号
+     */
+    var pointId: Long? = null
+
+    /**
+     * 自动标示编号
+     */
+    var pointIdList: List<Long>? = null
+
     var index: Int = 0
     var rows: Int = 20000
 

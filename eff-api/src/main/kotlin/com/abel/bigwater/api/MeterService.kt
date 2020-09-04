@@ -20,6 +20,8 @@ interface MeterService {
         const val PATH_UPDATE_ZONE_METER = "/update"
         const val PATH_LIST_ZONE_METER = "/list"
         const val PATH_FETCH_ZONE_METER = "/fetchMeter"
+        const val PATH_ADD_METER_POINT = "/addMeterPoint"
+        const val PATH_REMOVE_METER_POINT = "/removeMeterPoint"
         const val PATH_UPDATE_METER_LOC = "/updateMeterLoc"
 
         const val PATH_LIST_DMA = "/listDma"
@@ -72,6 +74,26 @@ interface MeterService {
     @POST
     @Path(PATH_UPDATE_ZONE_METER)
     fun updateMeter(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter>
+
+    /**
+     * 增加检定点
+     * holder#single holds the meter to be updated.
+     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.pointList
+     */
+    @POST
+    @Path(PATH_ADD_METER_POINT)
+    fun addMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter>
+
+    /**
+     * 删除检定点
+     * holder#single holds the meter to be updated.
+     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.pointList
+     */
+    @POST
+    @Path(PATH_REMOVE_METER_POINT)
+    fun removeMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter>
 
     /**
      * 更新大表的坐标，设置meter#{id, meterLoc}即可。
