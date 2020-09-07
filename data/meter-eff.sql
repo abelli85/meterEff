@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/9/7 11:51:46                            */
+/* Created on:     2020/9/7 17:14:39                            */
 /*==============================================================*/
 
 
@@ -164,17 +164,6 @@ drop index idx_work_holi_date;
 
 drop table vc_workday_holiday;
 
-drop type serial8;
-
-/*==============================================================*/
-/* Domain: serial8                                              */
-/*==============================================================*/
-create type serial8 (
-);
-
-comment on type serial8 is
-'remove it in SQL!!';
-
 /*==============================================================*/
 /* Table: bw_config                                             */
 /*==============================================================*/
@@ -239,8 +228,8 @@ create table bw_dma (
    dmaId                VARCHAR(45)          not null,
    dmaName              VARCHAR(45)          not null,
    location             VARCHAR(200)         null,
-   dmaLoc               geometry             null,
-   dmaRegion            geometry             null,
+   dmaLoc               geography            null,
+   dmaRegion            geography            null,
    firmId               VARCHAR(45)          not null,
    dmaType              VARCHAR(45)          null,
    showType             VARCHAR(45)          null,
@@ -480,8 +469,8 @@ create table bw_firm (
    firmId               VARCHAR(45)          not null,
    firmName             VARCHAR(45)          not null,
    firmCity             VARCHAR(100)         null,
-   firmLoc              geometry             null,
-   firmRegion           geometry             null,
+   firmLoc              geography            null,
+   firmRegion           geography            null,
    smallIcon            VARCHAR(200)         null,
    largeIcon            VARCHAR(200)         null,
    grade                INT4                 null,
@@ -553,7 +542,7 @@ create table bw_meter (
    powerType            VARCHAR(45)          null,
    meterStatus          VARCHAR(45)          null,
    adminMobile          VARCHAR(45)          null,
-   meterLoc             geometry             null,
+   meterLoc             geography            null,
    lastCalib            TIMESTAMP WITH TIME ZONE null,
    memo                 VARCHAR(45)          null,
    createBy             VARCHAR(45)          null,
@@ -808,12 +797,12 @@ create table bw_user (
    emailToken           VARCHAR(200)         null,
    userToken            VARCHAR(200)         null,
    lastLoginIp          VARCHAR(200)         null,
-   lastLoginLoc         geometry             null,
+   lastLoginLoc         geography            null,
    loginCount           INT4                 null,
    lastLoginTime        TIMESTAMP WITH TIME ZONE null,
    lastOperTime         TIMESTAMP WITH TIME ZONE null,
    lastOperIp           VARCHAR(200)         null,
-   lastOperLoc          geometry             null,
+   lastOperLoc          geography            null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
@@ -832,7 +821,7 @@ create table bw_user_login (
    loginIp              VARCHAR(200)         null,
    loginHost            VARCHAR(200)         null,
    loginAddr            VARCHAR(200)         null,
-   loginLoc             geometry             null,
+   loginLoc             geography            null,
    logoutTime           TIMESTAMP WITH TIME ZONE null,
    logoutIp             VARCHAR(200)         null,
    logoutLoc            VARCHAR(200)         null,
@@ -873,7 +862,7 @@ create table bw_user_oper (
    loginIp              VARCHAR(45)          null,
    loginHost            VARCHAR(45)          null,
    loginAddr            VARCHAR(45)          null,
-   loginLoc             geometry             null,
+   loginLoc             geography            null,
    clientIp             VARCHAR(45)          null,
    serverIp             VARCHAR(45)          null,
    operCity             VARCHAR(45)          null,
@@ -944,8 +933,8 @@ create table bw_zone (
    resiMeterCount       INT4                 null,
    onlineBigMeterCount  INT4                 null,
    onlineResiMeterCount INT4                 null,
-   zoneLoc              geometry             null,
-   zoneRegion           geometry             null,
+   zoneLoc              geography            null,
+   zoneRegion           geography            null,
    firmId               VARCHAR(45)          not null,
    leafable             INT4                 null,
    createBy             VARCHAR(45)          null,
@@ -994,7 +983,7 @@ create table vc_code_value (
    codeId               varchar(20)          not null,
    valueId              varchar(20)          not null,
    valueName            varchar(40)          null,
-   valueOrder           int                  null,
+   valueOrder           INT4                 null,
    valueType            varchar(20)          null,
    preInit              BOOL                 null,
    disabled             BOOL                 null,
