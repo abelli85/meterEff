@@ -77,8 +77,8 @@
     <select id="selectFirm" resultType="com.abel.bigwater.model.BwFirm">
         SELECT f.firmId
         ,f.firmName
-        ,f.firmLoc
-        ,f.firmRegion
+        ,ST_asText(f.firmLoc) AS firmLoc
+        ,ST_asText(f.firmRegion) AS firmRegion
         ,f.grade
         ,f.smallIcon
         ,f.largeIcon
@@ -146,10 +146,10 @@
     <sql id="firmValues">
         <trim suffixOverrides=",">
             <if test="firmLoc != null">
-                , st_geomFromText(#{firmLoc})::point
+                , st_geomFromText(#{firmLoc})
             </if>
             <if test="firmRegion != null">
-                , st_geomFromText(#{firmRegion})::polygon
+                , st_geomFromText(#{firmRegion})
             </if>
             <if test="memo != null">
                 , #{memo}
@@ -172,10 +172,10 @@
                 firmName = #{firmName}
             </if>
             <if test='firmLoc != null'>
-                , firmLoc = st_geomFromText(#{firmLoc})::point
+                , firmLoc = st_geomFromText(#{firmLoc})
             </if>
             <if test='firmRegion != null'>
-                , firmRegion = st_geomFromText(#{firmRegion})::polygon
+                , firmRegion = st_geomFromText(#{firmRegion})
             </if>
             <if test='grade != null'>
                 ,grade = #{grade}

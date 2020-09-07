@@ -138,7 +138,7 @@
     </sql>
     <sql id="meterLocValues">
         <if test="meterLoc != null">
-            , st_geomFromText(#{meterLoc})::point
+            , st_geomFromText(#{meterLoc})
         </if>
     </sql>
 
@@ -211,7 +211,7 @@
         , powerType = #{powerType}
         , meterStatus = #{meterStatus}
         , adminMobile = #{adminMobile}
-        , meterLoc = st_geomFromText(#{meterLoc})::point
+        , meterLoc = st_geomFromText(#{meterLoc})
         , lastCalib = #{lastCalib}
         , memo = #{memo}
         , updateBy = #{updateBy}
@@ -650,7 +650,7 @@
 
     <update id="updateMeterLoc" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
         UPDATE bw_meter
-        SET meterLoc = st_geomFromText(#{meterLoc})::point
+        SET meterLoc = st_geomFromText(#{meterLoc})
         , updateBy = #{updateBy}
         , updateDate = now()
         <where>
@@ -1248,19 +1248,24 @@
 
     <sql id="dmaValues">
         <if test="dmaLoc != null">
-            , st_geomFromText(#{dmaLoc})::point
+            , st_geomFromText(#{dmaLoc})
         </if>
         <if test="dmaRegion != null">
-            , st_geomFromText(#{dmaRegion})::polygon
+            , st_geomFromText(#{dmaRegion})
         </if>
     </sql>
 
     <update id="updateDma" parameterType="com.abel.bigwater.model.BwDma">
         UPDATE bw_dma
+        <set>
         SET dmaName       = #{dmaName}
           , location      = #{location}
-          , dmaLoc        = st_geomFromText(#{dmaLoc})::point
-          , dmaRegion     = st_geomfromtext(#{dmaRegion})::polygon
+          <if test="dmaLoc != null">
+          , dmaLoc        = st_geomFromText(#{dmaLoc})
+          </if>
+          <if test="dmaRegion != null">
+          , dmaRegion     = st_geomfromtext(#{dmaRegion})
+          </if>
           , firmId        = #{firmId}
           , dmaType       = #{dmaType}
           , showType      = #{showType}
@@ -1278,6 +1283,7 @@
           , memo          = #{memo}
           , updateBy      = #{updateBy}
           , updateDate    = now()
+        </set>
         WHERE dmaId = #{dmaId}
     </update>
 

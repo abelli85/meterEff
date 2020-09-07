@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/9/3 15:45:30                            */
+/* Created on:     2020/9/7 11:51:46                            */
 /*==============================================================*/
 
 
@@ -164,6 +164,17 @@ drop index idx_work_holi_date;
 
 drop table vc_workday_holiday;
 
+drop type serial8;
+
+/*==============================================================*/
+/* Domain: serial8                                              */
+/*==============================================================*/
+create type serial8 (
+);
+
+comment on type serial8 is
+'remove it in SQL!!';
+
 /*==============================================================*/
 /* Table: bw_config                                             */
 /*==============================================================*/
@@ -228,8 +239,8 @@ create table bw_dma (
    dmaId                VARCHAR(45)          not null,
    dmaName              VARCHAR(45)          not null,
    location             VARCHAR(200)         null,
-   dmaLoc               POINT                null,
-   dmaRegion            POLYGON              null,
+   dmaLoc               geometry             null,
+   dmaRegion            geometry             null,
    firmId               VARCHAR(45)          not null,
    dmaType              VARCHAR(45)          null,
    showType             VARCHAR(45)          null,
@@ -280,7 +291,7 @@ onlineDate
 /* Table: bw_dma_loss                                           */
 /*==============================================================*/
 create table bw_dma_loss (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    dmaId                VARCHAR(45)          not null,
    statDate             TIMESTAMP WITH TIME ZONE not null,
    durationDay          INT4                 not null default 1,
@@ -340,7 +351,7 @@ create table bw_dma_meter (
 /* Table: bw_eff_decay                                          */
 /*==============================================================*/
 create table bw_eff_decay (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
@@ -425,7 +436,7 @@ meterId
 /* Table: bw_eff_task                                           */
 /*==============================================================*/
 create table bw_eff_task (
-   taskId               SERIAL not null,
+   taskId               serial8              not null,
    taskName             VARCHAR(45)          not null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
@@ -468,8 +479,9 @@ runTime
 create table bw_firm (
    firmId               VARCHAR(45)          not null,
    firmName             VARCHAR(45)          not null,
-   firmLoc              POINT                null,
-   firmRegion           POLYGON              null,
+   firmCity             VARCHAR(100)         null,
+   firmLoc              geometry             null,
+   firmRegion           geometry             null,
    smallIcon            VARCHAR(200)         null,
    largeIcon            VARCHAR(200)         null,
    grade                INT4                 null,
@@ -541,7 +553,7 @@ create table bw_meter (
    powerType            VARCHAR(45)          null,
    meterStatus          VARCHAR(45)          null,
    adminMobile          VARCHAR(45)          null,
-   meterLoc             POINT                null,
+   meterLoc             geometry             null,
    lastCalib            TIMESTAMP WITH TIME ZONE null,
    memo                 VARCHAR(45)          null,
    createBy             VARCHAR(45)          null,
@@ -610,7 +622,7 @@ onlineDate
 /* Table: bw_meter_eff_point                                    */
 /*==============================================================*/
 create table bw_meter_eff_point (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    meterId              VARCHAR(45)          not null,
    taskId               INT8                 not null,
    pointName            varchar(20)          not null,
@@ -717,7 +729,7 @@ meterId
 /* Table: bw_rtu_log                                            */
 /*==============================================================*/
 create table bw_rtu_log (
-   logId                SERIAL not null,
+   logId                serial8              not null,
    logTime              TIMESTAMP WITH TIME ZONE null,
    logCmd               VARCHAR(45)          null,
    logLen               INT4                 null,
@@ -796,12 +808,12 @@ create table bw_user (
    emailToken           VARCHAR(200)         null,
    userToken            VARCHAR(200)         null,
    lastLoginIp          VARCHAR(200)         null,
-   lastLoginLoc         POINT                null,
+   lastLoginLoc         geometry             null,
    loginCount           INT4                 null,
    lastLoginTime        TIMESTAMP WITH TIME ZONE null,
    lastOperTime         TIMESTAMP WITH TIME ZONE null,
    lastOperIp           VARCHAR(200)         null,
-   lastOperLoc          POINT                null,
+   lastOperLoc          geometry             null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
@@ -813,14 +825,14 @@ create table bw_user (
 /* Table: bw_user_login                                         */
 /*==============================================================*/
 create table bw_user_login (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    sessionId            VARCHAR(200)         not null,
    userId               VARCHAR(45)          not null,
    loginTime            TIMESTAMP WITH TIME ZONE not null,
    loginIp              VARCHAR(200)         null,
    loginHost            VARCHAR(200)         null,
    loginAddr            VARCHAR(200)         null,
-   loginLoc             POINT                null,
+   loginLoc             geometry             null,
    logoutTime           TIMESTAMP WITH TIME ZONE null,
    logoutIp             VARCHAR(200)         null,
    logoutLoc            VARCHAR(200)         null,
@@ -849,7 +861,7 @@ loginTime
 /* Table: bw_user_oper                                          */
 /*==============================================================*/
 create table bw_user_oper (
-   operId               SERIAL not null,
+   operId               serial8              not null,
    userId               VARCHAR(45)          not null,
    operTime             TIMESTAMP WITH TIME ZONE not null,
    returnTime           TIMESTAMP WITH TIME ZONE null,
@@ -861,7 +873,7 @@ create table bw_user_oper (
    loginIp              VARCHAR(45)          null,
    loginHost            VARCHAR(45)          null,
    loginAddr            VARCHAR(45)          null,
-   loginLoc             POINT                null,
+   loginLoc             geometry             null,
    clientIp             VARCHAR(45)          null,
    serverIp             VARCHAR(45)          null,
    operCity             VARCHAR(45)          null,
@@ -932,8 +944,8 @@ create table bw_zone (
    resiMeterCount       INT4                 null,
    onlineBigMeterCount  INT4                 null,
    onlineResiMeterCount INT4                 null,
-   zoneLoc              POINT                null,
-   zoneRegion           POLYGON              null,
+   zoneLoc              geometry             null,
+   zoneRegion           geometry             null,
    firmId               VARCHAR(45)          not null,
    leafable             INT4                 null,
    createBy             VARCHAR(45)          null,
@@ -1041,7 +1053,7 @@ create table vc_meter_type (
 /* Table: vc_meter_verify_point                                 */
 /*==============================================================*/
 create table vc_meter_verify_point (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    pointName            varchar(20)          null,
    pointNo              INT4                 null,
    pointFlow            DECIMAL(15,3)        not null,
@@ -1106,7 +1118,7 @@ pointNo
 /* Table: vc_meter_verify_result                                */
 /*==============================================================*/
 create table vc_meter_verify_result (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    meterId              varchar(45)          not null,
    batchId              varchar(45)          not null,
    tempId               varchar(32)          null,
@@ -1353,7 +1365,7 @@ verifyId
 /* Table: vc_workday_holiday                                    */
 /*==============================================================*/
 create table vc_workday_holiday (
-   wid                  SERIAL not null,
+   wid                  serial8              not null,
    startDate            DATE                 not null,
    endDate              DATE                 not null,
    yr                   INT4                 not null,

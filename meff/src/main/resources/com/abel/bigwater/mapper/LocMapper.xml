@@ -191,10 +191,10 @@
         UPDATE bw_dma
         <set>
             <if test='dmaLoc != null'>
-                dmaLoc = ST_GeomFromText(#{dmaLoc})::point,
+                dmaLoc = ST_GeomFromText(#{dmaLoc}),
             </if>
             <if test='dmaRegion != null'>
-                dmaRegion = ST_GeomFromText(#{dmaRegion})::polygon
+                dmaRegion = ST_GeomFromText(#{dmaRegion})
             </if>
         </set>
         WHERE dmaId = #{dmaId}

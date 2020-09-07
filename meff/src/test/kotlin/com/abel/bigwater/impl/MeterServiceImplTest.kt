@@ -19,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.io.WKTWriter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
@@ -369,6 +370,7 @@ class MeterServiceImplTest {
             meterName = "测试水表01"
             sizeId = 100
             sizeName = "DN100"
+            meterLoc = WKTWriter().write(GeometryFactory().createPoint(Coordinate(122.1, 44.6)))
 
             verifyList = listOf(
                     VcMeterVerify().also {
