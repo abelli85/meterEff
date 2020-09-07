@@ -341,9 +341,9 @@ open class BwMeter : BwBase() {
      */
     var meterLoc: String? = null
         set(value) {
-            field = if (!meterLoc.isNullOrBlank()) {
+            field = if (!value.isNullOrBlank()) {
                 try {
-                    val g = WKTReader().read(value!!)
+                    val g = WKTReader().read(value)
                     if ("Point".equals(g.geometryType, true)) {
                         value
                     } else null

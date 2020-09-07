@@ -3,17 +3,22 @@ package com.abel.bigwater.model
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.locationtech.jts.io.WKTReader
 import java.util.*
 
 enum class UserStatus {
     /** 新建 */
     NEWBIE,
+
     /** 活跃 */
     ACTIVE,
+
     /** 在线 */
     ONLINE,
+
     /** 过期 */
     EXPIRED,
+
     /** 黑名单 */
     BLACK
 }
@@ -39,6 +44,16 @@ class BwUser : BwBase() {
 
     /** 最后登录地区. */
     var lastLoginLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    value
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /** 登录总次数  */
     var loginCount = 0
@@ -57,6 +72,16 @@ class BwUser : BwBase() {
 
     /** 最后操作地区 */
     var lastOperLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    value
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * @return the mobile

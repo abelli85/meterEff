@@ -7,6 +7,7 @@ import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.locationtech.jts.io.WKTReader
 import java.util.*
 
 /**
@@ -51,6 +52,16 @@ class BwUserLogin : BwBase() {
      * 登录经纬度
      */
     var loginLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    value
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 登出时间.
@@ -69,6 +80,16 @@ class BwUserLogin : BwBase() {
      * 登出地区.
      */
     var logoutLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    value
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * @return the ipAddr

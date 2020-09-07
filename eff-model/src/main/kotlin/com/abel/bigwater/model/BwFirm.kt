@@ -1,5 +1,7 @@
 package com.abel.bigwater.model
 
+import org.locationtech.jts.io.WKTReader
+
 class BwFirm : BwBase() {
     /**
      * @return the id
@@ -16,12 +18,36 @@ class BwFirm : BwBase() {
      * 转换矢量坐标对象，请参考Geo（C#）等相关框架。
      */
     var firmLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    if ("Point".equals(g.geometryType, true)) {
+                        value
+                    } else null
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 水司边界的WKT数据，对应矢量边界Polygon。
      * 转换矢量坐标对象，请参考Geo（C#）等相关框架。
      */
     var firmRegion: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    if ("Polygon".equals(g.geometryType, true)) {
+                        value
+                    } else null
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 小logo

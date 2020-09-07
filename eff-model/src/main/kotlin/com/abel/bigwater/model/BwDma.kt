@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.locationtech.jts.io.WKTReader
 import java.util.*
 
 enum class DmaType {
@@ -39,6 +40,18 @@ class BwDma : BwBase() {
      * @return the dmaLoc
      */
     var dmaLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    if ("Point".equals(g.geometryType, true)) {
+                        value
+                    } else null
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 区域WKT数据，对应矢量边界Polygon.
@@ -46,6 +59,18 @@ class BwDma : BwBase() {
      * @return the dmaRegion
      */
     var dmaRegion: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    if ("Polygon".equals(g.geometryType, true)) {
+                        value
+                    } else null
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * the r to set

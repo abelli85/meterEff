@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.joda.time.DateTime
 import org.joda.time.Duration
+import org.locationtech.jts.io.WKTReader
 import java.io.Serializable
 import java.util.*
 
@@ -53,11 +54,6 @@ data class BwUserOper(
         var loginAddr: String? = null,
 
         /**
-         * 登录经纬度
-         */
-        var loginLoc: String? = null,
-
-        /**
          * 客户机网址
          */
         var clientIp: String? = null,
@@ -94,6 +90,21 @@ data class BwUserOper(
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var returnTime: Date? = null
+
+    /**
+     * 登录经纬度
+     */
+    var loginLoc: String? = null
+        set(value) {
+            field = if (!value.isNullOrBlank()) {
+                try {
+                    val g = WKTReader().read(value)
+                    value
+                } catch (t: Throwable) {
+                    null
+                }
+            } else null
+        }
 
     /**
      * 花费时间, 单位: 秒.
