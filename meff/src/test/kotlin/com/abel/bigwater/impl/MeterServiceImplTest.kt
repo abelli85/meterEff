@@ -69,6 +69,23 @@ class MeterServiceImplTest {
     }
 
     @Test
+    fun testInsertMeterList() {
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), listOf(meter))
+
+            val r1 = meterService!!.insertMeter(holder)
+            lgr.info("insert result: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+        } finally {
+            meterMapper!!.deleteVerifyPoint(MeterParam(meterId = meter.meterId))
+            meterMapper!!.deleteMeterVerify(MeterParam(meterId = meter.meterId))
+            val cnt = meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
+            lgr.info("cleared meter: {}, {}", cnt, meter.meterId)
+        }
+    }
+
+    @Test
     fun testDeleteMeter() {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"

@@ -72,7 +72,7 @@ open class MeterServiceImpl : MeterService {
                 if (!it.pointList.isNullOrEmpty()) meterMapper!!.insertVerifyPoint(it)
             }
 
-            return BwResult(holder.single!!).apply {
+            return BwResult(list).apply {
                 error = "增加水表： ${list.size}"
             }
         } catch (ex: Exception) {
@@ -126,7 +126,7 @@ open class MeterServiceImpl : MeterService {
                         firmId = it.firmId))
             }
 
-            return BwResult(holder.single!!).apply {
+            return BwResult(list).apply {
                 error = "删除水表： $cnt"
             }
         } catch (ex: Exception) {
@@ -175,7 +175,7 @@ open class MeterServiceImpl : MeterService {
                 cnt += meterMapper!!.updateMeter(it)
             }
 
-            return BwResult(holder.single!!).apply {
+            return BwResult(list).apply {
                 error = "更新水表： $cnt"
             }
         } catch (ex: Exception) {
@@ -332,7 +332,7 @@ open class MeterServiceImpl : MeterService {
                 cnt += meterMapper!!.updateMeterLoc(it)
             }
 
-            return BwResult(holder.single!!).apply {
+            return BwResult(list).apply {
                 error = "更新水表： $cnt"
             }
         } catch (ex: Exception) {
@@ -525,7 +525,7 @@ open class MeterServiceImpl : MeterService {
                 meterMapper!!.insertDma(it)
             }
 
-            return BwResult(holder.single!!).apply {
+            return BwResult(list).apply {
                 error = "增加DMA： ${list.size}"
             }
         } catch (ex: Exception) {
