@@ -61,6 +61,15 @@ open class MeterServiceImpl : MeterService {
                 return BwResult(login.code, login.error!!)
             }
 
+            // check duplicate meterId
+            meterMapper!!.selectMeterDma(MeterParam().apply {
+                meterIdList = list.map { it.meterId!! }
+            }).also {
+                if (it.isNotEmpty()) {
+                    return BwResult(2, "水表档案已存在: ${it.joinToString { m1 -> m1.meterId!! }}")
+                }
+            }
+
             list.forEach {
                 // 只能更新 所在机构及分公司
                 if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {

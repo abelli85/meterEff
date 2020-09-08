@@ -734,6 +734,12 @@
                 <when test="meterId != null">
                     m.meterId LIKE #{meterId}
                 </when>
+                <when test="excludeMeterIdList != null and excludeMeterIdList.size != 0">
+                    AND m.meterId NOT IN
+                    <foreach collection="excludeMeterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
             </choose>
             <if test="userCode != null">
                 AND m.userCode LIKE #{userCode}
@@ -750,6 +756,12 @@
                 </when>
                 <when test="extId != null">
                     AND m.extId = #{extId}
+                </when>
+                <when test="excludeExtIdList != null and excludeExtIdList.size != 0">
+                    AND m.extId NOT IN
+                    <foreach collection="excludeExtIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
                 </when>
             </choose>
 

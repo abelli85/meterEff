@@ -12,7 +12,6 @@ import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.sun.xml.internal.ws.server.EndpointFactory
 import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.Test
@@ -25,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.fail
 
 @ContextConfiguration(locations = ["classpath:/spring/rest-provider.xml", "classpath:/spring-mybatis.xml"])
@@ -77,6 +77,28 @@ class MeterServiceImplTest {
             val r1 = meterService!!.insertMeter(holder)
             lgr.info("insert result: {}", JSON.toJSONString(r1, true))
             assertEquals(0, r1.code)
+        } finally {
+            meterMapper!!.deleteVerifyPoint(MeterParam(meterId = meter.meterId))
+            meterMapper!!.deleteMeterVerify(MeterParam(meterId = meter.meterId))
+            val cnt = meterMapper!!.deleteMeter(MeterParam(meterId = meter.meterId))
+            lgr.info("cleared meter: {}, {}", cnt, meter.meterId)
+        }
+    }
+
+    @Test
+    fun testInsertMeterListDuplicate() {
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), listOf(meter))
+
+            val r1 = meterService!!.insertMeter(holder)
+            lgr.info("insert result: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+
+            meterService!!.insertMeter(holder).also {
+                lgr.info("duplicate meter: {}", JSON.toJSONString(it, true))
+                assertNotEquals(0, it.code)
+            }
         } finally {
             meterMapper!!.deleteVerifyPoint(MeterParam(meterId = meter.meterId))
             meterMapper!!.deleteMeterVerify(MeterParam(meterId = meter.meterId))

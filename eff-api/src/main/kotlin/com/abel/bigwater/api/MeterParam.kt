@@ -10,11 +10,20 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
 data class MeterParam(var meterId: String? = null,
+
+                      /**
+                       * 包含的水表ID列表
+                       */
                       var meterIdList: List<String>? = null,
+
                       var meterName: String? = null,
                       var meterCode: String? = null,
                       var userCode: String? = null,
+
                       var extId: String? = null,
+                      /**
+                       * 包含的数据ID列表
+                       */
                       var extIdList: List<String>? = null,
 
                       /**
@@ -96,6 +105,16 @@ data class MeterParam(var meterId: String? = null,
      * 自动标示编号
      */
     var pointIdList: List<Long>? = null
+
+    /**
+     * 排除的水表ID列表
+     */
+    var excludeMeterIdList: List<String>? = null
+
+    /**
+     * 排除的数据ID列表
+     */
+    var excludeExtIdList: List<String>? = null
 
     var index: Int = 0
     var rows: Int = 20000
