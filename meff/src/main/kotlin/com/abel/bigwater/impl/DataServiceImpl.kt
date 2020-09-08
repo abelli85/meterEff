@@ -7,6 +7,7 @@ import com.abel.bigwater.model.BwRtu
 import com.abel.bigwater.model.BwRtuLog
 import com.abel.bigwater.model.DataRange
 import com.alibaba.fastjson.JSON
+import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -156,6 +157,14 @@ class DataServiceImpl : DataService {
                     subList.forEach {
                         if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                             it.firmId = login.single!!.firmId
+                        }
+                    }
+
+                    dataMapper!!.checkDuplicateData(DataParam().apply {
+                        dataList = subList
+                    }).also {
+                        if (it.isNotEmpty()) {
+                            return BwResult(2, "数据重复: ${it.joinToString { d1 -> LocalDateTime(d1.sampleTime).toString() }}")
                         }
                     }
 

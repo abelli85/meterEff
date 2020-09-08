@@ -33,6 +33,8 @@ interface DataMapper {
      */
     fun selectRealtime(dp: DataParam): List<BwData>
 
+    fun checkDuplicateData(dp: DataParam): List<BwData>
+
     /**
      * 选取水表的最后多行数据
      */

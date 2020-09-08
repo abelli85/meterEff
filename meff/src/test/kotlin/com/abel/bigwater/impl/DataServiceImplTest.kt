@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 @ContextConfiguration(locations = ["classpath:/spring/rest-provider.xml", "classpath:/spring-mybatis.xml"])
@@ -115,8 +116,10 @@ class DataServiceImplTest {
             literPulse = 100
         })
 
+        val holder = BwHolder(TestHelper.buildLoginRequest(ul.single!!), list)
+
         try {
-            val r1 = dataService!!.addRealtimeUser(BwHolder(TestHelper.buildLoginRequest(ul.single!!), list))
+            val r1 = dataService!!.addRealtimeUser(holder)
 
             lgr.info("add realtime result: {}", JSON.toJSONString(r1, true))
             assertEquals(0, r1.code)
@@ -126,6 +129,11 @@ class DataServiceImplTest {
             lgr.info("data list: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
             assertEquals(2, r2.list?.size)
+
+            dataService!!.addRealtimeUser(holder).also {
+                lgr.info("duplicate data: {}", JSON.toJSONString(it, true))
+                assertNotEquals(0, it.code)
+            }
         } finally {
             list.forEach {
                 dataMapper!!.deleteRealtime(DataParam(extId = it.extId).apply {

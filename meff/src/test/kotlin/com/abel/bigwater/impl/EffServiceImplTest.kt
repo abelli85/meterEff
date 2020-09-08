@@ -292,8 +292,8 @@ class EffServiceImplTest {
 
             effService!!.updateMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
                 taskId = task.taskId
-                meterList = task.meterList!!.take(1).also {
-                    it.first().also { m ->
+                meterList = task.meterList!!.take(2).also {
+                    it.forEach { m ->
                         m.meterEff = 0.99
                     }
                 }

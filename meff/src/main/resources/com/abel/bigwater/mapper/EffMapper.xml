@@ -379,9 +379,8 @@
             , #{m1.qr2}
             , #{m1.qr3}
             , #{m1.qr4})
-            )
         </foreach>
-        AS tmp (
+        ) AS tmp (
         taskId
         , meterId
         , meterName

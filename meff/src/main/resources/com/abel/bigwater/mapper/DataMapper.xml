@@ -176,6 +176,37 @@
         LIMIT #{rows} OFFSET #{index}
     </select>
 
+    <select id="checkDuplicateData" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.BwData">
+        SELECT r.extId
+             , r.sampleTime
+             , r.endTime
+             , r.durationSecond
+             , r.forwardSum
+             , r.revertSum
+             , r.pressure
+             , r.forwardDigits
+             , r.revertDigits
+             , r.literPulse
+             , r.pressureDigits
+             , r.q0Sum
+             , r.q1Sum
+             , r.q2Sum
+             , r.q3Sum
+             , r.q4Sum
+             , r.firmId
+             , r.rssi
+             , r.baseDigits
+        FROM bw_data r
+        JOIN (VALUES
+        <foreach collection="dataList" item="d1" separator=",">
+            (#{d1.extId}
+            , to_timestamp(#{d1.sampleTime}, 'YYYY-MM-DD HH24:MI:SS'))
+        </foreach>
+        )
+        AS tmp (extId, sampleTime) ON tmp.extId = r.extId AND tmp.sampleTime = r.sampleTime
+    </select>
+
     <select id="selectMeterRealtime" parameterType="com.abel.bigwater.api.DataParam"
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
