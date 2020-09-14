@@ -199,6 +199,24 @@ class DataServiceImplTest {
     }
 
     @Test
+    fun listMeterDayCount() {
+        val ul = TestHelper.login(loginService)
+
+        dataService!!.listMeterDayCount(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam())).also {
+            lgr.info("meter day count: {}", JSON.toJSONString(it, true))
+        }
+    }
+
+    @Test
+    fun listMeterHourCount() {
+        val ul = TestHelper.login(loginService)
+
+        dataService!!.listMeterHourCount(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam())).also {
+            lgr.info("meter hour count: {}", JSON.toJSONString(it, true))
+        }
+    }
+
+    @Test
     fun listRtuLog() {
     }
 

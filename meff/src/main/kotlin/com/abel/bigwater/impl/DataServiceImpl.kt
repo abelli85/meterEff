@@ -2,10 +2,7 @@ package com.abel.bigwater.impl
 
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.DataMapper
-import com.abel.bigwater.model.BwData
-import com.abel.bigwater.model.BwRtu
-import com.abel.bigwater.model.BwRtuLog
-import com.abel.bigwater.model.DataRange
+import com.abel.bigwater.model.*
 import com.alibaba.fastjson.JSON
 import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
@@ -241,6 +238,88 @@ class DataServiceImpl : DataService {
      */
     override fun scadaMeterListZone(holder: BwHolder<DataParam>): BwResult<BwData> {
         TODO("Not yet implemented")
+    }
+
+    /**
+     * 列出水表的数据的日条数. 填写水表ID/列表、数据标识/列表、时段, 否则可能响应时间缓慢,
+     * 或数据量较大导致返回不全.
+     * 如下字段可选:
+     * @see DataParam.meterId 或
+     * @see DataParam.meterIdList
+     * @see DataParam.extId 或
+     * @see DataParam.extIdList
+     *
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2
+     */
+    override fun listMeterDayCount(holder: BwHolder<DataParam>): BwResult<MeterDayDataCount> {
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val dp = holder.single!!
+        lgr.info("${holder.lr?.userId} try to list realtime: ${JSON.toJSONString(dp)}")
+
+        val rightName = DataService.BASE_PATH + DataService.PATH_LIST_REALTIME
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            if (!dp.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                dp.firmId = login.single!!.firmId!!.plus("%")
+            }
+            val list = dataMapper!!.listMeterDayCount(dp)
+
+            return BwResult(list).apply {
+                error = "数据条数： ${list.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 列出水表的数据的小时条数. 填写水表ID/列表、数据标识/列表、时段, 否则可能响应时间缓慢,
+     * 或数据量较大导致返回不全.
+     * 如下字段可选:
+     * @see DataParam.meterId 或
+     * @see DataParam.meterIdList
+     * @see DataParam.extId 或
+     * @see DataParam.extIdList
+     *
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2
+     */
+    override fun listMeterHourCount(holder: BwHolder<DataParam>): BwResult<MeterHourDataCount> {
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val dp = holder.single!!
+        lgr.info("${holder.lr?.userId} try to list realtime: ${JSON.toJSONString(dp)}")
+
+        val rightName = DataService.BASE_PATH + DataService.PATH_LIST_REALTIME
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            if (!dp.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                dp.firmId = login.single!!.firmId!!.plus("%")
+            }
+            val list = dataMapper!!.listMeterHourCount(dp)
+
+            return BwResult(list).apply {
+                error = "数据条数： ${list.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**

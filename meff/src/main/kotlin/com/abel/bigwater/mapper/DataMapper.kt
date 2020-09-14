@@ -3,6 +3,8 @@ package com.abel.bigwater.mapper
 import com.abel.bigwater.api.DataParam
 import com.abel.bigwater.model.BwData
 import com.abel.bigwater.model.DataRange
+import com.abel.bigwater.model.MeterDayDataCount
+import com.abel.bigwater.model.MeterHourDataCount
 import org.apache.ibatis.annotations.Mapper
 
 @Mapper
@@ -137,4 +139,8 @@ interface DataMapper {
      * @return - map: minDate, maxDate
      */
     fun realtimeDateRangeDma(dp: DataParam): List<DataRange>
+
+    fun listMeterDayCount(mp: DataParam): List<MeterDayDataCount>
+
+    fun listMeterHourCount(mp: DataParam): List<MeterHourDataCount>
 }

@@ -6,56 +6,56 @@
 <mapper namespace="com.abel.bigwater.mapper.DataMapper">
     <insert id="insertRealtime" parameterType="com.abel.bigwater.api.DataParam">
         insert into bw_data ( extId
-                            , sampletime
-                            , endTime
-                            , durationSecond
-                            , forwardSum
-                            , revertSum
-                            , pressure
-                            , pressureMin
-                            , pressureMax
-                            , pressureDigits
-                            , avgFlow
-                            , flowMax
-                            , flowMin
-                            , baseDigits
-                            , forwardDigits
-                            , revertDigits
-                            , literPulse
-                            , q0Sum
-                            , q1Sum
-                            , q2Sum
-                            , q3Sum
-                            , q4Sum
-                            , rssi
-                            , firmId)
+        , sampletime
+        , endTime
+        , durationSecond
+        , forwardSum
+        , revertSum
+        , pressure
+        , pressureMin
+        , pressureMax
+        , pressureDigits
+        , avgFlow
+        , flowMax
+        , flowMin
+        , baseDigits
+        , forwardDigits
+        , revertDigits
+        , literPulse
+        , q0Sum
+        , q1Sum
+        , q2Sum
+        , q3Sum
+        , q4Sum
+        , rssi
+        , firmId)
         values
-               <foreach collection="dataList" item="data" separator=",">
-               ( #{data.extId}
-               , #{data.sampleTime}
-               , #{data.endTime}
-               , #{data.durationSecond}
-               , #{data.forwardSum}
-               , #{data.revertSum}
-               , #{data.pressure}
-               , #{data.pressureMin}
-               , #{data.pressureMax}
-               , #{data.pressureDigits}
-               , #{data.avgFlow}
-               , #{data.flowMax}
-               , #{data.flowMin}
-               , #{data.baseDigits}
-               , #{data.forwardDigits}
-               , #{data.revertDigits}
-               , #{data.literPulse}
-               , #{data.q0Sum}
-               , #{data.q1Sum}
-               , #{data.q2Sum}
-               , #{data.q3Sum}
-               , #{data.q4Sum}
-               , #{data.rssi}
-               , #{data.firmId})
-               </foreach>
+        <foreach collection="dataList" item="data" separator=",">
+            ( #{data.extId}
+            , #{data.sampleTime}
+            , #{data.endTime}
+            , #{data.durationSecond}
+            , #{data.forwardSum}
+            , #{data.revertSum}
+            , #{data.pressure}
+            , #{data.pressureMin}
+            , #{data.pressureMax}
+            , #{data.pressureDigits}
+            , #{data.avgFlow}
+            , #{data.flowMax}
+            , #{data.flowMin}
+            , #{data.baseDigits}
+            , #{data.forwardDigits}
+            , #{data.revertDigits}
+            , #{data.literPulse}
+            , #{data.q0Sum}
+            , #{data.q1Sum}
+            , #{data.q2Sum}
+            , #{data.q3Sum}
+            , #{data.q4Sum}
+            , #{data.rssi}
+            , #{data.firmId})
+        </foreach>
     </insert>
 
     <update id="updateRealtime" parameterType="com.abel.bigwater.model.BwData">
@@ -179,24 +179,24 @@
     <select id="checkDuplicateData" parameterType="com.abel.bigwater.api.DataParam"
             resultType="com.abel.bigwater.model.BwData">
         SELECT r.extId
-             , r.sampleTime
-             , r.endTime
-             , r.durationSecond
-             , r.forwardSum
-             , r.revertSum
-             , r.pressure
-             , r.forwardDigits
-             , r.revertDigits
-             , r.literPulse
-             , r.pressureDigits
-             , r.q0Sum
-             , r.q1Sum
-             , r.q2Sum
-             , r.q3Sum
-             , r.q4Sum
-             , r.firmId
-             , r.rssi
-             , r.baseDigits
+        , r.sampleTime
+        , r.endTime
+        , r.durationSecond
+        , r.forwardSum
+        , r.revertSum
+        , r.pressure
+        , r.forwardDigits
+        , r.revertDigits
+        , r.literPulse
+        , r.pressureDigits
+        , r.q0Sum
+        , r.q1Sum
+        , r.q2Sum
+        , r.q3Sum
+        , r.q4Sum
+        , r.firmId
+        , r.rssi
+        , r.baseDigits
         FROM bw_data r
         JOIN (VALUES
         <foreach collection="dataList" item="d1" separator=",">
@@ -1155,5 +1155,140 @@
                 AND m.firmId LIKE #{firmId}
             </if>
         </where>
+    </select>
+
+    <select id="listMeterDayCount" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.MeterDayDataCount">
+        SELECT bm.meterId
+        , bm.meterName
+        , bm.firmId
+        , bd.extId
+        , date_trunc('Day', bd.sampletime) AS day1
+        , date_part('Day', bd.sampletime) AS dayInt
+        , COUNT(1) AS day1Count
+        FROM bw_data bd
+        LEFT JOIN bw_meter bm on bd.extid = bm.extid
+        <where>
+            <choose>
+                <when test="extId != null">
+                    bd.extId LIKE #{extId}
+                </when>
+                <when test="extIdList != null">
+                    bd.extId IN
+                    <foreach collection="extIdList" item="eid" open="(" close=")" separator=",">
+                        #{eid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="sampleTime1 != null and sampleTime2 != null">
+                    AND bd.sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+                </when>
+                <when test="sampleTime1 != null">
+                    AND bd.sampleTime &gt;= #{sampleTime1}
+                </when>
+                <when test="sampleTime2 != null">
+                    AND bd.sampleTime &lt; #{sampleTime2}
+                </when>
+                <when test="sampleTime != null">
+                    AND bd.sampleTime = #{sampleTime}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND (bm.meterId IS NULL OR bm.meterId LIKE #{meterId})
+                </when>
+                <when test="meterIdList != null">
+                    AND (bm.meterId IS NULL OR bm.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>)
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (bm.firmId IS NULL OR bm.firmId LIKE #{firmId})
+            </if>
+        </where>
+        GROUP BY bm.meterId
+        , bm.meterName
+        , bm.firmId
+        , bd.extId
+        , date_trunc('Day', bd.sampletime)
+        , date_part('Day', bd.sampletime)
+        ORDER BY bm.meterId
+        , bd.extId
+        , day1
+        LIMIT #{rows} OFFSET #{index}
+    </select>
+
+    <select id="listMeterHourCount" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.MeterHourDataCount">
+        SELECT bm.meterId
+        , bm.meterName
+        , bm.firmId
+        , bd.extId
+        , date_trunc('Hour', bd.sampletime) AS statDay
+        , date_part('Hour', bd.sampletime) AS hourInt
+        , COUNT(1) AS cnt1
+        FROM bw_data bd
+        LEFT JOIN bw_meter bm on bd.extid = bm.extid
+        <where>
+            <choose>
+                <when test="extId != null">
+                    bd.extId LIKE #{extId}
+                </when>
+                <when test="extIdList != null">
+                    bd.extId IN
+                    <foreach collection="extIdList" item="eid" open="(" close=")" separator=",">
+                        #{eid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <choose>
+                <when test="sampleTime1 != null and sampleTime2 != null">
+                    AND bd.sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+                </when>
+                <when test="sampleTime1 != null">
+                    AND bd.sampleTime &gt;= #{sampleTime1}
+                </when>
+                <when test="sampleTime2 != null">
+                    AND bd.sampleTime &lt; #{sampleTime2}
+                </when>
+                <when test="sampleTime != null">
+                    AND bd.sampleTime = #{sampleTime}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="meterId != null">
+                    AND (bm.meterId IS NULL OR bm.meterId LIKE #{meterId})
+                </when>
+                <when test="meterIdList != null">
+                    AND (bm.meterId IS NULL OR bm.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>)
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (bm.firmId IS NULL OR bm.firmId LIKE #{firmId})
+            </if>
+        </where>
+        GROUP BY bm.meterId
+        , bm.meterName
+        , bm.firmId
+        , bd.extId
+        , date_trunc('Hour', bd.sampletime)
+        , date_part('Hour', bd.sampletime)
+        ORDER BY bm.meterId
+        , bd.extId
+        , statDay
+        , hourInt
+        LIMIT #{rows} OFFSET #{index}
     </select>
 </mapper>
