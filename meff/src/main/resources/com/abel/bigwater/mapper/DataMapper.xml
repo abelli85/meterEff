@@ -1220,7 +1220,7 @@
         , date_part('Day', bd.sampletime)
         ORDER BY bm.meterId
         , bd.extId
-        , day1
+        , day1 DESC
         LIMIT #{rows} OFFSET #{index}
     </select>
 
@@ -1287,7 +1287,7 @@
         , date_part('Hour', bd.sampletime)
         ORDER BY bm.meterId
         , bd.extId
-        , statDay
+        , statDay DESC
         , hourInt
         LIMIT #{rows} OFFSET #{index}
     </select>

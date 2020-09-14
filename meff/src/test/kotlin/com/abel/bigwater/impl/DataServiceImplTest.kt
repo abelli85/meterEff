@@ -202,7 +202,9 @@ class DataServiceImplTest {
     fun listMeterDayCount() {
         val ul = TestHelper.login(loginService)
 
-        dataService!!.listMeterDayCount(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam())).also {
+        dataService!!.listMeterDayCount(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            rows = 2
+        })).also {
             lgr.info("meter day count: {}", JSON.toJSONString(it, true))
         }
     }

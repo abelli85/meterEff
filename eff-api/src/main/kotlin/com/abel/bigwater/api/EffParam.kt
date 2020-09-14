@@ -11,17 +11,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 class EffParam : BaseParam() {
 
     /**
      * 自增量
      */
     var taskId: Long? = null
-
-    /**
-     * @return the id
-     */
-    var firmId: String? = null
 
     /**
      * 水表ID

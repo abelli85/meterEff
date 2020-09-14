@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 data class LocParam(
-        /**
-         * 水司标识
-         */
-        var firmId: String? = null,
 
         /**
          * DMA标识

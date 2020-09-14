@@ -9,10 +9,13 @@ import com.alibaba.fastjson.serializer.DateCodec
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 data class DataParam(
         /** 水表标示 */
         var meterId: String? = null,
@@ -25,9 +28,6 @@ data class DataParam(
 
         /** 片区标示 */
         var zoneId: String? = null,
-
-        /** 水司标示 */
-        var firmId: String? = null,
 
         /** RTU标示 */
         var rtuId: String? = null,

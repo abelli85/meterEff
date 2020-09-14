@@ -130,9 +130,10 @@ open class MeterServiceImpl : MeterService {
                 meterMapper!!.deleteMeterVerify(MeterParam(meterId = it.meterId))
                 meterMapper!!.deleteVerifyPoint(MeterParam(meterId = it.meterId))
 
-                cnt += meterMapper!!.deleteMeter(MeterParam(
-                        meterId = it.meterId,
-                        firmId = it.firmId))
+                cnt += meterMapper!!.deleteMeter(MeterParam().apply {
+                    meterId = it.meterId
+                    firmId = it.firmId
+                })
             }
 
             return BwResult(list).apply {
@@ -222,10 +223,10 @@ open class MeterServiceImpl : MeterService {
                     it.firmId = login.single!!.firmId
                 }
 
-                val meter = meterMapper!!.selectMeterDma(MeterParam(
-                        meterId = it.meterId,
-                        firmId = it.firmId
-                )).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
+                val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+                    meterId = it.meterId
+                    firmId = it.firmId
+                }).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
 
                 if (!it.verifyList.isNullOrEmpty()) {
                     cnt1 = meterMapper!!.insertMeterVerify(it)
@@ -273,10 +274,10 @@ open class MeterServiceImpl : MeterService {
                     it.firmId = login.single!!.firmId
                 }
 
-                val meter = meterMapper!!.selectMeterDma(MeterParam(
-                        meterId = it.meterId,
-                        firmId = it.firmId
-                )).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
+                val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+                    meterId = it.meterId
+                    firmId = it.firmId
+                }).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
 
                 if (!it.pointList.isNullOrEmpty()) {
                     cnt2 = meterMapper!!.deleteVerifyPoint(MeterParam().apply {

@@ -9,6 +9,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 data class MeterParam(var meterId: String? = null,
 
                       /**
@@ -52,8 +56,7 @@ data class MeterParam(var meterId: String? = null,
                        * 请试用实体词前后加*，全文检索效率较高，如 *鹏兴* 、 *莲塘* 、 等
                        * 不支持量词、通用词的全文检索，如 *花园* 、 *一期* 、*五期* 等。
                        */
-                      var keywords: String? = null,
-                      var firmId: String? = null) : BaseParam() {
+                      var keywords: String? = null) : BaseParam() {
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)

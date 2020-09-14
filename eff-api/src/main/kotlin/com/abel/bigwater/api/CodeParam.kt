@@ -1,5 +1,9 @@
 package com.abel.bigwater.api
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 data class CodeParam(
 
         /**
@@ -17,11 +21,6 @@ data class CodeParam(
          * 出厂编号
          */
         var manuNo: String? = null,
-
-        /**
-         * 公司ID
-         */
-        var firmId: String? = null,
 
         /**
          * 是否自动同步, 默认0 - 不自动同步.

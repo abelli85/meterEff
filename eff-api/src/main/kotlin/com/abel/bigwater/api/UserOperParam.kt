@@ -9,12 +9,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
 
+/**
+ * 机构ID移到基类中:
+ * @see BaseParam.firmId
+ */
 data class UserOperParam(
         /** 用户ID通配符 */
         var userId: String? = null,
-
-        /** 水司ID通配符 */
-        var firmId: String? = null,
 
         /** 设备ID */
         var devId: String? = null,

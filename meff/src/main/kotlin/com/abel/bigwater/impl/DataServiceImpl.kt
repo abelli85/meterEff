@@ -74,7 +74,7 @@ class DataServiceImpl : DataService {
 
     /**
      * 实时数据范围.
-     * 填充 extId，不要填充 meterId 字段。
+     * 填充 extId可获得更好的性能, 也可填充 meterId 字段.
      * there will be 2 rows in the list. 1st: start date-time;
      * 2nd: end date-time.
      */
@@ -93,7 +93,7 @@ class DataServiceImpl : DataService {
                 return BwResult(login.code, login.error!!)
             }
 
-            val list = dataMapper!!.realtimeDateRange(dp)
+            val list = dataMapper!!.realtimeDateRange(dp.refineFirmId(login.single!!))
             return BwResult(list).apply {
                 error = "数据条数： ${list.size}"
             }
@@ -267,10 +267,7 @@ class DataServiceImpl : DataService {
                 return BwResult(login.code, login.error!!)
             }
 
-            if (!dp.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
-                dp.firmId = login.single!!.firmId!!.plus("%")
-            }
-            val list = dataMapper!!.listMeterDayCount(dp)
+            val list = dataMapper!!.listMeterDayCount(dp.refineFirmId(login.single!!))
 
             return BwResult(list).apply {
                 error = "数据条数： ${list.size}"

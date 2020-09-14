@@ -336,8 +336,10 @@ class MeterServiceImplTest {
                 assertEquals(0, it.code)
             }
         } finally {
-            val cnt = meterMapper!!.deleteDma(MeterParam(dmaId = d.dmaId,
-                    firmId = "%"))
+            val cnt = meterMapper!!.deleteDma(MeterParam().apply {
+                dmaId = d.dmaId
+                firmId = "%"
+            })
             lgr.info("cleared dma: {}, {}", cnt, d.dmaId)
         }
 

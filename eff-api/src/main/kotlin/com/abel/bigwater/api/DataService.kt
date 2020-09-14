@@ -55,7 +55,7 @@ interface DataService {
 
     /**
      * 实时数据范围.
-     * 填充 extId，不要填充 meterId 字段。
+     * 填充 extId可获得更好的性能, 也可填充 meterId 字段.
      * there will be 2 rows in the list. 1st: start date-time;
      * 2nd: end date-time.
      */
