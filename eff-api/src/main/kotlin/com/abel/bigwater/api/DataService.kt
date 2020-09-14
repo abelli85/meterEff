@@ -1,9 +1,6 @@
 package com.abel.bigwater.api
 
-import com.abel.bigwater.model.BwData
-import com.abel.bigwater.model.BwRtu
-import com.abel.bigwater.model.BwRtuLog
-import com.abel.bigwater.model.DataRange
+import com.abel.bigwater.model.*
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
 import javax.ws.rs.Consumes
 import javax.ws.rs.POST
@@ -33,6 +30,9 @@ interface DataService {
         const val PATH_LIST_REALTIME_REVERSE = "/listRealtimeReverse"
         const val PATH_REALTIME_DATE_RANGE = "/realtimeDateRange"
         const val PATH_REALTIME_LIST_STAT = "/realtimeListStat"
+
+        const val PATH_LIST_DAY_COUNT = "/listMeterDayCount"
+        const val PATH_LIST_HOUR_COUNT = "/listMeterHourCount"
     }
 
     /**
@@ -106,6 +106,38 @@ interface DataService {
     @POST
     @Path("scadaMeterListZone")
     fun scadaMeterListZone(holder: BwHolder<DataParam>): BwResult<BwData>
+
+    /**
+     * 列出水表的数据的日条数. 填写水表ID/列表、数据标识/列表、时段, 否则可能响应时间缓慢,
+     * 或数据量较大导致返回不全.
+     * 如下字段可选:
+     * @see DataParam.meterId 或
+     * @see DataParam.meterIdList
+     * @see DataParam.extId 或
+     * @see DataParam.extIdList
+     *
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2
+     */
+    @POST
+    @Path(PATH_LIST_DAY_COUNT)
+    fun listMeterDayCount(holder: BwHolder<DataParam>): BwResult<MeterDayDataCount>
+
+    /**
+     * 列出水表的数据的小时条数. 填写水表ID/列表、数据标识/列表、时段, 否则可能响应时间缓慢,
+     * 或数据量较大导致返回不全.
+     * 如下字段可选:
+     * @see DataParam.meterId 或
+     * @see DataParam.meterIdList
+     * @see DataParam.extId 或
+     * @see DataParam.extIdList
+     *
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2
+     */
+    @POST
+    @Path(PATH_LIST_HOUR_COUNT)
+    fun listMeterHourCount(holder: BwHolder<DataParam>): BwResult<MeterHourDataCount>
 
     /**
      * 列举rtu-log.
