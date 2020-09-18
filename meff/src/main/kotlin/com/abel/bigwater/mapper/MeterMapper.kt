@@ -101,4 +101,6 @@ interface MeterMapper {
 
     fun statMeterFirm(dp: MeterParam): List<MeterFirmStat>
 
+    fun statFirmSize(dp: MeterParam): List<MeterFirmStat>
+
 }

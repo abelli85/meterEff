@@ -3,6 +3,7 @@ package com.abel.bigwater.impl
 import com.abel.bigwater.Helper
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.ConfigMapper
+import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.mapper.UserMapper
 import com.abel.bigwater.model.*
 import com.alibaba.fastjson.JSON
@@ -27,6 +28,9 @@ open class UserServiceImpl : UserService {
 
     @Autowired
     private var configMapper: ConfigMapper? = null
+
+    @Autowired
+    private var meterMapper: MeterMapper? = null
 
     /**
      * 用户详情，仅供测试
@@ -695,8 +699,13 @@ open class UserServiceImpl : UserService {
                 return BwResult(login.code, login.error!!)
             }
 
-            val firmId = if (Helper.TOP_FIRM_ID == login.single?.firmId) "%" else (login.single?.firmId + "%")
-            val firmList = configMapper?.selectFirm(firmId)!!
+            val dp = MeterParam().apply {
+                firmId = holder.single
+                refineFirmId(login.single!!)
+            }
+
+            val firmList = configMapper?.selectFirm(dp.firmId)!!
+            val sizeList = meterMapper!!.statFirmSize(dp)
             firmList.forEachIndexed { index, firm ->
                 // skip 0
                 when {
@@ -715,6 +724,8 @@ open class UserServiceImpl : UserService {
                         log.info("开始匹配: ${firm.firmId}/${firm.firmName}")
                     }
                 }
+
+                firm.sizeList = sizeList.filter { it.firmId == firm.firmId }
             }
             return BwResult(firmList)
         } catch (ex: Exception) {

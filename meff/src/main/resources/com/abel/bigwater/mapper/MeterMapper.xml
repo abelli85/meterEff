@@ -1153,6 +1153,114 @@
         ORDER BY f.firmId
     </select>
 
+    <select id="statFirmSize" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.stat.MeterFirmStat">
+        SELECT f.firmId
+             , f.firmName
+             , m1.sizeId
+             , m1.sizeName
+             , COALESCE(m1.meterCount, 0) AS meterCount
+        FROM bw_firm f
+
+        LEFT JOIN (
+        SELECT m.firmId
+             , m.sizeId
+             , m.sizeName
+             , COUNT(1) meterCount
+        FROM bw_meter m
+        <where>
+            <choose>
+                <when test="meterIdList != null and meterIdList.size != 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="userCode != null">
+                AND m.userCode LIKE #{userCode}
+            </if>
+            <if test="meterName != null">
+                AND m.meterName LIKE #{meterName}
+            </if>
+
+            <choose>
+                <when test="extIdList != null and extIdList.size != 0">
+                    AND m.extId IN
+                    <foreach collection="extIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="extId != null">
+                    AND m.extId = #{extId}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="dmaIdList != null and dmaIdList.size != 0">
+                    AND d.dmaId IN
+                    <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
+                        #{did}
+                    </foreach>
+                </when>
+                <when test="dmaId != null">
+                    AND d.dmaId LIKE #{dmaId}
+                </when>
+            </choose>
+
+            <if test="dmaName != null">
+                AND d.dmaName LIKE #{dmaName}
+            </if>
+
+            <choose>
+                <when test="typeId == 'CHECK'">
+                    AND m.typeId = 'CHECK'
+                </when>
+                <when test="typeId != null">
+                    AND m.typeId = #{typeId}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="installDate1 != null and installDate2 != null">
+                    AND m.installDate BETWEEN #{installDate1} AND #{installDate2}
+                </when>
+                <when test="installDate1 != null">
+                    AND m.installDate &gt;= #{installDate1}
+                </when>
+                <when test="installDate2 != null">
+                    AND m.installDate &lt; #{installDate2}
+                </when>
+            </choose>
+
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="remoteBrandId != null">
+                AND m.remoteBrandId LIKE #{remoteBrandId}
+            </if>
+
+            <if test="firmId != null">
+                AND m.firmId LIKE #{firmId}
+            </if>
+        </where>
+        GROUP BY m.firmId
+                 , m.sizeId
+                 , m.sizeName
+        ) m1 ON f.firmId = m1.firmId
+        <where>
+            <if test="firmId != null">
+                AND f.firmId LIKE #{firmId}
+            </if>
+        </where>
+        ORDER BY f.firmId
+               , m1.sizeId
+    </select>
+
     <select id="selectDma" parameterType="com.abel.bigwater.api.MeterParam"
             resultType="com.abel.bigwater.model.BwDma">
         SELECT dmaId

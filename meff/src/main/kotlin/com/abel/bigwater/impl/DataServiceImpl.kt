@@ -93,7 +93,7 @@ class DataServiceImpl : DataService {
                 return BwResult(login.code, login.error!!)
             }
 
-            val list = dataMapper!!.realtimeDateRange(dp.refineFirmId(login.single!!))
+            val list = dataMapper!!.realtimeDateRange(dp.refineFirmId<DataParam>(login.single!!))
             return BwResult(list).apply {
                 error = "数据条数： ${list.size}"
             }
@@ -267,7 +267,7 @@ class DataServiceImpl : DataService {
                 return BwResult(login.code, login.error!!)
             }
 
-            val list = dataMapper!!.listMeterDayCount(dp.refineFirmId(login.single!!))
+            val list = dataMapper!!.listMeterDayCount(dp.refineFirmId<DataParam>(login.single!!))
 
             return BwResult(list).apply {
                 error = "数据条数： ${list.size}"
