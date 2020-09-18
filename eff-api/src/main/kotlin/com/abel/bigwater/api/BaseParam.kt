@@ -60,6 +60,18 @@ open class BaseParam : BwBase() {
         return this as T
     }
 
+    fun refineFirmId(login: BwUserLogin, withWildcard: Boolean = true) {
+        // 超级用户
+        if (login.firmId == TOP_FIRM_ID) {
+            if (withWildcard && !firmId.orEmpty().endsWith('%')) {
+                firmId += '%'
+            }
+        } else if (firmId?.startsWith(login.firmId.orEmpty()) == false) {
+            // 必须为本司或子公司
+            firmId = if (withWildcard) login.firmId?.plus('%') else login.firmId
+        }
+    }
+
     companion object {
         const val TOP_FIRM_ID = "1"
     }

@@ -1,5 +1,6 @@
 package com.abel.bigwater.model
 
+import com.abel.bigwater.model.stat.MeterFirmStat
 import org.locationtech.jts.io.WKTReader
 
 class BwFirm : BwBase() {
@@ -113,6 +114,11 @@ class BwFirm : BwBase() {
      * count of meters currently.
      */
     var meterCount: Int? = null
+
+    /**
+     * 口径列表
+     */
+    var sizeList: List<MeterFirmStat>? = null
 
     /**
      * 用来在combox/listbox中显示为标题。
