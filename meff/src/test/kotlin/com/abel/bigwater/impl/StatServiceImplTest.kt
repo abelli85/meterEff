@@ -8,11 +8,13 @@ import com.abel.bigwater.api.UserService
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
+import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import kotlin.test.fail
@@ -46,8 +48,9 @@ class StatServiceImplTest {
 
         @BeforeClass
         @JvmStatic
-        fun preload() {
-            lgr.info("pre load bootstrap...")
+        fun addServletContext() {
+            lgr.warn("prepare servlet container...")
+            ServletManager.getInstance().addServletContext(ServletManager.EXTERNAL_SERVER_PORT, MockServletContext())
         }
     }
 }

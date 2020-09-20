@@ -11,10 +11,12 @@ import com.abel.bigwater.model.BwUser
 import com.abel.bigwater.model.BwUserLogin
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.apache.dubbo.rpc.RpcContext
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import org.junit.Assert.*
+import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,10 +26,10 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.mybatis.spring.annotation.MapperScan
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.util.DigestUtils
-import kotlin.math.log
 
 /**
  * Launch zookeeper before the tests.
@@ -599,5 +601,12 @@ class UserServiceImplTest {
 
     companion object {
         private val lgr = LoggerFactory.getLogger(UserServiceImplTest::class.java)
+
+        @BeforeClass
+        @JvmStatic
+        fun addServletContext() {
+            lgr.warn("prepare servlet container...")
+            ServletManager.getInstance().addServletContext(ServletManager.EXTERNAL_SERVER_PORT, MockServletContext())
+        }
     }
 }

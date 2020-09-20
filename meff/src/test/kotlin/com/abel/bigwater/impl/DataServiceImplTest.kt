@@ -8,17 +8,19 @@ import com.abel.bigwater.api.UserService
 import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.model.BwData
 import com.alibaba.fastjson.JSON
+import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 
 @ContextConfiguration(locations = ["classpath:/spring/rest-provider.xml", "classpath:/spring-mybatis.xml"])
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -244,5 +246,12 @@ class DataServiceImplTest {
 
     companion object {
         private val lgr = LoggerFactory.getLogger(DataServiceImplTest::class.java)
+
+        @BeforeClass
+        @JvmStatic
+        fun addServletContext() {
+            lgr.warn("prepare servlet container...")
+            ServletManager.getInstance().addServletContext(ServletManager.EXTERNAL_SERVER_PORT, MockServletContext())
+        }
     }
 }

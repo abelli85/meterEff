@@ -12,6 +12,7 @@ import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.Test
@@ -21,6 +22,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.io.WKTWriter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import kotlin.test.assertEquals
@@ -432,8 +434,9 @@ class MeterServiceImplTest {
 
         @BeforeClass
         @JvmStatic
-        fun preload() {
-            lgr.info("pre load bootstrap...")
+        fun addServletContext() {
+            lgr.warn("prepare servlet container...")
+            ServletManager.getInstance().addServletContext(ServletManager.EXTERNAL_SERVER_PORT, MockServletContext())
         }
     }
 }
