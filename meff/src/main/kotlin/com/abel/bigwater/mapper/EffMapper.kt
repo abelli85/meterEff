@@ -1,6 +1,7 @@
 package com.abel.bigwater.mapper
 
 import com.abel.bigwater.api.EffParam
+import com.abel.bigwater.model.DataRange
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.EffTask
@@ -16,6 +17,8 @@ interface EffMapper {
     fun deleteEffTask(p: EffParam): Int
 
     fun listEffMeter(p: EffParam): List<EffMeter>
+
+    fun listEffRange(p: EffParam): List<DataRange>
 
     fun insertEffMeter(p: EffParam): Int
 

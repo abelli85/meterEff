@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.joda.time.DateTime
+import org.joda.time.LocalDateTime
 import java.util.*
 
 class BwData : BwBase() {
@@ -279,6 +281,14 @@ class BwData : BwBase() {
      * 信号强度
      */
     var rssi: Int? = null
+
+    @JsonIgnore
+    var localSample: LocalDateTime? = null
+        get() = if (sampleTime == null) null else LocalDateTime(sampleTime)
+
+    @JsonIgnore
+    var jodaSample: DateTime? = null
+        get() = if (sampleTime == null) null else DateTime(sampleTime)
 
     /* (non-Javadoc)
      * @see java.lang.Object#toString()

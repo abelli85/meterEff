@@ -273,7 +273,7 @@
             </choose>
         </where>
         ORDER BY r.extId, r.sampleTime
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectMeterRealtimeReverse" parameterType="com.abel.bigwater.api.DataParam"
@@ -342,7 +342,7 @@
             </choose>
         </where>
         ORDER BY r.extId, r.sampleTime DESC
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectRealtimeLast" parameterType="com.abel.bigwater.api.DataParam"
@@ -436,7 +436,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectRealtimeHourly" parameterType="com.abel.bigwater.api.DataParam"
@@ -533,7 +533,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectRealtimeHalf" parameterType="com.abel.bigwater.api.DataParam"
@@ -631,7 +631,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectRealtimeQuarter" parameterType="com.abel.bigwater.api.DataParam"
@@ -729,7 +729,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectDmaRealtimeHourly" parameterType="com.abel.bigwater.api.DataParam"
@@ -824,7 +824,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="selectZoneRealtimeHourly" parameterType="com.abel.bigwater.api.DataParam"
@@ -919,7 +919,7 @@
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
-        LIMIT #{index}, #{rows}
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="countDeleteRealtime" parameterType="com.abel.bigwater.api.DataParam"

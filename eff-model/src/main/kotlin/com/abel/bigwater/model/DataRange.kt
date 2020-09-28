@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.joda.time.DateTime
+import org.joda.time.LocalDateTime
 import java.util.*
 
 class DataRange : BwBase() {
@@ -96,10 +97,35 @@ class DataRange : BwBase() {
             this.maxTime = value?.toDate()
         }
 
+    /** 最小时标镜像 */
+    @JsonIgnore
+    var minLocalDateTime: LocalDateTime? = null
+        get() {
+            field = if (minTime == null) null else LocalDateTime(minTime)
+            return field
+        }
+        set(value) {
+            field = value
+            this.minTime = value?.toDate()
+        }
+
+    /** 最大时标镜像 */
+    @JsonIgnore
+    var maxLocalDateTime: LocalDateTime? = null
+        get() {
+            field = if (maxTime == null) null else LocalDateTime(maxTime)
+            return field
+        }
+        set(value) {
+            field = value
+            this.maxTime = value?.toDate()
+        }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     override fun toString(): String {
-        return String.format("{zoneId:%s, meterId:%s, minTime:%s, maxTime:%s}", zoneId, meterId, minTime, maxTime)
+        return String.format("{zoneId:%s, meterId:%s, minTime:%s, maxTime:%s}", zoneId, meterId,
+                minLocalDateTime, maxLocalDateTime)
     }
 }

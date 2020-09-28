@@ -540,6 +540,88 @@
         </where>
     </select>
 
+    <select id="listVerifyPointLast" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.eff.VcMeterVerifyPoint">
+        SELECT p.wid AS pointId
+        ,p.pointName
+        ,p.pointNo
+        ,p.pointFlow
+        ,p.pointDev
+        ,p.lowLimit
+        ,p.highLimit
+        ,p.meterId
+
+        ,p.startReading
+        ,p.endReading
+        ,p.totalVolume
+        ,p.verifyDura
+        ,p.avgFlow
+        ,p.waterTemp
+        ,p.startMass
+        ,p.endMass
+        ,p.standardMass
+        ,p.density
+        ,p.standardVolume
+        ,p.standardDura
+        ,p.standardFlow
+        ,p.verifyDate
+        ,p.boardResult
+        ,p.instrumentNo
+        ,p.boardMemo
+        ,p.itemId
+        FROM vc_meter_verify_point p
+        JOIN (
+            SELECT meterId
+                   , MAX(verifyDate) verifyDate
+            FROM vc_meter_verify_point
+            <where>
+                <choose>
+                    <when test="meterId != null">
+                        AND meterId LIKE #{meterId}
+                    </when>
+                    <when test="meterIdList != null and meterIdList.size > 0">
+                        AND meterId IN
+                        <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                            #{mid}
+                        </foreach>
+                    </when>
+                </choose>
+            </where>
+            GROUP BY meterId
+        ) vmax ON (p.meterId = vmax.meterId AND p.verifyDate = vmax.verifyDate)
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    AND p.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.meterId IN
+                    <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+            <if test="instrumentNo != null">
+                AND p.instrumentNo LIKE #{instrumentNo}
+            </if>
+
+            <choose>
+                <when test="verifyDate != null">
+                    AND p.verifyDate = #{verifyDate}
+                </when>
+                <when test="verifyDateStart != null and verifyDateEnd != null">
+                    AND p.verifyDate BETWEEN #{verifyDateStart} AND #{verifyDateEnd}
+                </when>
+                <when test="verifyDateStart != null">
+                    AND p.verifyDate &gt;= #{verifyDateStart}
+                </when>
+                <when test="verifyDateEnd != null">
+                    AND p.verifyDate &lt;= #{verifyDateEnd}
+                </when>
+            </choose>
+        </where>
+    </select>
+
     <insert id="insertVerifyPoint" parameterType="com.abel.bigwater.model.zone.ZoneMeter">
         INSERT INTO vc_meter_verify_point( pointName
         , pointNo

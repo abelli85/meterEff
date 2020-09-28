@@ -1,4 +1,4 @@
-package com.abel.bigwater
+package com.abel.bigwater.impl
 
 import com.abel.bigwater.model.BwData
 import com.abel.bigwater.model.BwMeter
@@ -10,7 +10,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.slf4j.LoggerFactory
 
-class EffTaskBeanTest {
+class EffTaskPojoTest {
     @Test
     fun testEffWithData() {
         val eff = EffMeter().apply {
@@ -173,6 +173,6 @@ class EffTaskBeanTest {
     }
 
     companion object {
-        private val lgr = LoggerFactory.getLogger(EffTaskBeanTest::class.java)
+        private val lgr = LoggerFactory.getLogger(EffTaskPojoTest::class.java)
     }
 }

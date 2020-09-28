@@ -61,6 +61,8 @@ interface MeterMapper {
 
     fun listVerifyPoint(mp: MeterParam): List<VcMeterVerifyPoint>
 
+    fun listVerifyPointLast(mp: MeterParam): List<VcMeterVerifyPoint>
+
     fun insertVerifyPoint(mp: ZoneMeter): Int
 
     fun deleteVerifyPoint(mp: MeterParam): Int

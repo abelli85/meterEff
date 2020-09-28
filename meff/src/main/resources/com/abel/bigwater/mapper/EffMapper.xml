@@ -236,6 +236,52 @@
         </where>
     </select>
 
+    <select id="listEffRange" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.DataRange">
+        SELECT
+        bm.firmId
+        , em.meterId
+        , bm.meterName
+        , MIN(em.taskStart) minTime
+        , MAX(em.taskStart) maxTime
+        FROM bw_eff_meter em
+        LEFT JOIN bw_eff_task et ON em.taskId = et.taskId
+        LEFT JOIN bw_meter bm ON em.meterId = bm.meterId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    em.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null">
+                    em.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" separator="," close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND et.firmId LIKE #{firmId}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND em.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND em.taskStart &gt;= #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND em.taskStart &lt;= #{taskEnd}
+                </when>
+            </choose>
+        </where>
+        GROUP BY
+        bm.firmId
+        , em.meterId
+        , bm.meterName
+    </select>
+
     <insert id="insertEffMeter" parameterType="com.abel.bigwater.api.EffParam">
         INSERT INTO bw_eff_meter( taskId
         , meterId
