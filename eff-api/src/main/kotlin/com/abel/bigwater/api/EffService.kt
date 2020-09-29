@@ -27,6 +27,8 @@ interface EffService {
 
         const val PATH_FETCH_METER_EFF = "/fetchMeterEff"
         const val PATH_REPLACE_METER_EFF = "/replaceMeterEff"
+        const val PATH_BUILD_METER_EFF = "/buildMeterEff"
+        const val PATH_PUSH_EFF_TASK = "/pushEffTask"
     }
 
     /**
@@ -103,4 +105,24 @@ interface EffService {
     @POST
     @Path(PATH_REPLACE_METER_EFF)
     fun replaceMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 分析水表的计量效率, 分析一只或多只水表, 指定时段的计量效率.
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - can be null
+     * @see EffParam.taskEnd - can be null
+     */
+    @POST
+    @Path(PATH_BUILD_METER_EFF)
+    fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 分析水表的计量效率, 可以是整个水司, 一只或多只水表, 不指定时段 或 指定时段的计量效率.
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
+     */
+    @POST
+    @Path(PATH_PUSH_EFF_TASK)
+    fun pushEffTask(holder: BwHolder<EffParam>): BwResult<EffTask>
 }
