@@ -3,6 +3,7 @@ package com.abel.bigwater.impl
 import com.abel.bigwater.api.DataParam
 import com.abel.bigwater.api.EffParam
 import com.abel.bigwater.api.MeterParam
+import com.abel.bigwater.mapper.ConfigMapper
 import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
@@ -17,12 +18,19 @@ import org.joda.time.Duration
 import org.joda.time.format.ISODateTimeFormat
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
 import kotlin.math.absoluteValue
 
 @Component
+@EnableScheduling
 class EffTaskBean {
+
+    @Autowired
+    private var configMapper: ConfigMapper? = null
+
     @Autowired
     private var meterMapper: MeterMapper? = null
 
@@ -31,6 +39,20 @@ class EffTaskBean {
 
     @Autowired
     private var effMapper: EffMapper? = null
+
+    @Scheduled(cron = "0 15 0/2 * * ?")
+    fun effAll() {
+        lgr.info("定时任务: 分析所有水司的水表计量效率...")
+        configMapper!!.selectFirm("%").forEach {
+            try {
+                effFirm(it)
+            } catch (ex: Exception) {
+                lgr.error("fail to build eff for ${it.firmId}/${it.firmName} caused by ${ex.message}", ex)
+            }
+        }
+
+        lgr.info("完成任务: 分析所有水司的水表计量效率.")
+    }
 
     fun effFirm(firm: BwFirm) {
         val meterList = meterMapper!!.selectMeterDma(MeterParam().apply {

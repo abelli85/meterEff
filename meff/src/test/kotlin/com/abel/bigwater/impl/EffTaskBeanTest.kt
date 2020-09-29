@@ -38,6 +38,11 @@ class EffTaskBeanTest {
     fun effMeterRange() {
     }
 
+    @Test
+    fun effAll() {
+        bean!!.effAll()
+    }
+
     companion object {
         private val lgr = LoggerFactory.getLogger(EffTaskBeanTest::class.java)
 
