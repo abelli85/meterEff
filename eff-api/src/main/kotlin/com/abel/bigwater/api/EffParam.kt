@@ -7,8 +7,10 @@ import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import org.joda.time.DateTime
 import java.util.*
 
 /**
@@ -66,6 +68,14 @@ class EffParam : BaseParam() {
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var runTime2: Date? = null
+
+    @JsonIgnore
+    var jodaTaskStart: DateTime? = null
+        get() = if (taskStart == null) null else DateTime(taskStart)
+
+    @JsonIgnore
+    var jodaTaskEnd: DateTime? = null
+        get() = if (taskEnd == null) null else DateTime(taskEnd)
 
     /**
      * 口径

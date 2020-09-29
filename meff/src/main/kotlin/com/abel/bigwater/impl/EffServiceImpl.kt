@@ -1,10 +1,8 @@
 package com.abel.bigwater.impl
 
-import com.abel.bigwater.api.BwHolder
-import com.abel.bigwater.api.BwResult
-import com.abel.bigwater.api.EffParam
-import com.abel.bigwater.api.EffService
+import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
+import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffTask
 import com.alibaba.fastjson.JSON
@@ -20,6 +18,12 @@ class EffServiceImpl : EffService {
 
     @Autowired
     private var effMapper: EffMapper? = null
+
+    @Autowired
+    private var effTaskBean: EffTaskBean? = null
+
+    @Autowired
+    private var meterMapper: MeterMapper? = null
 
     /**
      * 创建计量效率分析任务
@@ -402,9 +406,67 @@ class EffServiceImpl : EffService {
             val cnt2 = effMapper!!.insertEffPoint(dp)
             return BwResult(0, "水表计量效率修改:$cnt1 / $cnt2 / ${dp.taskId} / ${dp.meterId}")
         } catch (ex: Exception) {
-            lgr.error(ex.message, ex);
-            return BwResult(1, "内部错误: ${ex.message}")
+            lgr.error(ex.message, ex)
+            return BwResult(1, "${ERR_INTERNAL} ${ex.message}")
         }
+    }
+
+    /**
+     * 分析水表的计量效率, 分析一只或多只水表, 指定时段的计量效率.
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - can be null
+     * @see EffParam.taskEnd - can be null
+     */
+    override fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty())
+                || holder.single?.jodaTaskEnd?.isAfterNow == true
+                || holder.single?.jodaTaskStart?.isAfterNow == true) {
+            return BwResult(2, ERR_PARAM)
+        }
+        if (holder.single?.jodaTaskStart != null
+                && holder.single?.jodaTaskEnd?.isBefore(holder.single?.jodaTaskStart!!) == true) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val param = holder.single!!
+        val midList = if (param.meterId.isNullOrBlank())
+            param.meterIdList!!
+        else
+            param.meterIdList.orEmpty().plus(param.meterId!!)
+
+        val effList = arrayListOf<EffMeter>()
+
+        try {
+            var cnt = 0
+            meterMapper!!.selectMeterDma(MeterParam().apply {
+                meterIdList = midList
+            }).forEach {
+                effList.addAll(if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
+                    effTaskBean!!.effMeter(it)
+                else
+                    effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!))
+
+                ++cnt
+            }
+
+            return BwResult(effList.toList()).also {
+                it.error = "分析计量效率: ${cnt}只水表"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex)
+            return BwResult(1, "${ERR_INTERNAL} ${ex.message}")
+        }
+    }
+
+    /**
+     * 分析水表的计量效率, 可以是整个水司, 一只或多只水表, 不指定时段 或 指定时段的计量效率.
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
+     */
+    override fun pushEffTask(holder: BwHolder<EffParam>): BwResult<EffTask> {
+        TODO("Not yet implemented")
     }
 
     companion object {

@@ -1,11 +1,9 @@
 package com.abel.bigwater.impl
 
 import com.abel.bigwater.TestHelper
-import com.abel.bigwater.api.BwHolder
-import com.abel.bigwater.api.EffParam
-import com.abel.bigwater.api.EffService
-import com.abel.bigwater.api.UserService
+import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
+import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.EffTask
@@ -36,6 +34,9 @@ class EffServiceImplTest {
 
     @Autowired
     var loginService: UserService? = null
+
+    @Autowired
+    var meterMapper: MeterMapper? = null
 
     @Test
     fun createEffTask() {
@@ -383,6 +384,30 @@ class EffServiceImplTest {
                     taskId = task.taskId
                 })
             }
+        }
+    }
+
+    @Test
+    fun testEffMeter() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        kotlin.run {
+            val r1 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
+                    EffParam().apply {
+                        meterIdList = listOf("hello", "world")
+                    }))
+            lgr.info("build eff result: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+        }
+
+        kotlin.run {
+            val meterList = meterMapper!!.selectMeterZone(MeterParam())
+            val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
+                    EffParam().apply {
+                        meterId = meterList.firstOrNull()?.meterId
+                    }))
+            lgr.info("build eff result: {}", JSON.toJSONString(r2, true))
+            assertEquals(0, r2.code)
         }
     }
 

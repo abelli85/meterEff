@@ -138,15 +138,15 @@ class EffTaskBean {
          */
         fun effSingleMeterDay(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
             if (meter.meterId.isNullOrBlank() || meter.pointList.isNullOrEmpty()) {
-                throw IllegalArgumentException("point list of meter should be populated: ${meter.meterId}")
+                throw IllegalArgumentException("计量点不存在: ${meter.meterId}")
             }
             if (day.withTimeAtStartOfDay() != day) {
-                throw IllegalArgumentException("day must be at start of the day: ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                throw IllegalArgumentException("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
             }
             eff.pointList = meter.pointList!!.sortedBy { it.pointFlow }
             eff.pointList!!.forEach {
                 if (it.pointFlow == null) {
-                    throw IllegalArgumentException("point-flow can't be null")
+                    throw IllegalArgumentException("计量点不能为空")
                 }
             }
 
@@ -157,7 +157,7 @@ class EffTaskBean {
             }
             dlist.forEach {
                 if (it.sampleTime == null) {
-                    throw IllegalArgumentException("sample-time can't be null: ${meter.meterId}")
+                    throw IllegalArgumentException("采样时间不能为空: ${meter.meterId}")
                 }
             }
 
