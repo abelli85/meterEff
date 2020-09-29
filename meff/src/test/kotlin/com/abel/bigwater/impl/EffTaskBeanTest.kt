@@ -24,7 +24,7 @@ class EffTaskBeanTest {
     var bean: EffTaskBean? = null
 
     @Test
-    fun effFirm() {
+    fun testEffFirm() {
         bean!!.effFirm(BwFirm().apply {
             firmId = "76"
         })
@@ -39,7 +39,7 @@ class EffTaskBeanTest {
     }
 
     @Test
-    fun effAll() {
+    fun testEffAll() {
         bean!!.effAll()
     }
 

@@ -436,17 +436,37 @@ class EffServiceImpl : EffService {
         else
             param.meterIdList.orEmpty().plus(param.meterId!!)
 
-        val effList = arrayListOf<EffMeter>()
-
+        val rightName = EffService.BASE_PATH + EffService.PATH_REPLACE_METER_EFF
         try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+            val task = EffTask().apply {
+                taskName = login.single?.userName
+                createBy = login.single?.userId
+
+                firmId = login.single!!.firmId
+                firmName = login.single!!.firmName
+                taskStart = param.taskStart ?: EffTaskBean.DUMMY_START.toDate()
+                taskEnd = param.taskEnd ?: EffTaskBean.DUMMY_END.toDate()
+
+                effMapper!!.createEffTask(this)
+            }
+
+            val effList = arrayListOf<EffMeter>()
+
             var cnt = 0
             meterMapper!!.selectMeterDma(MeterParam().apply {
                 meterIdList = midList
             }).forEach {
+                effTaskBean!!.fillPointList(it)
+
                 effList.addAll(if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
-                    effTaskBean!!.effMeter(it)
+                    effTaskBean!!.effMeter(it, task, 31)
                 else
-                    effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!))
+                    effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!, task)
+                )
 
                 ++cnt
             }

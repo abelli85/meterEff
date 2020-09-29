@@ -401,10 +401,9 @@ class EffServiceImplTest {
         }
 
         kotlin.run {
-            val meterList = meterMapper!!.selectMeterZone(MeterParam())
             val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
                     EffParam().apply {
-                        meterId = meterList.firstOrNull()?.meterId
+                        meterId = "fz-JTIJ1900015"
                     }))
             lgr.info("build eff result: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)

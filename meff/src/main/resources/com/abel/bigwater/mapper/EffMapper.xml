@@ -97,7 +97,7 @@
                                , deprecated)
         VALUES ( #{taskName}
                , #{createBy}
-               , #{createDate}
+               , CURRENT_TIMESTAMP
                , #{firmId}
                , #{firmName}
                , #{meterCount}
@@ -151,6 +151,7 @@
         , m.sizeId
         , m.sizeName
         , m.modelSize
+        , m.dataRows
         , m.decayEff
         , m.q4
         , m.q3
@@ -306,6 +307,7 @@
         , sizeId
         , sizeName
         , modelSize
+        , dataRows
         , decayEff
         , q4
         , q3
@@ -341,6 +343,7 @@
             , #{m1.sizeId}
             , #{m1.sizeName}
             , #{m1.modelSize}
+            , #{m1.dataRows}
             , #{m1.decayEff}
             , #{m1.q4}
             , #{m1.q3}
@@ -378,6 +381,7 @@
             , sizeId = tmp.sizeId
             , sizeName = tmp.sizeName
             , modelSize = tmp.modelSize
+            , dataRows = tmp.dataRows
             , decayEff = tmp.decayEff
             , q4 = tmp.q4
             , q3 = tmp.q3
@@ -415,6 +419,7 @@
             , #{m1.sizeId}
             , #{m1.sizeName}
             , #{m1.modelSize}
+            , #{m1.dataRows}
             , #{m1.decayEff}
             , #{m1.q4}
             , #{m1.q3}
@@ -450,6 +455,7 @@
         , sizeId
         , sizeName
         , modelSize
+        , dataRows
         , decayEff
         , q4
         , q3

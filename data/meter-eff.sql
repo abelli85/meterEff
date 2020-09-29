@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/9/7 17:14:39                            */
+/* Created on:     2020/9/29 17:28:21                           */
 /*==============================================================*/
 
 
@@ -27,6 +27,8 @@ drop table bw_dma_loss;
 drop table bw_dma_meter;
 
 drop table bw_eff_decay;
+
+drop index idx_meter_eff_task;
 
 drop index idx_meter_eff_size_model;
 
@@ -163,6 +165,17 @@ drop index idx_work_holi_yr;
 drop index idx_work_holi_date;
 
 drop table vc_workday_holiday;
+
+drop type serial8;
+
+/*==============================================================*/
+/* Domain: serial8                                              */
+/*==============================================================*/
+create type serial8 (
+);
+
+comment on type serial8 is
+'remove it in SQL!!';
 
 /*==============================================================*/
 /* Table: bw_config                                             */
@@ -358,6 +371,7 @@ create table bw_eff_decay (
 /* Table: bw_eff_meter                                          */
 /*==============================================================*/
 create table bw_eff_meter (
+   wid                  SERIAL               not null,
    taskId               INT8                 not null,
    meterId              VARCHAR(45)          not null,
    meterName            VARCHAR(45)          not null,
@@ -375,6 +389,7 @@ create table bw_eff_meter (
    q4v                  DECIMAL(15,3)        null,
    qtv                  DECIMAL(15,3)        null,
    meterEff             DECIMAL(15,3)        null,
+   dataRows             INT4                 null,
    realWater            DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
@@ -391,7 +406,7 @@ create table bw_eff_meter (
    qr2                  DECIMAL(15,3)        null,
    qr3                  DECIMAL(15,3)        null,
    qr4                  DECIMAL(15,3)        null,
-   constraint PK_BW_EFF_METER primary key (meterId, taskId)
+   constraint PK_BW_EFF_METER primary key (wid)
 );
 
 /*==============================================================*/
@@ -419,6 +434,15 @@ sizeId,
 modelSize,
 sizeName,
 meterId
+);
+
+/*==============================================================*/
+/* Index: idx_meter_eff_task                                    */
+/*==============================================================*/
+create  index idx_meter_eff_task on bw_eff_meter (
+taskId,
+meterId,
+taskStart
 );
 
 /*==============================================================*/
@@ -612,8 +636,6 @@ onlineDate
 /*==============================================================*/
 create table bw_meter_eff_point (
    wid                  serial8              not null,
-   meterId              VARCHAR(45)          not null,
-   taskId               INT8                 not null,
    pointName            varchar(20)          not null,
    pointNo              INT4                 not null,
    pointFlow            DECIMAL(15,3)        not null,
@@ -629,8 +651,6 @@ create table bw_meter_eff_point (
 /* Index: idx_eff_meter_flow                                    */
 /*==============================================================*/
 create  index idx_eff_meter_flow on bw_meter_eff_point (
-taskId,
-meterId,
 pointNo
 );
 
