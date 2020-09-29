@@ -5,6 +5,7 @@ import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
+import com.abel.bigwater.model.eff.VcEffDecay
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -114,5 +115,10 @@ class EffParam : BaseParam() {
      * 记录点检定结果
      */
     var pointList: List<VcMeterVerifyPoint>? = null
+
+    /**
+     * 品牌、型号、口径水表对应行度下的老化计量效率
+     */
+    var decayList: List<VcEffDecay>? = null
 
 }

@@ -1,5 +1,6 @@
 package com.abel.bigwater.model
 
+import com.abel.bigwater.model.eff.VcEffDecay
 import com.abel.bigwater.model.eff.VcMeterVerify
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.alibaba.fastjson.annotation.JSONField
@@ -375,6 +376,11 @@ open class BwMeter : BwBase() {
      * 记录检定点
      */
     var pointList: List<VcMeterVerifyPoint>? = null
+
+    /**
+     * 该品牌、型号、口径水表对应行度下的老化计量效率
+     */
+    var effDecay: VcEffDecay? = null
 
     override fun hashCode(): Int {
         return meterId?.hashCode() ?: 0

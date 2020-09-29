@@ -187,4 +187,9 @@ data class EffMeter(
      * 记录点检定结果
      */
     var pointList: List<VcMeterVerifyPoint>? = null
+
+    /**
+     * 该品牌、型号、口径水表对应行度下的老化计量效率
+     */
+    var effDecay: VcEffDecay? = null
 }

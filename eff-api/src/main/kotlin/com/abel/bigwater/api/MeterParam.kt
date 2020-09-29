@@ -85,6 +85,24 @@ data class MeterParam(var meterId: String? = null,
     var verifyDateEnd: Date? = null
 
     /**
+     * 口径
+     * the size to set
+     */
+    var sizeId: Int? = null
+
+    /**
+     * 口径
+     * the size to set
+     */
+    var sizeName: String? = null
+
+    /**
+     * 水表型号
+     * the model to set
+     */
+    var modelSize: String? = null
+
+    /**
      * 委托编号
      */
     var batchId: String? = null
