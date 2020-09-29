@@ -186,12 +186,12 @@ class BwData : BwBase() {
     var baseDigits: Double = 0.0
 
     /**
-     * 行度，未计入脉冲当量，原始读数. The sign should be +.
+     * 正向累计行度，未计入脉冲当量，原始读数. The sign should be +.
      */
     var forwardDigits: Double? = 0.0
 
     /**
-     * 反向行度，原始读数，未计入脉冲当量. The sign should be +.
+     * 反向累计行度，原始读数，未计入脉冲当量. The sign should be +.
      */
     var revertDigits: Double? = 0.0
 

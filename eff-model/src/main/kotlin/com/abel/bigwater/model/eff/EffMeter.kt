@@ -136,6 +136,11 @@ data class EffMeter(
     var modelSize: String? = null
 
     /**
+     * 引用的数据行数
+     */
+    var dataRows: Int = 0
+
+    /**
      * 引用的衰减系数
      */
     var decayEff: String? = null
