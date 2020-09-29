@@ -748,4 +748,75 @@
             </choose>
         </where>
     </delete>
+
+    <select id="selectEffDecay" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.VcEffDecay">
+        SELECT wid
+             , sizeId
+             , sizeName
+             , modelSize
+             , totalFwd
+             , decayEff
+             , createBy
+             , createDate
+             , updateBy
+             , updateDate
+             , deprecated
+        FROM bw_eff_decay
+        <where>
+            <if test="sizeId != null">
+                AND sizeId = #{sizeId}
+            </if>
+            <if test="sizeName != null">
+                AND sizeName LIKE #{sizeName}
+            </if>
+            <if test="modelSize != null">
+                AND modelSize LIKE #{modelSize}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertEffDecay" parameterType="com.abel.bigwater.api.EffParam">
+        INSERT INTO bw_eff_decay(sizeId
+        , sizeName
+        , modelSize
+        , totalFwd
+        , decayEff
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
+        , deprecated
+        )
+        VALUES
+        <foreach collection="decayList" item="de" separator=",">
+            (
+            #{de.sizeId}
+            , #{de.sizeName}
+            , #{de.modelSize}
+            , #{de.totalFwd}
+            , #{de.decayEff}
+            , #{de.createBy}
+            , #{de.createDate}
+            , #{de.updateBy}
+            , #{de.updateDate}
+            , #{de.deprecated}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteEffDecay" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE FROM bw_eff_decay
+        <where>
+            <if test="sizeId != null">
+                AND sizeId = #{sizeId}
+            </if>
+            <if test="sizeName != null">
+                AND sizeName LIKE #{sizeName}
+            </if>
+            <if test="modelSize != null">
+                AND modelSize LIKE #{modelSize}
+            </if>
+        </where>
+    </delete>
 </mapper>

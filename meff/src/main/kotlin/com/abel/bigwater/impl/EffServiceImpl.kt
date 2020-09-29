@@ -461,6 +461,7 @@ class EffServiceImpl : EffService {
                 meterIdList = midList
             }).forEach {
                 effTaskBean!!.fillPointList(it)
+                effTaskBean!!.fillDecay(it)
 
                 effList.addAll(if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
                     effTaskBean!!.effMeter(it, task, 31)

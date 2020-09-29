@@ -7,6 +7,7 @@ import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.EffTask
+import com.abel.bigwater.model.eff.VcEffDecay
 import com.alibaba.fastjson.JSON
 import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDate
@@ -391,22 +392,40 @@ class EffServiceImplTest {
     fun testEffMeter() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
-        kotlin.run {
-            val r1 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
-                    EffParam().apply {
-                        meterIdList = listOf("hello", "world")
-                    }))
-            lgr.info("build eff result: {}", JSON.toJSONString(r1, true))
-            assertEquals(0, r1.code)
-        }
+        try {
+            effMapper!!.insertEffDecay(EffParam().apply {
+                decayList = listOf(VcEffDecay().also {
+                    it.sizeId = 0
+                    it.modelSize = "0"
+                    it.sizeName = "0"
 
-        kotlin.run {
-            val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
-                    EffParam().apply {
-                        meterId = "fz-JTIJ1900015"
-                    }))
-            lgr.info("build eff result: {}", JSON.toJSONString(r2, true))
-            assertEquals(0, r2.code)
+                    it.totalFwd = 1E6
+                    it.decayEff = 10.0
+                })
+            })
+
+            kotlin.run {
+                val r1 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
+                        EffParam().apply {
+                            meterIdList = listOf("hello", "world")
+                        }))
+                lgr.info("build eff result: {}", JSON.toJSONString(r1, true))
+                assertEquals(0, r1.code)
+            }
+
+            kotlin.run {
+                val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
+                        EffParam().apply {
+                            meterId = "fz-JTIJ1900015"
+                        }))
+                lgr.info("build eff result: {}", JSON.toJSONString(r2, true))
+                assertEquals(0, r2.code)
+            }
+        } finally {
+            effMapper!!.deleteEffDecay(EffParam().apply {
+                sizeId = 0
+                modelSize = "0"
+            })
         }
     }
 

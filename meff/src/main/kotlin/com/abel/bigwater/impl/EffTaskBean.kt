@@ -89,57 +89,88 @@ class EffTaskBean {
     /**
      * 填充计量点
      */
-    fun fillPointList(it: ZoneMeter) {
-        it.pointList = meterMapper!!.listVerifyPointLast(MeterParam().apply {
-            meterId = it.meterId
+    fun fillPointList(meter: ZoneMeter) {
+        meter.pointList = meterMapper!!.listVerifyPointLast(MeterParam().apply {
+            meterId = meter.meterId
         })
 
         val ptList = arrayListOf<VcMeterVerifyPoint>()
-        if (it.q1 > 1E-3) {
+        if (meter.q1 > 1E-3) {
             ptList.add(VcMeterVerifyPoint().apply {
-                meterId = it.meterId
+                meterId = meter.meterId
                 verifyDate = LocalDate(2010, 1, 1).toDate()
                 pointNo = 1
                 pointName = "Q1"
-                pointFlow = it.q1
-                pointDev = it.q1r
+                pointFlow = meter.q1
+                pointDev = meter.q1r
             })
         }
 
-        if (it.q2 > 1E-3) {
+        if (meter.q2 > 1E-3) {
             ptList.add(VcMeterVerifyPoint().apply {
-                meterId = it.meterId
+                meterId = meter.meterId
                 verifyDate = LocalDate(2010, 1, 1).toDate()
                 pointNo = 2
                 pointName = "Q2"
-                pointFlow = it.q2
-                pointDev = it.q2r
+                pointFlow = meter.q2
+                pointDev = meter.q2r
             })
         }
 
-        if (it.q3 > 1E-3) {
+        if (meter.q3 > 1E-3) {
             ptList.add(VcMeterVerifyPoint().apply {
-                meterId = it.meterId
+                meterId = meter.meterId
                 verifyDate = LocalDate(2010, 1, 1).toDate()
                 pointNo = 3
                 pointName = "Q3"
-                pointFlow = it.q3
-                pointDev = it.q3r
+                pointFlow = meter.q3
+                pointDev = meter.q3r
             })
         }
 
-        if (it.q4 > 1E-3) {
+        if (meter.q4 > 1E-3) {
             ptList.add(VcMeterVerifyPoint().apply {
-                meterId = it.meterId
+                meterId = meter.meterId
                 verifyDate = LocalDate(2010, 1, 1).toDate()
                 pointNo = 4
                 pointName = "Q4"
-                pointFlow = it.q4
-                pointDev = it.q4r
+                pointFlow = meter.q4
+                pointDev = meter.q4r
             })
         }
 
-        it.pointList = ptList.toList()
+        meter.pointList = ptList.toList()
+    }
+
+    /**
+     * fill eff-meter for decay
+     */
+    fun fillDecay(meter: BwMeter) {
+        // if there's decay
+        effMapper!!.selectEffDecay(EffParam().apply {
+            sizeId = meter.sizeId
+            modelSize = meter.modelSize
+        }).firstOrNull()?.also {
+            meter.effDecay = it
+        }
+
+        if (meter.effDecay == null) {
+            effMapper!!.selectEffDecay(EffParam().apply {
+                sizeId = meter.sizeId
+                modelSize = "0"
+            }).firstOrNull()?.also {
+                meter.effDecay = it
+            }
+        }
+
+        if (meter.effDecay == null) {
+            effMapper!!.selectEffDecay(EffParam().apply {
+                sizeId = 0
+                modelSize = "0"
+            }).firstOrNull()?.also {
+                meter.effDecay = it
+            }
+        }
     }
 
     fun effMeter(meter: BwMeter, task: EffTask, days: Int? = null): List<EffMeter> {
@@ -281,6 +312,9 @@ class EffTaskBean {
                 }
             }
 
+            // decayed eff
+            eff.effDecay = meter.effDecay
+
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
@@ -360,8 +394,18 @@ class EffTaskBean {
                 meterWater = pointEffList!!.sumByDouble { it.pointWater!! }
                 realWater = pointEffList!!.sumByDouble { it.realWater!! }
                 meterEff = if (realWater!! > 1.0E-3) {
-                    meterWater!!.div(realWater!!)
-                } else 1.0
+                    meterWater!!.div(realWater!!).times(100.0)
+                } else 100.0
+
+                // decayed eff
+                decayEff = if (eff.effDecay?.decayEff == null)
+                    String.format("%.3f", meterEff)
+                else {
+                    var tfwd = effDecay!!.totalFwd ?: 1.0E6
+                    if (tfwd < 1.0E5) tfwd = 1.0E6
+                    val decay = endFwd?.div(tfwd)?.times(effDecay!!.decayEff?.div(100.0) ?: 0.0) ?: 0.0
+                    String.format("%.3f", meterEff?.minus(decay) ?: 0.0)
+                }
 
                 q0v = pointEffList?.getOrNull(0)?.pointWater
                 q1v = pointEffList?.getOrNull(1)?.pointWater

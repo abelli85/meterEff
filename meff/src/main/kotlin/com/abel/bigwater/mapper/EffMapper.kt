@@ -5,6 +5,7 @@ import com.abel.bigwater.model.DataRange
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.EffTask
+import com.abel.bigwater.model.eff.VcEffDecay
 import org.apache.ibatis.annotations.Mapper
 
 @Mapper
@@ -31,5 +32,11 @@ interface EffMapper {
     fun insertEffPoint(p: EffParam): Int
 
     fun deleteEffPoint(p: EffParam): Int
+
+    fun selectEffDecay(p: EffParam): List<VcEffDecay>
+
+    fun insertEffDecay(p: EffParam): Int
+
+    fun deleteEffDecay(p: EffParam): Int
 
 }

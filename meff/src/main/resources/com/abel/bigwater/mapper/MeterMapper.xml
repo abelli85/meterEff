@@ -864,6 +864,13 @@
                 AND (d.dmaName IS NULL OR d.dmaName LIKE #{dmaName})
             </if>
 
+            <if test="sizeId != null">
+                AND m.sizeId = #{sizeId}
+            </if>
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
             <choose>
                 <when test="typeId == 'CHECK'">
                     AND m.typeId = 'CHECK'
@@ -1006,6 +1013,13 @@
 
             <if test="zoneName != null">
                 AND z.zoneName LIKE #{zoneName}
+            </if>
+
+            <if test="sizeId != null">
+                AND m.sizeId = #{sizeId}
+            </if>
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
             </if>
 
             <choose>
