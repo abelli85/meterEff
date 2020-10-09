@@ -39,7 +39,7 @@ class EffParam : BaseParam() {
     var taskStart: Date? = null
 
     /**
-     * 任务开始时段
+     * 任务结束时段
      */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
@@ -47,7 +47,7 @@ class EffParam : BaseParam() {
     var taskEnd: Date? = null
 
     /**
-     * 运行开始时间
+     * 运行时间
      */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
@@ -63,7 +63,7 @@ class EffParam : BaseParam() {
     var runTime1: Date? = null
 
     /**
-     * 运行开始时间
+     * 运行结束时间
      */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)

@@ -54,7 +54,11 @@ interface EffService {
     fun fetchEffTask(holder: BwHolder<EffParam>): BwResult<EffTask>
 
     /**
-     * 列出水表的分析结果
+     * 列出水表的分析结果, 填充参数:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
      */
     @POST
     @Path(PATH_LIST_METER_EFF)
