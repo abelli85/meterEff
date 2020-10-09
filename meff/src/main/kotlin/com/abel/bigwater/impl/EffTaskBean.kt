@@ -44,7 +44,7 @@ class EffTaskBean {
     @Autowired
     private var effMapper: EffMapper? = null
 
-    @Scheduled(cron = "0 15 0/2 * * ?")
+    @Scheduled(cron = "0 15 0/6 * * ?")
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
         val firmList = configMapper!!.selectFirm("%")

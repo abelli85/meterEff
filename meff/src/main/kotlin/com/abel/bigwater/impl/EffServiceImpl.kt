@@ -150,7 +150,11 @@ class EffServiceImpl : EffService {
     }
 
     /**
-     * 列出水表的分析结果
+     * 列出水表的分析结果, 填充参数:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
      */
     override fun listMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
         if (holder.lr?.sessionId.isNullOrBlank()) {
