@@ -429,6 +429,15 @@ class EffServiceImplTest {
         }
     }
 
+    @Test
+    fun testListDecay() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        val dlist = effService!!.selectEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                EffParam()))
+        lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
+    }
+
     companion object {
         private val lgr = LoggerFactory.getLogger(EffServiceImplTest::class.java)
         private val task = EffTask().apply {

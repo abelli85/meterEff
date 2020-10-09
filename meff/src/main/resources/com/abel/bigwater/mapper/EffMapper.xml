@@ -17,6 +17,7 @@
         , taskMemo
         , taskStart
         , taskEnd
+        , periodType
         , runTime
         , runDuration
         , taskResult
@@ -31,6 +32,9 @@
             </if>
             <if test="taskId != null">
                 AND t.taskId = #{taskId}
+            </if>
+            <if test="periodType != null">
+                AND t.periodType = #{periodType}
             </if>
 
             <choose>
@@ -88,6 +92,7 @@
                                , taskMemo
                                , taskStart
                                , taskEnd
+                               , periodType
                                , runTime
                                , runDuration
                                , taskResult
@@ -104,6 +109,7 @@
                , #{taskMemo}
                , #{taskStart}
                , #{taskEnd}
+               , #{periodType}
                , #{runTime}
                , #{runDuration}
                , #{taskResult}
@@ -134,6 +140,7 @@
         , m.taskName
         , m.taskStart
         , m.taskEnd
+        , m.periodType
         , m.runTime
         , m.runDuration
         , m.taskResult
@@ -171,6 +178,9 @@
             </if>
             <if test="taskId != null">
                 AND m.taskId = #{taskId}
+            </if>
+            <if test="periodType != null">
+                AND m.periodType = #{periodType}
             </if>
 
             <choose>
@@ -290,6 +300,7 @@
         , taskName
         , taskStart
         , taskEnd
+        , periodType
         , runTime
         , runDuration
         , taskResult
@@ -326,6 +337,7 @@
             , #{m1.taskName}
             , #{m1.taskStart}
             , #{m1.taskEnd}
+            , #{m1.periodType}
             , #{m1.runTime}
             , #{m1.runDuration}
             , #{m1.taskResult}
@@ -364,6 +376,7 @@
             , taskName = tmp.taskName
             , taskStart = tmp.taskStart
             , taskEnd = tmp.taskEnd
+            , periodType = tmp.periodType
             , runTime = tmp.runTime
             , runDuration = tmp.runDuration
             , taskResult = tmp.taskResult
@@ -402,6 +415,7 @@
             , #{m1.taskName}
             , #{m1.taskStart}
             , #{m1.taskEnd}
+            , #{m1.periodType}
             , #{m1.runTime}
             , #{m1.runDuration}
             , #{m1.taskResult}
@@ -438,6 +452,7 @@
         , taskName
         , taskStart
         , taskEnd
+        , periodType
         , runTime
         , runDuration
         , taskResult
@@ -752,6 +767,8 @@
     <select id="selectEffDecay" parameterType="com.abel.bigwater.api.EffParam"
             resultType="com.abel.bigwater.model.eff.VcEffDecay">
         SELECT wid
+             , meterBrandId
+             , meterBrandName
              , sizeId
              , sizeName
              , modelSize
@@ -777,7 +794,9 @@
     </select>
 
     <insert id="insertEffDecay" parameterType="com.abel.bigwater.api.EffParam">
-        INSERT INTO bw_eff_decay(sizeId
+        INSERT INTO bw_eff_decay(meterBrandId
+        , meterBrandName
+        , sizeId
         , sizeName
         , modelSize
         , totalFwd
@@ -790,8 +809,9 @@
         )
         VALUES
         <foreach collection="decayList" item="de" separator=",">
-            (
-            #{de.sizeId}
+            ( #{meterBrandId}
+            , #{meterBrandName}
+            , #{de.sizeId}
             , #{de.sizeName}
             , #{de.modelSize}
             , #{de.totalFwd}
@@ -808,6 +828,9 @@
     <delete id="deleteEffDecay" parameterType="com.abel.bigwater.api.EffParam">
         DELETE FROM bw_eff_decay
         <where>
+            <if test="meterBrandId != null">
+                meterBrandId = #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND sizeId = #{sizeId}
             </if>

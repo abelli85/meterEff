@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/9/29 17:28:21                           */
+/* Created on:     2020/10/9 18:28:07                           */
 /*==============================================================*/
 
 
@@ -25,6 +25,8 @@ drop index idx_loss_dma;
 drop table bw_dma_loss;
 
 drop table bw_dma_meter;
+
+drop index idx_meter_decay;
 
 drop table bw_eff_decay;
 
@@ -354,6 +356,8 @@ create table bw_dma_meter (
 /*==============================================================*/
 create table bw_eff_decay (
    wid                  serial8              not null,
+   meterBrandId         VARCHAR(45)          null,
+   meterBrandName       VARCHAR(45)          null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
@@ -368,6 +372,15 @@ create table bw_eff_decay (
 );
 
 /*==============================================================*/
+/* Index: idx_meter_decay                                       */
+/*==============================================================*/
+create  index idx_meter_decay on bw_eff_decay (
+meterBrandId,
+sizeId,
+modelSize
+);
+
+/*==============================================================*/
 /* Table: bw_eff_meter                                          */
 /*==============================================================*/
 create table bw_eff_meter (
@@ -378,6 +391,7 @@ create table bw_eff_meter (
    taskName             VARCHAR(45)          not null,
    taskStart            TIMESTAMP WITH TIME ZONE not null,
    taskEnd              TIMESTAMP WITH TIME ZONE not null,
+   periodType           VARCHAR(20)          not null,
    runTime              TIMESTAMP WITH TIME ZONE null,
    runDuration          INT4                 null,
    taskResult           VARCHAR(500)         null,
@@ -459,6 +473,7 @@ create table bw_eff_task (
    taskMemo             VARCHAR(500)         null,
    taskStart            TIMESTAMP WITH TIME ZONE not null,
    taskEnd              TIMESTAMP WITH TIME ZONE not null,
+   periodType           VARCHAR(20)          not null,
    runTime              TIMESTAMP WITH TIME ZONE null,
    runDuration          INT4                 null,
    taskResult           VARCHAR(500)         null,

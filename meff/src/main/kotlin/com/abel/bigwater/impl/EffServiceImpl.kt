@@ -5,6 +5,7 @@ import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffTask
+import com.abel.bigwater.model.eff.VcEffDecay
 import com.alibaba.fastjson.JSON
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -483,6 +484,36 @@ class EffServiceImpl : EffService {
             lgr.error(ex.message, ex)
             return BwResult(1, "${ERR_INTERNAL} ${ex.message}")
         }
+    }
+
+    /**
+     * 列出水表老化规则（每百万方水计量效率衰减）
+     */
+    override fun selectEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
+        if (holder.lr?.sessionId.isNullOrBlank() || holder.single == null) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        try {
+            return BwResult(effMapper!!.selectEffDecay(holder.single!!))
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex)
+            return BwResult(1, "${ERR_INTERNAL} ${ex.message}")
+        }
+    }
+
+    /**
+     * 插入水表老化规则（每百万方水计量效率衰减）
+     */
+    override fun insertEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * 删除水表老化规则（每百万方水计量效率衰减）
+     */
+    override fun deleteEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
+        TODO("Not yet implemented")
     }
 
     /**
