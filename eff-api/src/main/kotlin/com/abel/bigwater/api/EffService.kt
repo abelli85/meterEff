@@ -2,6 +2,7 @@ package com.abel.bigwater.api
 
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.EffTask
+import com.abel.bigwater.model.eff.VcEffDecay
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
 import javax.ws.rs.Consumes
 import javax.ws.rs.POST
@@ -29,6 +30,10 @@ interface EffService {
         const val PATH_REPLACE_METER_EFF = "/replaceMeterEff"
         const val PATH_BUILD_METER_EFF = "/buildMeterEff"
         const val PATH_PUSH_EFF_TASK = "/pushEffTask"
+
+        const val PATH_LIST_EFF_DECAY = "/listEffDecay"
+        const val PATH_INSERT_EFF_DECAY = "/insertEffDecay"
+        const val PATH_DELETE_EFF_DECAY = "/deleteEffDecay"
     }
 
     /**
@@ -120,6 +125,27 @@ interface EffService {
     @POST
     @Path(PATH_BUILD_METER_EFF)
     fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 列出水表老化规则（每百万方水计量效率衰减）
+     */
+    @POST
+    @Path(PATH_LIST_EFF_DECAY)
+    fun selectEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
+
+    /**
+     * 插入水表老化规则（每百万方水计量效率衰减）
+     */
+    @POST
+    @Path(PATH_INSERT_EFF_DECAY)
+    fun insertEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
+
+    /**
+     * 删除水表老化规则（每百万方水计量效率衰减）
+     */
+    @POST
+    @Path(PATH_DELETE_EFF_DECAY)
+    fun deleteEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
 
     /**
      * 分析水表的计量效率, 可以是整个水司, 一只或多只水表, 不指定时段 或 指定时段的计量效率.

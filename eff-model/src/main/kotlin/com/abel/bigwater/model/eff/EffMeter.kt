@@ -53,12 +53,19 @@ data class EffMeter(
     var taskStart: Date? = null
 
     /**
-     * 任务开始时段
+     * 任务结束时段
      */
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var taskEnd: Date? = null
+
+    /**
+     * 计量效率分析的时段类型
+     */
+    var periodType: String? = null
+    var periodTypeObj: EffPeriodType? = null
+        get() = EffPeriodType.values().find { it.name == periodType }
 
     /**
      * 运行开始时间

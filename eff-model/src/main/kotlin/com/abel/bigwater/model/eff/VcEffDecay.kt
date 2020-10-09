@@ -12,6 +12,18 @@ class VcEffDecay : BwBase() {
     var wid: Long? = null
 
     /**
+     * 水表品牌标示
+     * the meterBrandId to set
+     */
+    var meterBrandId: String? = null
+
+    /**
+     * 水表品牌名称
+     * the meterBrandId to set
+     */
+    var meterBrandName: String? = null
+
+    /**
      * 口径
      * the size to set
      */

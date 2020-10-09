@@ -65,6 +65,13 @@ data class EffTask(
     var taskEnd: Date? = null
 
     /**
+     * 计量效率分析的时段类型
+     */
+    var periodType: String? = null
+    var periodTypeObj: EffPeriodType? = null
+        get() = EffPeriodType.values().find { it.name == periodType }
+
+    /**
      * 运行开始时间
      */
     @JsonSerialize(using = JsonDateSerializer::class)
