@@ -3,10 +3,7 @@ package com.abel.bigwater.api
 import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
-import com.abel.bigwater.model.eff.EffMeter
-import com.abel.bigwater.model.eff.EffMeterPoint
-import com.abel.bigwater.model.eff.VcEffDecay
-import com.abel.bigwater.model.eff.VcMeterVerifyPoint
+import com.abel.bigwater.model.eff.*
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -77,6 +74,16 @@ class EffParam : BaseParam() {
     @JsonIgnore
     var jodaTaskEnd: DateTime? = null
         get() = if (taskEnd == null) null else DateTime(taskEnd)
+
+    /**
+     * 计量效率分析的时段类型
+     */
+    var periodType: String = EffPeriodType.Day.name
+    var periodTypeObj: EffPeriodType?
+        get() = EffPeriodType.values().find { it.name == periodType }
+        set(value) {
+            periodType = value!!.name
+        }
 
     /**
      * 口径

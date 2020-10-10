@@ -68,8 +68,11 @@ data class EffTask(
      * 计量效率分析的时段类型
      */
     var periodType: String? = null
-    var periodTypeObj: EffPeriodType? = null
+    var periodTypeObj: EffPeriodType?
         get() = EffPeriodType.values().find { it.name == periodType }
+        set(value) {
+            periodType = value!!.name
+        }
 
     /**
      * 运行开始时间
