@@ -433,9 +433,100 @@ class EffServiceImplTest {
     fun testListDecay() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
-        val dlist = effService!!.selectEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+        val r1 = effService!!.selectEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
                 EffParam()))
-        lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
+        lgr.info("decay list: {}", JSON.toJSONString(r1, true))
+    }
+
+    @Test
+    fun testInsertDecay() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val dlist = listOf(VcEffDecay().apply {
+            meterBrandId = "brand-1"
+            meterBrandName = "brand-1"
+
+            sizeId = 1
+            sizeName = "test1"
+
+            modelSize = "model1"
+        }, VcEffDecay().apply {
+            meterBrandId = "brand-2"
+            meterBrandName = "brand-2"
+
+            sizeId = 2
+            sizeName = "test2"
+
+            modelSize = "model2"
+        })
+
+        try {
+            val r1 = effService!!.insertEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                    EffParam().also {
+                        it.decayList = dlist
+                    }))
+            lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
+        } finally {
+            var cnt = 0
+            dlist.forEach {
+                cnt += effMapper!!.deleteEffDecaySingle(it)
+            }
+            lgr.info("delete test decay: $cnt")
+            assertEquals(2, cnt)
+        }
+    }
+
+    @Test
+    fun testDeleteDecay() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val dlist = listOf(VcEffDecay().apply {
+            meterBrandId = "brand-1"
+            meterBrandName = "brand-1"
+
+            sizeId = 1
+            sizeName = "test1"
+
+            modelSize = "model1"
+        }, VcEffDecay().apply {
+            meterBrandId = "brand-2"
+            meterBrandName = "brand-2"
+
+            sizeId = 2
+            sizeName = "test2"
+
+            modelSize = "model2"
+        })
+
+        try {
+            kotlin.run {
+                val r1 = effService!!.insertEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                        EffParam().also {
+                            it.decayList = dlist
+                        }))
+                lgr.info("decay list: {}", JSON.toJSONString(r1, true))
+            }
+
+            val r1 = effService!!.selectEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                    EffParam()))
+            val brandList = dlist.map { it.meterBrandId!! }
+            r1.list = r1.list?.filter {
+                brandList.contains(it.meterBrandId)
+            }
+            lgr.info("decay list: {}", JSON.toJSONString(r1, true))
+            assertEquals(2, r1.list?.size)
+
+            val r2 = effService!!.deleteEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                    EffParam().also {
+                        it.decayList = dlist
+                    }))
+            lgr.info("decay list: {}", JSON.toJSONString(r2, true))
+        } finally {
+            var cnt = 0
+            dlist.forEach {
+                cnt += effMapper!!.deleteEffDecaySingle(it)
+            }
+            lgr.info("delete test decay: $cnt")
+            assertEquals(0, cnt)
+        }
     }
 
     companion object {

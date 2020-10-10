@@ -809,8 +809,8 @@
         )
         VALUES
         <foreach collection="decayList" item="de" separator=",">
-            ( #{meterBrandId}
-            , #{meterBrandName}
+            ( #{de.meterBrandId}
+            , #{de.meterBrandName}
             , #{de.sizeId}
             , #{de.sizeName}
             , #{de.modelSize}
@@ -826,6 +826,30 @@
     </insert>
 
     <delete id="deleteEffDecay" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE FROM bw_eff_decay
+            USING bw_eff_decay ed,
+                (VALUES
+                    <foreach collection="decayList" item="d1" separator=",">
+                        (
+                         #{d1.meterBrandId}
+                         , #{d1.sizeId}
+                         , #{d1.modelSize}
+                        )
+                    </foreach> )
+                AS tmp(meterBrandId
+                    , sizeId
+                    , modelSize)
+        <where>
+            ed.meterBrandId = tmp.meterBrandId
+            AND ed.sizeId = tmp.sizeId
+            AND ed.modelSize = tmp.modelSize
+            <if test="sizeName != null">
+                AND ed.sizeName LIKE #{sizeName}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteEffDecaySingle" parameterType="com.abel.bigwater.model.eff.VcEffDecay">
         DELETE FROM bw_eff_decay
         <where>
             <if test="meterBrandId != null">

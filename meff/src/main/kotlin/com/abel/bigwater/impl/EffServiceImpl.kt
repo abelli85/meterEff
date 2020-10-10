@@ -39,7 +39,7 @@ class EffServiceImpl : EffService {
         lgr.info("${holder.lr?.userId} try to list eff-task: ${JSON.toJSONString(holder.single)}")
         val dp = holder.single!!
 
-        val rightName = EffService.BASE_PATH + EffService.PATH_LIST_TASK
+        val rightName = EffService.BASE_PATH + EffService.PATH_CREATE_TASK
         try {
             val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
             if (login.code != 0) {
@@ -487,7 +487,11 @@ class EffServiceImpl : EffService {
     }
 
     /**
-     * 列出水表老化规则（每百万方水计量效率衰减）
+     * 列出水表老化规则（每百万方水计量效率衰减）, 如下参数均可选:
+     * @see EffParam.meterBrandId
+     * @see EffParam.sizeId
+     * @see EffParam.sizeName
+     * @see EffParam.modelSize
      */
     override fun selectEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
         if (holder.lr?.sessionId.isNullOrBlank() || holder.single == null) {
@@ -503,17 +507,61 @@ class EffServiceImpl : EffService {
     }
 
     /**
-     * 插入水表老化规则（每百万方水计量效率衰减）
+     * 插入水表老化规则（每百万方水计量效率衰减）, 必填:
+     * @see EffParam.decayList
      */
     override fun insertEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.decayList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val dp = holder.single!!
+        lgr.info("${holder.lr?.userId} try to add eff-decay: ${JSON.toJSONString(dp)}")
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_INSERT_EFF_DECAY
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            val cnt = effMapper!!.insertEffDecay(dp)
+
+            return BwResult(0, "添加水表计量效率衰减： $cnt")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 删除水表老化规则（每百万方水计量效率衰减）
+     * 删除水表老化规则（每百万方水计量效率衰减）, 必填:
+     * @see EffParam.decayList
      */
     override fun deleteEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.decayList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val dp = holder.single!!
+        lgr.info("${holder.lr?.userId} try to delete eff-decay: ${JSON.toJSONString(dp)}")
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_DELETE_EFF_DECAY
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            val cnt = effMapper!!.deleteEffDecay(dp)
+
+            return BwResult(0, "删除水表计量效率衰减： $cnt")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**

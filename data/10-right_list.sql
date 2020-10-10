@@ -1,5 +1,6 @@
 ﻿-- \c eff;
 
+-- <editor-fold desc='clean rights & roles'>
 -- delete role-right
 DELETE FROM bw_role_right WHERE rightName LIKE 'user%';
 DELETE FROM bw_role_right WHERE rightName LIKE 'zone%';
@@ -39,9 +40,10 @@ DELETE FROM bw_right;
 -- delete role
 DELETE FROM bw_role;
 
+-- </editor-fold>
 
 -- ----------------------------------------
-
+-- <editor-fold desc='rights & roles migrated from loss-control-platform'>
 INSERT INTO bw_right (rightName, rightDesc) VALUES ('LIST_USER', '列举用户资料');
 INSERT INTO bw_role_right (rightName, roleName) VALUES ('LIST_USER', 'ADMINISTRATOR');
 
@@ -119,12 +121,12 @@ INSERT INTO bw_role_right (roleName, rightName) VALUES('DMA_USER', 'TOTAL_DATA_U
 -- 角色 MOB_USER
 INSERT INTO bw_role (roleName, roleDesc) VALUES('MOB_USER', '手机用户');
 INSERT INTO bw_role_right (roleName, rightName) VALUES('MOB_USER', 'MOB_LOGIN');
-
+-- </editor-fold>
 
 ----------------
 -- right list --
 ----------------
--- <editor-fold desc="right list">
+-- <editor-fold desc="rights @user">
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user', '用户详情');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/login', '登录');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/logout', '登出');
@@ -156,7 +158,9 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/kickLogin', '踢出会
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/listStdAuth', '获取计量标准列表');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/addStdAuth', '插入计量标准');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/user/deleteStdAuth', '删除计量标准');
+-- </editor-fold>
 
+-- <editor-fold desc='rights migrated from verify-center'>
 -- right for zone
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/zone/save', '创建片区');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/zone/delete', '删除片区');
@@ -348,6 +352,9 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/listMeter'	, '列出备
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/listUnregMeter'	, '列出待备案详单');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/createReg'	, '备案一批水表');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/reg/removeReg'	, '取消一次备案');
+-- </editor-fold>
+
+-- <editor-fold desc='rights & roles @eff'>
 
 -- 计量效率
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/createEffTask'	    , '任务详情');
@@ -359,12 +366,15 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listMeterEff'	    , '�
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/addMeterEff'	    , '添加水表效率'),
                                                   ('/eff/deleteMeterEff'	    , '删除水表效率'),
                                                   ('/eff/updateMeterEff'	    , '修改水表效率');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/eff/listEffDecay'	        , '列出水表效率衰减'),
+                                                  ('/eff/insertEffDecay'	    , '上传水表效率衰减'),
+                                                  ('/eff/deleteEffDecay'	    , '删除水表效率衰减');
 
 
 -- </editor-fold>
 
 -- ===========================================================================
-
+-- <editor-fold desc='roles for verify-center'>
 -- 角色 WARE_JIANDING 库房检定员
 -- 角色 WARE_AUDIT 库房审核
 INSERT INTO bw_role (roleName, roleDesc) VALUES('WARE_JIANDING', '库房检定员');
@@ -414,7 +424,7 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('MOB_USER', '/stat/listSt
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('MOB_USER', '/stat/statDataRange');
 
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('MOB_USER', '/zone/searchAllText');
-
+-- </editor-fold>
 -- admin
 
 -- <editor-fold desc="rights for ADMINISTRATOR">
@@ -855,6 +865,9 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/list
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/addMeterEff'),
                                                       ('POWER_USER',  '/eff/deleteMeterEff'),
                                                       ('POWER_USER',  '/eff/updateMeterEff');
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER',  '/eff/listEffDecay'),
+                                                      ('POWER_USER',  '/eff/insertEffDecay'),
+                                                      ('POWER_USER',  '/eff/deleteEffDecay');
 
 -- </editor-fold>
 
