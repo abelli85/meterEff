@@ -91,6 +91,18 @@ class EffParam : BaseParam() {
     var sizeName: String? = null
 
     /**
+     * 水表品牌标示
+     * the meterBrandId to set
+     */
+    var meterBrandId: String? = null
+
+    /**
+     * 水表品牌名称
+     * the meterBrandId to set
+     */
+    var meterBrandName: String? = null
+
+    /**
      * 水表型号
      * the model to set
      */

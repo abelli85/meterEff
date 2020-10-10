@@ -127,21 +127,27 @@ interface EffService {
     fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
-     * 列出水表老化规则（每百万方水计量效率衰减）
+     * 列出水表老化规则（每百万方水计量效率衰减）, 如下参数均可选:
+     * @see EffParam.meterBrandId
+     * @see EffParam.sizeId
+     * @see EffParam.sizeName
+     * @see EffParam.modelSize
      */
     @POST
     @Path(PATH_LIST_EFF_DECAY)
     fun selectEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
 
     /**
-     * 插入水表老化规则（每百万方水计量效率衰减）
+     * 插入水表老化规则（每百万方水计量效率衰减）, 必填:
+     * @see EffParam.decayList
      */
     @POST
     @Path(PATH_INSERT_EFF_DECAY)
     fun insertEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
 
     /**
-     * 删除水表老化规则（每百万方水计量效率衰减）
+     * 删除水表老化规则（每百万方水计量效率衰减）, 必填:
+     * @see EffParam.decayList
      */
     @POST
     @Path(PATH_DELETE_EFF_DECAY)
