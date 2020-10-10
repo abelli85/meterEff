@@ -4,6 +4,7 @@ import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.eff.EffMeter
+import com.abel.bigwater.model.eff.EffPeriodType
 import com.abel.bigwater.model.eff.EffTask
 import com.abel.bigwater.model.eff.VcEffDecay
 import com.alibaba.fastjson.JSON
@@ -455,6 +456,7 @@ class EffServiceImpl : EffService {
                 firmName = login.single!!.firmName
                 taskStart = param.taskStart ?: EffTaskBean.DUMMY_START.toDate()
                 taskEnd = param.taskEnd ?: EffTaskBean.DUMMY_END.toDate()
+                periodTypeObj = EffPeriodType.Day
 
                 effMapper!!.createEffTask(this)
             }
@@ -468,11 +470,15 @@ class EffServiceImpl : EffService {
                 effTaskBean!!.fillPointList(it)
                 effTaskBean!!.fillDecay(it)
 
-                effList.addAll(if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
+                val lst = if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
                     effTaskBean!!.effMeter(it, task, 31)
                 else
                     effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!, task)
-                )
+
+                // 月度效率
+                effTaskBean!!.buildMonthEff(lst)
+
+                effList.addAll(lst)
 
                 ++cnt
             }

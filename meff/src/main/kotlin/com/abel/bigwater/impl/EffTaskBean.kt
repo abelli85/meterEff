@@ -11,10 +11,7 @@ import com.abel.bigwater.model.BwData
 import com.abel.bigwater.model.BwFirm
 import com.abel.bigwater.model.BwMeter
 import com.abel.bigwater.model.DataRange
-import com.abel.bigwater.model.eff.EffMeter
-import com.abel.bigwater.model.eff.EffMeterPoint
-import com.abel.bigwater.model.eff.EffTask
-import com.abel.bigwater.model.eff.VcMeterVerifyPoint
+import com.abel.bigwater.model.eff.*
 import com.abel.bigwater.model.zone.ZoneMeter
 import org.joda.time.DateTime
 import org.joda.time.Duration
@@ -64,6 +61,7 @@ class EffTaskBean {
             taskName = "auto"
             firmId = firm.firmId
             firmName = firm.firmName
+            periodTypeObj = EffPeriodType.Day
             taskStart = DUMMY_START.toDate()
             taskEnd = DUMMY_END.toDate()
 
@@ -83,7 +81,22 @@ class EffTaskBean {
             val effList = effMeter(it, task, 31)
             lgr.info("analyze {} eff for {}/{} in {}", effList.size,
                     it.meterId, it.meterName, firm.title)
+            if (effList.isEmpty()) return@forEach
+
+            buildMonthEff(effList)
         }
+    }
+
+    fun buildMonthEff(effList: List<EffMeter>) {
+        val pmth = EffParam().apply {
+            meterId = effList.firstOrNull()?.meterId
+            periodTypeObj = EffPeriodType.Month
+            taskStart = effList.minOf { e1 -> e1.taskStart!! }
+            taskEnd = effList.maxOf { e1 -> e1.taskStart!! }
+        }
+        effMapper!!.deleteEffMeter(pmth)
+        val cnt = effMapper!!.buildEffMeterMonth(pmth)
+        lgr.info("build month eff: $cnt")
     }
 
     /**
@@ -233,6 +246,7 @@ class EffTaskBean {
                 meterName = meter.meterName
                 taskId = task.taskId
                 taskName = task.taskName
+                periodTypeObj = EffPeriodType.Day
                 taskStart = day1.toDate()
                 taskEnd = day1.plusDays(1).toDate()
 
@@ -326,7 +340,9 @@ class EffTaskBean {
                 }
             }
 
-            eff.runTime = Date()
+            eff.apply {
+                runTime = Date()
+            }
 
             eff.pointEffList = eff.pointList!!.map {
                 EffMeterPoint().apply {

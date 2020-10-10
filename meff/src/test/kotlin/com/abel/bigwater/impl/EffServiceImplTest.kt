@@ -4,10 +4,7 @@ import com.abel.bigwater.TestHelper
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
-import com.abel.bigwater.model.eff.EffMeter
-import com.abel.bigwater.model.eff.EffMeterPoint
-import com.abel.bigwater.model.eff.EffTask
-import com.abel.bigwater.model.eff.VcEffDecay
+import com.abel.bigwater.model.eff.*
 import com.alibaba.fastjson.JSON
 import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDate
@@ -46,6 +43,7 @@ class EffServiceImplTest {
             taskName = "季度分析任务"
             taskStart = LocalDate(2020, 7, 1).toDate()
             taskEnd = LocalDate(2020, 9, 30).toDate()
+            periodTypeObj = EffPeriodType.Day
         }
 
         try {
@@ -105,6 +103,7 @@ class EffServiceImplTest {
         ).apply {
             taskStart = LocalDate(2020, 9, 1).toDate()
             taskEnd = LocalDate(2020, 9, 2).toDate()
+            periodTypeObj = EffPeriodType.Day
         }
         effMapper!!.createEffTask(t1)
 
@@ -133,6 +132,7 @@ class EffServiceImplTest {
         ).apply {
             taskStart = LocalDate(2020, 9, 1).toDate()
             taskEnd = LocalDate(2020, 9, 2).toDate()
+            periodTypeObj = EffPeriodType.Day
         }
         effMapper!!.createEffTask(t1)
 
@@ -180,6 +180,24 @@ class EffServiceImplTest {
                     taskId = task.taskId
                 })
             }
+        }
+    }
+
+    @Test
+    fun testListMeterEff() {
+        val login = TestHelper.login(loginService, "fuzhou").single ?: fail("fail to login")
+
+        effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            firmId = "76%"
+        })).also {
+            lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
+        }
+
+        effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            firmId = "76%"
+            periodTypeObj = EffPeriodType.Month
+        })).also {
+            lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
         }
     }
 
@@ -422,7 +440,7 @@ class EffServiceImplTest {
                 assertEquals(0, r2.code)
             }
         } finally {
-            effMapper!!.deleteEffDecay(EffParam().apply {
+            effMapper!!.deleteEffDecaySingle(VcEffDecay().apply {
                 sizeId = 0
                 modelSize = "0"
             })
@@ -535,6 +553,8 @@ class EffServiceImplTest {
             taskName = "季度分析任务"
             taskStart = LocalDate(2020, 7, 1).toDate()
             taskEnd = LocalDate(2020, 9, 30).toDate()
+            periodTypeObj = EffPeriodType.Day
+
             meterList = listOf(
                     EffMeter().also {
                         it.meterId = "0123"
@@ -542,6 +562,7 @@ class EffServiceImplTest {
                         it.taskName = taskName
                         it.taskStart = taskStart
                         it.taskEnd = taskEnd
+                        it.periodTypeObj = EffPeriodType.Day
 
                         it.sizeId = 40
                         it.sizeName = "DN40"
@@ -552,6 +573,7 @@ class EffServiceImplTest {
                         it.taskName = taskName
                         it.taskStart = taskStart
                         it.taskEnd = taskEnd
+                        it.periodTypeObj = EffPeriodType.Day
 
                         it.sizeId = 50
                         it.sizeName = "DN5"
@@ -562,6 +584,7 @@ class EffServiceImplTest {
                         it.taskName = taskName
                         it.taskStart = taskStart
                         it.taskEnd = taskEnd
+                        it.periodTypeObj = EffPeriodType.Day
 
                         it.sizeId = 50
                         it.sizeName = "DN5"
@@ -573,6 +596,8 @@ class EffServiceImplTest {
             taskName = "季度分析任务"
             taskStart = LocalDate(2020, 7, 1).toDate()
             taskEnd = LocalDate(2020, 9, 30).toDate()
+            periodTypeObj = EffPeriodType.Day
+
             meterList = listOf(
                     EffMeter().also {
                         it.meterId = "1123"
@@ -580,6 +605,7 @@ class EffServiceImplTest {
                         it.taskName = taskName
                         it.taskStart = taskStart
                         it.taskEnd = taskEnd
+                        it.periodTypeObj = EffPeriodType.Day
 
                         it.sizeId = 40
                         it.sizeName = "DN40"
@@ -590,6 +616,7 @@ class EffServiceImplTest {
                         it.taskName = taskName
                         it.taskStart = taskStart
                         it.taskEnd = taskEnd
+                        it.periodTypeObj = EffPeriodType.Day
 
                         it.sizeId = 50
                         it.sizeName = "DN5"

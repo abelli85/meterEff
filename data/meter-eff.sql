@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/9 18:28:07                           */
+/* Created on:     2020/10/10 11:53:23                          */
 /*==============================================================*/
 
 
@@ -435,8 +435,11 @@ taskEnd
 /*==============================================================*/
 /* Index: idx_meter_eff_time                                    */
 /*==============================================================*/
-create  index idx_meter_eff_time on bw_eff_meter (
+create unique index idx_meter_eff_time on bw_eff_meter (
 meterId,
+periodType,
+taskStart,
+taskEnd,
 runTime
 );
 

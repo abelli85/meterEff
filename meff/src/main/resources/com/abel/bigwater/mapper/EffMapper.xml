@@ -128,6 +128,9 @@
             <if test="taskId != null">
                 AND t.taskId = #{taskId}
             </if>
+            <if test="periodType != null">
+                AND t.periodType LIKE #{periodType}
+            </if>
         </where>
     </delete>
 
@@ -179,9 +182,14 @@
             <if test="taskId != null">
                 AND m.taskId = #{taskId}
             </if>
-            <if test="periodType != null">
-                AND m.periodType = #{periodType}
-            </if>
+            <choose>
+                <when test="periodType != null">
+                    AND m.periodType LIKE #{periodType}
+                </when>
+                <otherwise>
+                    AND m.periodType = 'Day'
+                </otherwise>
+            </choose>
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
@@ -369,6 +377,223 @@
         </foreach>
     </insert>
 
+    <insert id="buildEffMeterMonth" parameterType="com.abel.bigwater.api.EffParam">
+    INSERT INTO bw_eff_meter( taskId
+    , meterId
+    , meterName
+    , taskName
+    , taskStart
+    , taskEnd
+    , periodType
+    , runTime
+    , runDuration
+    , taskResult
+    , meterWater
+    , q0v
+    , q1v
+    , q2v
+    , q3v
+    , q4v
+    , qtv
+    , meterEff
+    , realWater
+    , startFwd
+    , endFwd
+    , sizeId
+    , sizeName
+    , modelSize
+    , dataRows
+    , decayEff
+    , q4
+    , q3
+    , q3toq1
+    , q4toq3
+    , q2toq1
+    , qr1
+    , qr2
+    , qr3
+    , qr4)
+    SELECT m.taskId
+         , m.meterId
+         , m.meterName
+         , m.taskName
+         , m2.taskStart
+         , (m2.taskStart + interval '1month') taskEnd
+         , 'Month' periodType
+         , m.runTime
+         , m2.runDuration
+         , m.taskResult
+         , m2.meterWater
+         , m2.q0v
+         , m2.q1v
+         , m2.q2v
+         , m2.q3v
+         , m2.q4v
+         , m2.qtv
+         , (m2.meterWater / m2.meterWater) * 100 meterEff
+         , m2.realWater
+         , m2.startFwd
+         , m2.endFwd
+         , m.sizeId
+         , m.sizeName
+         , m.modelSize
+         , m2.dataRows
+         , m.decayEff
+         , m.q4
+         , m.q3
+         , m.q3toq1
+         , m.q4toq3
+         , m.q2toq1
+         , m.qr1
+         , m.qr2
+         , m.qr3
+         , m.qr4
+        FROM (
+             SELECT
+                 meterId
+                  , MAX(wid) wid
+             FROM bw_eff_meter m
+            <where>
+                <if test="taskId != null">
+                    AND m.taskId = #{taskId}
+                </if>
+
+                <choose>
+                    <when test="meterIdList != null and meterIdList.size > 0">
+                        AND m.meterId IN
+                        <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                            #{mid}
+                        </foreach>
+                    </when>
+                    <when test="meterId != null">
+                        AND m.meterId LIKE #{meterId}
+                    </when>
+                </choose>
+
+                <if test="sizeId != null">
+                    AND m.sizeId LIKE #{sizeId}
+                </if>
+
+                <if test="modelSize != null">
+                    AND m.modelSize LIKE #{modelSize}
+                </if>
+
+                <choose>
+                    <when test="taskStart != null and taskEnd != null">
+                        AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                    </when>
+                    <when test="taskStart != null">
+                        AND m.taskStart = #{taskStart}
+                    </when>
+                    <when test="taskEnd != null">
+                        AND m.taskEnd = #{taskEnd}
+                    </when>
+                </choose>
+            </where>
+            GROUP BY meterId
+             ) m1
+        JOIN bw_eff_meter m ON m.meterId = m1.meterId AND m.wid = m1.wid
+        JOIN (
+             SELECT
+                 meterId
+                  , date_trunc('month', taskStart) taskStart
+                  , SUM(runDuration) runDuration
+                  , SUM(meterWater) meterWater
+                  , SUM(q0v) q0v
+                  , SUM(q1v) q1v
+                  , SUM(q2v) q2v
+                  , SUM(q3v) q3v
+                  , SUM(q4v) q4v
+                  , SUM(qtv) qtv
+                  , SUM(realWater) realWater
+                  , MIN(startFwd) startFwd
+                  , MAX(endFwd) endFwd
+                  , COUNT(1) dataRows
+            FROM bw_eff_meter m
+        <where>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+        </where>
+        GROUP BY
+        meterId
+        , date_trunc('month', taskStart)
+             ) m2 ON m1.meterId = m2.meterId
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        <where>
+            <if test="firmId != null">
+                t.firmId LIKE #{firmId}
+            </if>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
+            </if>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+        </where>
+    </insert>
+
     <update id="updateEffMeter" parameterType="com.abel.bigwater.api.EffParam">
         UPDATE bw_eff_meter
         <set>
@@ -501,6 +726,9 @@
             </if>
             <if test="taskId != null">
                 AND m.taskId = #{taskId}
+            </if>
+            <if test="periodType != null">
+                AND m.periodType LIKE #{periodType}
             </if>
 
             <choose>

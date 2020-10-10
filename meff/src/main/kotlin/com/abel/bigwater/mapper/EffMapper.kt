@@ -19,6 +19,8 @@ interface EffMapper {
 
     fun listEffMeter(p: EffParam): List<EffMeter>
 
+    fun buildEffMeterMonth(p: EffParam): Int
+
     fun listEffRange(p: EffParam): List<DataRange>
 
     fun insertEffMeter(p: EffParam): Int
