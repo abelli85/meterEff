@@ -28,6 +28,7 @@ interface EffService {
 
         const val PATH_FETCH_METER_EFF = "/fetchMeterEff"
         const val PATH_REPLACE_METER_EFF = "/replaceMeterEff"
+        const val PATH_MATCH_METER = "/matchMeter"
         const val PATH_BUILD_METER_EFF = "/buildMeterEff"
         const val PATH_PUSH_EFF_TASK = "/pushEffTask"
 
@@ -114,6 +115,25 @@ interface EffService {
     @POST
     @Path(PATH_REPLACE_METER_EFF)
     fun replaceMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 仅针对远传水表进行口径匹配分析。
+     * Step1:暂定Q2～Q3 流量段用水量占比≥80%，匹配。否则，不匹配。
+     * 可对Q2～Q3 流量段用水量占比进行调整赋值:
+     * @see EffParam.matchQ2v - 默认 80.0
+     * @see EffParam.sizeId - 可空
+     * @see EffParam.meterBrandId - 可空
+     * @see EffParam.modelSize - 可空
+     * @see EffParam.taskStart - 可空
+     * @see EffParam.taskEnd - 可空
+     * @see EffParam.firmId - 可空
+     * @see EffParam.meterId - 可空
+     * @see EffParam.meterIdList - 可空
+     * @see EffParam.periodType - 默认 Day
+     */
+    @POST
+    @Path(PATH_MATCH_METER)
+    fun matchMeter(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
      * 分析水表的计量效率, 分析一只或多只水表, 指定时段的计量效率.

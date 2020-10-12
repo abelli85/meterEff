@@ -133,6 +133,12 @@ data class EffMeter(
     var endFwd: Double? = null
 
     /**
+     * 水表品牌标示
+     * the meterBrandId to set
+     */
+    var meterBrandId: String? = null
+
+    /**
      * 口径
      * the size to set
      */

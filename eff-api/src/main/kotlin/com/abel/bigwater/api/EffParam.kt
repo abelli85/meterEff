@@ -120,6 +120,12 @@ class EffParam : BaseParam() {
     var modelSize: String? = null
 
     /**
+     * 远传水表进行口径匹配分析.
+     * 暂定Q2～Q3 流量段用水量占比≥80%，匹配。否则，不匹配。
+     */
+    var matchQ2v: Double = 80.0
+
+    /**
      * 水表ID列表
      */
     var meterIdList: List<String>? = null
