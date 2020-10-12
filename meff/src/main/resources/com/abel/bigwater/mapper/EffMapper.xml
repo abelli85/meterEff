@@ -204,6 +204,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -319,6 +322,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND sizeId LIKE #{sizeId}
             </if>
@@ -426,6 +432,9 @@
                     </when>
                 </choose>
 
+                <if test="meterBrandId != null">
+                    AND m.meterBrandId LIKE #{meterBrandId}
+                </if>
                 <if test="sizeId != null">
                     AND m.sizeId LIKE #{sizeId}
                 </if>
@@ -473,6 +482,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -719,6 +731,9 @@
                     </when>
                 </choose>
 
+                <if test="meterBrandId != null">
+                    AND meterBrandId LIKE #{meterBrandId}
+                </if>
                 <if test="sizeId != null">
                     AND sizeId LIKE #{sizeId}
                 </if>
@@ -782,6 +797,9 @@
                         </when>
                     </choose>
 
+                    <if test="meterBrandId != null">
+                        AND meterBrandId LIKE #{meterBrandId}
+                    </if>
                     <if test="sizeId != null">
                         AND sizeId LIKE #{sizeId}
                     </if>
@@ -823,6 +841,9 @@
                     </when>
                 </choose>
 
+                <if test="meterBrandId != null">
+                    AND m.meterBrandId LIKE #{meterBrandId}
+                </if>
                 <if test="sizeId != null">
                     AND m.sizeId LIKE #{sizeId}
                 </if>
@@ -869,6 +890,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1043,6 +1067,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1116,6 +1143,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1174,6 +1204,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1283,6 +1316,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1355,6 +1391,9 @@
                 </when>
             </choose>
 
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
@@ -1394,6 +1433,9 @@
              , deprecated
         FROM bw_eff_decay
         <where>
+            <if test="meterBrandId != null">
+                AND meterBrandId LIKE #{meterBrandId}
+            </if>
             <if test="sizeId != null">
                 AND sizeId = #{sizeId}
             </if>

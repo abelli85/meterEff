@@ -583,6 +583,7 @@ class EffServiceImplTest {
                         it.taskEnd = taskEnd
                         it.periodTypeObj = EffPeriodType.Day
 
+                        it.meterBrandId = "ZNSW"
                         it.sizeId = 40
                         it.sizeName = "DN40"
                     },
@@ -594,6 +595,7 @@ class EffServiceImplTest {
                         it.taskEnd = taskEnd
                         it.periodTypeObj = EffPeriodType.Day
 
+                        it.meterBrandId = "ZNSW"
                         it.sizeId = 50
                         it.sizeName = "DN5"
                     },
@@ -605,6 +607,7 @@ class EffServiceImplTest {
                         it.taskEnd = taskEnd
                         it.periodTypeObj = EffPeriodType.Day
 
+                        it.meterBrandId = "ZNSW"
                         it.sizeId = 50
                         it.sizeName = "DN5"
                     }
@@ -626,6 +629,7 @@ class EffServiceImplTest {
                         it.taskEnd = taskEnd
                         it.periodTypeObj = EffPeriodType.Day
 
+                        it.meterBrandId = "ZNSW"
                         it.sizeId = 40
                         it.sizeName = "DN40"
                     },
@@ -637,6 +641,7 @@ class EffServiceImplTest {
                         it.taskEnd = taskEnd
                         it.periodTypeObj = EffPeriodType.Day
 
+                        it.meterBrandId = "ZNSW"
                         it.sizeId = 50
                         it.sizeName = "DN5"
                     }
