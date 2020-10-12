@@ -202,6 +202,25 @@ class EffServiceImplTest {
     }
 
     @Test
+    fun testMatchMeter() {
+        val login = TestHelper.login(loginService, "fuzhou").single ?: fail("fail to login")
+
+        effService!!.matchMeter(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            firmId = "76%"
+
+        })).also {
+            lgr.info("match meter Day: {}", JSON.toJSONString(it, true))
+        }
+
+        effService!!.matchMeter(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            firmId = "76%"
+            periodTypeObj = EffPeriodType.Month
+        })).also {
+            lgr.info("match meter Month: {}", JSON.toJSONString(it, true))
+        }
+    }
+
+    @Test
     fun fetchMeterEff() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
@@ -407,7 +426,7 @@ class EffServiceImplTest {
     }
 
     @Test
-    fun testEffMeter() {
+    fun testBuildEffMeter() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
         try {

@@ -94,6 +94,13 @@ class EffTaskBean {
             taskStart = effList.minOf { e1 -> e1.taskStart!! }
             taskEnd = effList.maxOf { e1 -> e1.taskStart!! }
         }
+
+        // truncate to month
+        pmth.also {
+            it.taskStart = it.jodaTaskStart?.withDayOfMonth(1)?.toDate()
+            it.taskEnd = it.jodaTaskEnd?.plusMonths(1)?.withDayOfMonth(1)?.toDate()
+
+        }
         effMapper!!.deleteEffMeter(pmth)
         val cnt = effMapper!!.buildEffMeterMonth(pmth)
         lgr.info("build month eff: $cnt")
@@ -250,6 +257,7 @@ class EffTaskBean {
                 taskStart = day1.toDate()
                 taskEnd = day1.plusDays(1).toDate()
 
+                meterBrandId = meter.meterBrandId ?: "0"
                 sizeId = meter.sizeId ?: 0
                 sizeName = meter.sizeName ?: "0"
                 modelSize = meter.modelSize
@@ -273,9 +281,8 @@ class EffTaskBean {
             if (effSingleMeterDay(meter, day1, dlist, eff)) {
                 val param = EffParam().apply {
                     meterId = meter.meterId
-                    taskId = task.taskId
+                    periodType = "%"
                     taskStart = day1.toDate()
-                    taskEnd = day1.plusDays(1).toDate()
                 }
                 lgr.info("remove eff meter: {}/{}",
                         effMapper!!.deleteEffPoint(param),

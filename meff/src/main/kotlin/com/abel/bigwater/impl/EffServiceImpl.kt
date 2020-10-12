@@ -418,6 +418,54 @@ class EffServiceImpl : EffService {
     }
 
     /**
+     * 仅针对远传水表进行口径匹配分析。
+     * Step1:暂定Q2～Q3 流量段用水量占比≥80%，匹配。否则，不匹配。
+     * 可对Q2～Q3 流量段用水量占比进行调整赋值:
+     * @see EffParam.matchQ2v - 默认80.0
+     * @see EffParam.sizeId - 可空
+     * @see EffParam.meterBrandId - 可空
+     * @see EffParam.modelSize - 可空
+     * @see EffParam.taskStart - 可空
+     * @see EffParam.taskEnd - 可空
+     * @see EffParam.firmId - 可空
+     * @see EffParam.meterId - 可空
+     * @see EffParam.meterIdList - 可空
+     */
+    override fun matchMeter(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank() || holder.single == null) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to match meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_LIST_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val ms = effMapper!!.matchMeter(dp)
+            return BwResult(ms).apply {
+                error = "水表口径匹配列表： ${ms.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
      * 分析水表的计量效率, 分析一只或多只水表, 指定时段的计量效率.
      * @see EffParam.meterId
      * @see EffParam.meterIdList

@@ -19,6 +19,8 @@ interface EffMapper {
 
     fun listEffMeter(p: EffParam): List<EffMeter>
 
+    fun matchMeter(p: EffParam): List<EffMeter>
+
     fun buildEffMeterMonth(p: EffParam): Int
 
     fun listEffRange(p: EffParam): List<DataRange>
@@ -29,11 +31,15 @@ interface EffMapper {
 
     fun deleteEffMeter(p: EffParam): Int
 
+    fun deleteEffMeterWithTask(p: EffParam): Int
+
     fun listEffPoint(p: EffParam): List<EffMeterPoint>
 
     fun insertEffPoint(p: EffParam): Int
 
     fun deleteEffPoint(p: EffParam): Int
+
+    fun deleteEffPointWithTask(p: EffParam): Int
 
     fun selectEffDecay(p: EffParam): List<VcEffDecay>
 

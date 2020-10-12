@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/10 11:53:23                          */
+/* Created on:     2020/10/12 15:23:07                          */
 /*==============================================================*/
 
 
@@ -35,8 +35,6 @@ drop index idx_meter_eff_task;
 drop index idx_meter_eff_size_model;
 
 drop index idx_meter_eff_time;
-
-drop index idx_meter_eff_firm;
 
 drop table bw_eff_meter;
 
@@ -407,6 +405,7 @@ create table bw_eff_meter (
    realWater            DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
+   meterBrandId         VARCHAR(45)          not null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
@@ -424,23 +423,14 @@ create table bw_eff_meter (
 );
 
 /*==============================================================*/
-/* Index: idx_meter_eff_firm                                    */
-/*==============================================================*/
-create  index idx_meter_eff_firm on bw_eff_meter (
-meterId,
-taskStart,
-taskEnd
-);
-
-/*==============================================================*/
 /* Index: idx_meter_eff_time                                    */
 /*==============================================================*/
-create unique index idx_meter_eff_time on bw_eff_meter (
+create  index idx_meter_eff_time on bw_eff_meter (
 meterId,
 periodType,
 taskStart,
 taskEnd,
-runTime
+wid
 );
 
 /*==============================================================*/

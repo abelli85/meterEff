@@ -26,7 +26,8 @@ class EffTaskBeanTest {
     @Test
     fun testEffFirm() {
         bean!!.effFirm(BwFirm().apply {
-            firmId = "76"
+            firmId = "76%"
+            firmName = "fuzhou-test"
         })
     }
 
