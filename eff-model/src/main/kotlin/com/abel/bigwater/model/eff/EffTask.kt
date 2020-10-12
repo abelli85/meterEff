@@ -5,8 +5,10 @@ import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
 import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import java.time.Period
 import java.util.*
 
 /**
@@ -67,11 +69,15 @@ data class EffTask(
     /**
      * 计量效率分析的时段类型
      */
-    var periodType: String? = null
-    var periodTypeObj: EffPeriodType?
+    var periodType: String = EffPeriodType.Day.name
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+    var periodTypeObj: EffPeriodType? = null
         get() = EffPeriodType.values().find { it.name == periodType }
         set(value) {
-            periodType = value!!.name
+            field = value
+            periodType = value?.name ?: EffPeriodType.Day.name
         }
 
     /**

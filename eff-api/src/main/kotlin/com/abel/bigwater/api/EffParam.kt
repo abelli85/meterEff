@@ -79,10 +79,14 @@ class EffParam : BaseParam() {
      * 计量效率分析的时段类型
      */
     var periodType: String = EffPeriodType.Day.name
-    var periodTypeObj: EffPeriodType?
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+    var periodTypeObj: EffPeriodType? = null
         get() = EffPeriodType.values().find { it.name == periodType }
         set(value) {
-            periodType = value!!.name
+            field = value
+            periodType = value?.name ?: EffPeriodType.Day.name
         }
 
     /**
