@@ -90,6 +90,24 @@ class EffParam : BaseParam() {
         }
 
     /**
+     * 模式(只分离用水模式, 不分析计量效率)/效率(包含用水模式及计量效率)
+     * @see EffPeriodType
+     */
+    var pointType: String? = null
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+    var pointTypeObj: EffPointType? = null
+        get() {
+            field = EffPointType.values().find { it.name == pointType }
+            return field
+        }
+        set(value) {
+            field = value
+            pointType = value?.name
+        }
+
+    /**
      * 口径
      * the size to set
      */
@@ -149,5 +167,10 @@ class EffParam : BaseParam() {
      * 品牌、型号、口径水表对应行度下的老化计量效率
      */
     var decayList: List<VcEffDecay>? = null
+
+    /**
+     * 老化模板ID
+     */
+    var decayId: Long? = null
 
 }

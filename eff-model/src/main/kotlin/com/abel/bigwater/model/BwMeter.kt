@@ -368,9 +368,19 @@ open class BwMeter : BwBase() {
     var memo: String? = null
 
     /**
+     * 老化模板ID
+     */
+    var decayId: Long? = null
+
+    /**
      * 记录检定结果
      */
     var verifyList: List<VcMeterVerify>? = null
+
+    /**
+     * 分离用水模式的计量点
+     */
+    var modelPointList: List<VcMeterVerifyPoint>? = null
 
     /**
      * 记录检定点
