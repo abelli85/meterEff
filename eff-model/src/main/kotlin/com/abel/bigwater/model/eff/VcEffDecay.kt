@@ -55,4 +55,40 @@ class VcEffDecay : BwBase() {
      * can be used or not.
      */
     var deprecated: Boolean = false
+
+    /**
+     * 水表标准参数中的流量点及检定误差
+     */
+    var q1: Double? = null
+    var q2: Double? = null
+    var q3: Double? = null
+    var q4: Double? = null
+    var q1r: Double? = null
+    var q2r: Double? = null
+    var q3r: Double? = null
+    var q4r: Double? = null
+
+    /**
+     * 水表测试的流量点及误差, 可空
+     */
+    var qs1: Double? = null
+    var qs2: Double? = null
+    var qs3: Double? = null
+    var qs4: Double? = null
+    var qs5: Double? = null
+    var qs6: Double? = null
+    var qs7: Double? = null
+    var qs8: Double? = null
+    var qs9: Double? = null
+    var qs10: Double? = null
+    var qs1r: Double? = null
+    var qs2r: Double? = null
+    var qs3r: Double? = null
+    var qs4r: Double? = null
+    var qs5r: Double? = null
+    var qs6r: Double? = null
+    var qs7r: Double? = null
+    var qs8r: Double? = null
+    var qs9r: Double? = null
+    var qs10r: Double? = null
 }
