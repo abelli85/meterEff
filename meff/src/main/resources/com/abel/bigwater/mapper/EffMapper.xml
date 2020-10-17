@@ -1170,10 +1170,13 @@
 
     <select id="listEffPoint" parameterType="com.abel.bigwater.api.EffParam"
             resultType="com.abel.bigwater.model.eff.EffMeterPoint">
-        SELECT p.meterId
+        SELECT p.wid
+        , p.meterId
         , p.taskId
-        , p.pointName
+        , p.periodType
+        , p.pointType
         , p.pointNo
+        , p.pointName
         , p.pointFlow
         , p.pointDev
         , p.highLimit
@@ -1182,25 +1185,31 @@
         , p.realWater
         FROM bw_meter_eff_point p
         JOIN bw_eff_meter m on p.meterId = m.meterId
-        JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
             <if test="firmId != null">
                 t.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
-                AND t.taskId = #{taskId}
+                AND p.taskId = #{taskId}
+            </if>
+            <if test="periodType != null">
+                AND p.periodType = #{periodType}
+            </if>
+            <if test="pointType != null">
+                AND p.pointType = #{pointType}
             </if>
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND m.meterId IN
+                    AND p.meterId IN
                     <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
                         #{mid}
                     </foreach>
                 </when>
                 <when test="meterId != null">
-                    AND m.meterId LIKE #{meterId}
+                    AND p.meterId LIKE #{meterId}
                 </when>
             </choose>
 
@@ -1265,8 +1274,10 @@
         bw_meter_eff_point(
         meterId
         , taskId
-        , pointName
+        , periodType
+        , pointType
         , pointNo
+        , pointName
         , pointFlow
         , pointDev
         , highLimit
@@ -1277,8 +1288,10 @@
         <foreach collection="pointEffList" item="pt" separator=",">
             (#{pt.meterId}
             , #{pt.taskId}
-            , #{pt.pointName}
+            , #{pt.periodType}
+            , #{pt.pointType}
             , #{pt.pointNo}
+            , #{pt.pointName}
             , #{pt.pointFlow}
             , #{pt.pointDev}
             , #{pt.highLimit}
@@ -1292,27 +1305,34 @@
         DELETE
         FROM bw_meter_eff_point p
         USING bw_eff_meter m
-        JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
             p.meterId = m.meterId
+            AND p.taskId = m.taskId
 
             <if test="firmId != null">
                 AND t.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
-                AND t.taskId = #{taskId}
+                AND p.taskId = #{taskId}
+            </if>
+            <if test="periodType != null">
+                AND p.periodType = #{periodType}
+            </if>
+            <if test="pointType != null">
+                AND p.pointType = #{pointType}
             </if>
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND m.meterId IN
+                    AND p.meterId IN
                     <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
                         #{mid}
                     </foreach>
                 </when>
                 <when test="meterId != null">
-                    AND m.meterId LIKE #{meterId}
+                    AND p.meterId LIKE #{meterId}
                 </when>
             </choose>
 
@@ -1377,17 +1397,17 @@
         USING bw_eff_meter m
 
         <where>
-            p.meterId = m.meterId
+            p.meterId = m.meterId AND p.taskId = m.taskId
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND m.meterId IN
+                    AND p.meterId IN
                     <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
                         #{mid}
                     </foreach>
                 </when>
                 <when test="meterId != null">
-                    AND m.meterId LIKE #{meterId}
+                    AND p.meterId LIKE #{meterId}
                 </when>
             </choose>
 
@@ -1431,8 +1451,39 @@
              , updateBy
              , updateDate
              , deprecated
+             , q1
+             , q2
+             , q3
+             , q4
+             , q1r
+             , q2r
+             , q3r
+             , q4r
+             , qs1
+             , qs2
+             , qs3
+             , qs4
+             , qs5
+             , qs6
+             , qs7
+             , qs8
+             , qs9
+             , qs10
+             , qs1r
+             , qs2r
+             , qs3r
+             , qs4r
+             , qs5r
+             , qs6r
+             , qs7r
+             , qs8r
+             , qs9r
+             , qs10r
         FROM bw_eff_decay
         <where>
+            <if test="decayId != null">
+                wid = #{decayId}
+            </if>
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
@@ -1461,6 +1512,34 @@
         , updateBy
         , updateDate
         , deprecated
+        , q1
+        , q2
+        , q3
+        , q4
+        , q1r
+        , q2r
+        , q3r
+        , q4r
+        , qs1
+        , qs2
+        , qs3
+        , qs4
+        , qs5
+        , qs6
+        , qs7
+        , qs8
+        , qs9
+        , qs10
+        , qs1r
+        , qs2r
+        , qs3r
+        , qs4r
+        , qs5r
+        , qs6r
+        , qs7r
+        , qs8r
+        , qs9r
+        , qs10r
         )
         VALUES
         <foreach collection="decayList" item="de" separator=",">
@@ -1476,6 +1555,34 @@
             , #{de.updateBy}
             , #{de.updateDate}
             , #{de.deprecated}
+            , #{de.q1}
+            , #{de.q2}
+            , #{de.q3}
+            , #{de.q4}
+            , #{de.q1r}
+            , #{de.q2r}
+            , #{de.q3r}
+            , #{de.q4r}
+            , #{de.qs1}
+            , #{de.qs2}
+            , #{de.qs3}
+            , #{de.qs4}
+            , #{de.qs5}
+            , #{de.qs6}
+            , #{de.qs7}
+            , #{de.qs8}
+            , #{de.qs9}
+            , #{de.qs10}
+            , #{de.qs1r}
+            , #{de.qs2r}
+            , #{de.qs3r}
+            , #{de.qs4r}
+            , #{de.qs5r}
+            , #{de.qs6r}
+            , #{de.qs7r}
+            , #{de.qs8r}
+            , #{de.qs9r}
+            , #{de.qs10r}
             )
         </foreach>
     </insert>

@@ -71,6 +71,7 @@
         <include refid="meterLocFields"></include>
         , lastCalib
         , memo
+        , decayId
         , createBy
         , createDate
         , updateBy
@@ -125,6 +126,7 @@
         <include refid="meterLocValues"></include>
         , #{lastCalib}
         , #{memo}
+        , #{decayId}
         , #{createBy}
         , now()
         , #{updateBy}
@@ -214,6 +216,7 @@
         , meterLoc = st_geomFromText(#{meterLoc})
         , lastCalib = #{lastCalib}
         , memo = #{memo}
+        , decayId = #{decayId}
         , updateBy = #{updateBy}
         , updateDate = now()
         <where>
@@ -797,6 +800,7 @@
         , st_asText(m.meterLoc::geometry) AS meterLoc
         , m.lastCalib
         , m.memo
+        , m.decayId
         , m.createBy
         , m.createDate
         , m.updateBy
@@ -961,6 +965,7 @@
         , st_asText(m.meterLoc::geometry) AS meterLoc
         , m.lastCalib
         , m.memo
+        , m.decayId
         , m.createBy
         , m.createDate
         , m.updateBy

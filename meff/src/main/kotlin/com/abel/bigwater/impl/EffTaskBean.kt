@@ -115,51 +115,143 @@ class EffTaskBean {
         })
 
         val ptList = arrayListOf<VcMeterVerifyPoint>()
+        val mpList = arrayListOf<VcMeterVerifyPoint>()
         if (meter.q1 > 1E-3) {
-            ptList.add(VcMeterVerifyPoint().apply {
-                meterId = meter.meterId
-                verifyDate = LocalDate(2010, 1, 1).toDate()
-                pointNo = 1
-                pointName = "Q1"
-                pointFlow = meter.q1
-                pointDev = meter.q1r
-            })
+            q1@ kotlin.run {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 1
+                    pointName = "Q1"
+                    pointFlow = meter.q1
+                    pointDev = meter.q1r
+                })
+
+                // model point.
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 1
+                    pointName = "Q1/2"
+                    pointFlow = meter.q1 / 2
+                    pointDev = meter.q1r / 2
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 2
+                    pointName = "Q1"
+                    pointFlow = meter.q1
+                    pointDev = meter.q1r
+                })
+            }
+
+            q2@ if (meter.q2 > 1E-3) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 2
+                    pointName = "Q2"
+                    pointFlow = meter.q2
+                    pointDev = meter.q2r
+                })
+
+                // model point.
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 3
+                    pointName = "(Q1+Q2)/2"
+                    pointFlow = meter.q1.plus(meter.q2).div(2)
+                    pointDev = meter.q1r.plus(meter.q2r).div(2)
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 4
+                    pointName = "Q2"
+                    pointFlow = meter.q2
+                    pointDev = meter.q2r
+                })
+            }
+
+            q3@ if (meter.q3 > 1E-3) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 3
+                    pointName = "Q3"
+                    pointFlow = meter.q3
+                    pointDev = meter.q3r
+                })
+
+                // model point.
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 5
+                    pointName = "Q2+(Q3-Q2)/5"
+                    pointFlow = meter.q2 + (meter.q3 - meter.q2) / 5
+                    pointDev = meter.q2r + (meter.q3r - meter.q2r) / 5
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 6
+                    pointName = "Q2+(Q3-Q2)*2/5"
+                    pointFlow = meter.q2 + (meter.q3 - meter.q2) * 2 / 5
+                    pointDev = meter.q2r + (meter.q3r - meter.q2r) * 2 / 5
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 7
+                    pointName = "Q2+(Q3-Q2)*3/5"
+                    pointFlow = meter.q2 + (meter.q3 - meter.q2) * 3 / 5
+                    pointDev = meter.q2r + (meter.q3r - meter.q2r) * 3 / 5
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 8
+                    pointName = "Q2+(Q3-Q2)*4/5"
+                    pointFlow = meter.q2 + (meter.q3 - meter.q2) * 4 / 5
+                    pointDev = meter.q2r + (meter.q3r - meter.q2r) * 4 / 5
+                })
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 9
+                    pointName = "Q3"
+                    pointFlow = meter.q3
+                    pointDev = meter.q3r
+                })
+            }
+
+            q4@ if (meter.q4 > 1E-3) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 4
+                    pointName = "Q4"
+                    pointFlow = meter.q4
+                    pointDev = meter.q4r
+                })
+
+                // model point.
+                mpList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 4
+                    pointName = "Q4"
+                    pointFlow = meter.q4
+                    pointDev = meter.q4r
+                })
+            }
         }
 
-        if (meter.q2 > 1E-3) {
-            ptList.add(VcMeterVerifyPoint().apply {
-                meterId = meter.meterId
-                verifyDate = LocalDate(2010, 1, 1).toDate()
-                pointNo = 2
-                pointName = "Q2"
-                pointFlow = meter.q2
-                pointDev = meter.q2r
-            })
-        }
-
-        if (meter.q3 > 1E-3) {
-            ptList.add(VcMeterVerifyPoint().apply {
-                meterId = meter.meterId
-                verifyDate = LocalDate(2010, 1, 1).toDate()
-                pointNo = 3
-                pointName = "Q3"
-                pointFlow = meter.q3
-                pointDev = meter.q3r
-            })
-        }
-
-        if (meter.q4 > 1E-3) {
-            ptList.add(VcMeterVerifyPoint().apply {
-                meterId = meter.meterId
-                verifyDate = LocalDate(2010, 1, 1).toDate()
-                pointNo = 4
-                pointName = "Q4"
-                pointFlow = meter.q4
-                pointDev = meter.q4r
-            })
-        }
-
-        meter.pointList = ptList.toList()
+        meter.pointList = ptList.sortedBy { it.pointFlow }.toList()
+        meter.modelPointList = mpList.toList()
     }
 
     /**

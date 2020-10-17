@@ -99,8 +99,9 @@ where firmId like '27%';
 */
 
 DELETE FROM bw_firm WHERE firmId LIKE '76%';
-INSERT INTO bw_firm(firmId, firmName, firmCity, firmLoc)
-VALUES('76', '福州市自来水公司', '福州', 'POINT(119.31145882543946 26.07921305191548)'::geometry);
+INSERT INTO bw_firm(firmId, firmName, firmCity, firmLoc, firmRegion)
+VALUES('76', '福州市自来水公司', '福州', 'POINT(119.31145882543946 26.07921305191548)'::geometry
+, 'POLYGON((119.32854 25.725326,119.357551 25.727801,119.389652 25.723161,119.378837 25.713263,119.357723 25.696868,119.336437 25.688051,119.317039 25.701972,119.32854 25.725326))'::geometry);
 INSERT INTO bw_firm(firmId, firmName, firmCity, firmLoc) VALUES
 ('7620', '供水服务一公司（鼓楼-20）', '福州', 'POINT(119.31145882543946 26.07921305191548)'::geometry),
 ('7621', '供水服务三公司（晋安-21）', '福州', 'POINT(119.31145882543946 26.07921305191548)'::geometry),

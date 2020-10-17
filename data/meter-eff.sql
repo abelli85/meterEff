@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/12 15:23:07                          */
+/* Created on:     2020/10/17 16:13:30                          */
 /*==============================================================*/
 
 
@@ -61,6 +61,8 @@ drop index idx_meter_user;
 drop index idx_meter_code;
 
 drop table bw_meter;
+
+drop index idx_eff_meter_point;
 
 drop index idx_eff_meter_flow;
 
@@ -358,7 +360,7 @@ create table bw_eff_decay (
    meterBrandName       VARCHAR(45)          null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
-   modelSize            VARCHAR(100)         null,
+   modelSize            VARCHAR(45)          null,
    totalFwd             DECIMAL(15,3)        null,
    decayEff             VARCHAR(20)          null,
    createBy             VARCHAR(45)          null,
@@ -366,6 +368,34 @@ create table bw_eff_decay (
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
    deprecated           BOOL                 null,
+   q1                   DECIMAL(15,3)        null,
+   q2                   DECIMAL(15,3)        null,
+   q3                   DECIMAL(15,3)        null,
+   q4                   DECIMAL(15,3)        null,
+   q1r                  DECIMAL(15,3)        null,
+   q2r                  DECIMAL(15,3)        null,
+   q3r                  DECIMAL(15,3)        null,
+   q4r                  DECIMAL(15,3)        null,
+   qs1                  DECIMAL(15,3)        null,
+   qs2                  DECIMAL(15,3)        null,
+   qs3                  DECIMAL(15,3)        null,
+   qs4                  DECIMAL(15,3)        null,
+   qs5                  DECIMAL(15,3)        null,
+   qs6                  DECIMAL(15,3)        null,
+   qs7                  DECIMAL(15,3)        null,
+   qs8                  DECIMAL(15,3)        null,
+   qs9                  DECIMAL(15,3)        null,
+   qs10                 DECIMAL(15,3)        null,
+   qs1r                 DECIMAL(15,3)        null,
+   qs2r                 DECIMAL(15,3)        null,
+   qs3r                 DECIMAL(15,3)        null,
+   qs4r                 DECIMAL(15,3)        null,
+   qs5r                 DECIMAL(15,3)        null,
+   qs6r                 DECIMAL(15,3)        null,
+   qs7r                 DECIMAL(15,3)        null,
+   qs8r                 DECIMAL(15,3)        null,
+   qs9r                 DECIMAL(15,3)        null,
+   qs10r                DECIMAL(15,3)        null,
    constraint PK_BW_EFF_DECAY primary key (wid)
 );
 
@@ -437,10 +467,13 @@ wid
 /* Index: idx_meter_eff_size_model                              */
 /*==============================================================*/
 create  index idx_meter_eff_size_model on bw_eff_meter (
+meterBrandId,
 sizeId,
 modelSize,
 sizeName,
-meterId
+meterId,
+periodType,
+taskStart
 );
 
 /*==============================================================*/
@@ -577,6 +610,7 @@ create table bw_meter (
    meterLoc             geography            null,
    lastCalib            TIMESTAMP WITH TIME ZONE null,
    memo                 VARCHAR(45)          null,
+   decayId              int8                 null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
@@ -643,9 +677,13 @@ onlineDate
 /* Table: bw_meter_eff_point                                    */
 /*==============================================================*/
 create table bw_meter_eff_point (
-   wid                  serial8              not null,
-   pointName            varchar(20)          not null,
+   wid                  SERIAL               not null,
+   meterId              VARCHAR(45)          not null,
+   taskId               INT8                 not null,
+   periodType           VARCHAR(20)          not null,
+   pointType            varchar(20)          not null,
    pointNo              INT4                 not null,
+   pointName            varchar(20)          not null,
    pointFlow            DECIMAL(15,3)        not null,
    pointDev             DECIMAL(15,3)        null,
    highLimit            DECIMAL(15,3)        null,
@@ -655,10 +693,28 @@ create table bw_meter_eff_point (
    constraint PK_BW_METER_EFF_POINT primary key (wid)
 );
 
+comment on column bw_meter_eff_point.pointType is
+'MODEL/EFF';
+
 /*==============================================================*/
 /* Index: idx_eff_meter_flow                                    */
 /*==============================================================*/
 create  index idx_eff_meter_flow on bw_meter_eff_point (
+meterId,
+taskId,
+periodType,
+pointType,
+pointFlow
+);
+
+/*==============================================================*/
+/* Index: idx_eff_meter_point                                   */
+/*==============================================================*/
+create  index idx_eff_meter_point on bw_meter_eff_point (
+meterId,
+taskId,
+periodType,
+pointType,
 pointNo
 );
 
