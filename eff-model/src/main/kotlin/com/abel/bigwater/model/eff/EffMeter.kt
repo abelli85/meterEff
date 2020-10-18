@@ -200,9 +200,14 @@ data class EffMeter(
     var qr4: Double? = null
 
     /**
-     * 用水模式
+     * 计量效率的用水模式
      */
     var pointEffList: List<EffMeterPoint>? = null
+
+    /**
+     * 标准的用水模式
+     */
+    var modelPointList: List<EffMeterPoint>? = null
 
     /**
      * 记录点检定结果
