@@ -515,7 +515,10 @@ class EffServiceImpl : EffService {
             meterMapper!!.selectMeterDma(MeterParam().apply {
                 meterIdList = midList
             }).forEach {
-                effTaskBean!!.fillPointList(it)
+                if (!effTaskBean!!.fillPointList(it)) {
+                    return BwResult(2, "计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
+                }
+
                 effTaskBean!!.fillDecay(it)
 
                 val lst = if (param.jodaTaskStart == null || param.jodaTaskEnd == null)

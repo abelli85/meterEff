@@ -23,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
 
 @Component
@@ -71,10 +72,8 @@ class EffTaskBean {
         meterMapper!!.selectMeterDma(MeterParam().apply {
             firmId = firm.firmId
         }).forEach {
-            fillPointList(it)
-
-            if (it.pointList.isNullOrEmpty()) {
-                lgr.warn("no point for {}/{}", it.meterId, it.meterName)
+            if (!fillPointList(it)) {
+                lgr.warn("计量点不足3个或Q2/Q3不存在: {}/{}", it.meterId, it.meterName)
                 return@forEach
             }
 
@@ -107,26 +106,12 @@ class EffTaskBean {
     }
 
     /**
-     * 填充计量点
+     * fill model-point-list, not for efficiency.
      */
-    fun fillPointList(meter: ZoneMeter) {
-        meter.pointList = meterMapper!!.listVerifyPointLast(MeterParam().apply {
-            meterId = meter.meterId
-        })
-
-        val ptList = arrayListOf<VcMeterVerifyPoint>()
+    private fun fillModelPointList(meter: ZoneMeter) {
         val mpList = arrayListOf<VcMeterVerifyPoint>()
         if (meter.q1 > 1E-3) {
             q1@ kotlin.run {
-                ptList.add(VcMeterVerifyPoint().apply {
-                    meterId = meter.meterId
-                    verifyDate = LocalDate(2010, 1, 1).toDate()
-                    pointNo = 1
-                    pointName = "Q1"
-                    pointFlow = meter.q1
-                    pointDev = meter.q1r
-                })
-
                 // model point.
                 mpList.add(VcMeterVerifyPoint().apply {
                     meterId = meter.meterId
@@ -146,16 +131,7 @@ class EffTaskBean {
                 })
             }
 
-            q2@ if (meter.q2 > 1E-3) {
-                ptList.add(VcMeterVerifyPoint().apply {
-                    meterId = meter.meterId
-                    verifyDate = LocalDate(2010, 1, 1).toDate()
-                    pointNo = 2
-                    pointName = "Q2"
-                    pointFlow = meter.q2
-                    pointDev = meter.q2r
-                })
-
+            q2@ if (meter.q2 > meter.q1) {
                 // model point.
                 mpList.add(VcMeterVerifyPoint().apply {
                     meterId = meter.meterId
@@ -175,16 +151,7 @@ class EffTaskBean {
                 })
             }
 
-            q3@ if (meter.q3 > 1E-3) {
-                ptList.add(VcMeterVerifyPoint().apply {
-                    meterId = meter.meterId
-                    verifyDate = LocalDate(2010, 1, 1).toDate()
-                    pointNo = 3
-                    pointName = "Q3"
-                    pointFlow = meter.q3
-                    pointDev = meter.q3r
-                })
-
+            q3@ if (meter.q3 > meter.q2) {
                 // model point.
                 mpList.add(VcMeterVerifyPoint().apply {
                     meterId = meter.meterId
@@ -228,16 +195,7 @@ class EffTaskBean {
                 })
             }
 
-            q4@ if (meter.q4 > 1E-3) {
-                ptList.add(VcMeterVerifyPoint().apply {
-                    meterId = meter.meterId
-                    verifyDate = LocalDate(2010, 1, 1).toDate()
-                    pointNo = 4
-                    pointName = "Q4"
-                    pointFlow = meter.q4
-                    pointDev = meter.q4r
-                })
-
+            q4@ if (meter.q4 > meter.q3) {
                 // model point.
                 mpList.add(VcMeterVerifyPoint().apply {
                     meterId = meter.meterId
@@ -250,16 +208,258 @@ class EffTaskBean {
             }
         }
 
-        meter.pointList = ptList.sortedBy { it.pointFlow }.toList()
+        if (mpList.size < 2 + 2 + 5 + 1) {
+            lgr.error("标准流量点不完整: ${meter.meterId} (${meter.meterName})")
+        }
+
         meter.modelPointList = mpList.toList()
     }
 
     /**
+     * 填充计量点. 按照顺序:
+     * @see ZoneMeter.decayId
+     * @see VcMeterVerifyPoint
+     * @see ZoneMeter.q1 - 2/3/4
+     */
+    fun fillPointList(meter: ZoneMeter): Boolean {
+        val ptList = if (meter.decayId ?: 0 > 0) {
+            fillPointListFromDecay(meter)
+        } else {
+            ArrayList<VcMeterVerifyPoint>(meterMapper!!.listVerifyPointLast(MeterParam().apply {
+                meterId = meter.meterId
+            }))
+        }
+
+        if (meter.q1 < 1E-3 || meter.q2 <= meter.q1 || meter.q3 <= meter.q2) return false
+
+        // fill model-point-list after q1/2/3/4 are filled.
+        fillModelPointList(meter)
+
+        ptList.forEach {
+            if (it.pointFlow == null) it.pointFlow = 0.0
+            if (it.pointDev == null) it.pointDev = 0.0
+        }
+
+        if (meter.q1 > 1E-3) {
+            q1@ kotlin.run {
+                val p1 = ptList.find { it.pointFlow!!.minus(meter.q1).absoluteValue < 1E-3 }
+                if (p1 != null) {
+                    p1.pointNo = 1
+                    p1.pointName = "Q1"
+                } else
+                    ptList.add(VcMeterVerifyPoint().apply {
+                        meterId = meter.meterId
+                        verifyDate = LocalDate(2010, 1, 1).toDate()
+                        pointNo = 1
+                        pointName = "Q1"
+                        pointFlow = meter.q1
+                        pointDev = meter.q1r
+                    })
+            }
+
+            q2@ if (meter.q2 > meter.q1) {
+                val p2 = ptList.find { it.pointFlow!!.minus(meter.q2).absoluteValue < 1E-3 }
+                if (p2 != null) {
+                    p2.pointNo = 2
+                    p2.pointName = "Q2"
+                } else
+                    ptList.add(VcMeterVerifyPoint().apply {
+                        meterId = meter.meterId
+                        verifyDate = LocalDate(2010, 1, 1).toDate()
+                        pointNo = 2
+                        pointName = "Q2"
+                        pointFlow = meter.q2
+                        pointDev = meter.q2r
+                    })
+            }
+
+            q3@ if (meter.q3 > meter.q2) {
+                val p3 = ptList.find { it.pointFlow!!.minus(meter.q3).absoluteValue < 1E-3 }
+                if (p3 != null) {
+                    p3.pointNo = 3
+                    p3.pointName = "Q3"
+                } else
+                    ptList.add(VcMeterVerifyPoint().apply {
+                        meterId = meter.meterId
+                        verifyDate = LocalDate(2010, 1, 1).toDate()
+                        pointNo = 3
+                        pointName = "Q3"
+                        pointFlow = meter.q3
+                        pointDev = meter.q3r
+                    })
+            }
+
+            q4@ if (meter.q4 > meter.q1) {
+                val p4 = ptList.find { it.pointFlow!!.minus(meter.q4).absoluteValue < 1E-3 }
+                if (p4 != null) {
+                    p4.pointNo = 4
+                    p4.pointName = "Q4"
+                } else
+                    ptList.add(VcMeterVerifyPoint().apply {
+                        meterId = meter.meterId
+                        verifyDate = LocalDate(2010, 1, 1).toDate()
+                        pointNo = 4
+                        pointName = "Q4"
+                        pointFlow = meter.q4
+                        pointDev = meter.q4r
+                    })
+            }
+        }
+
+        // use q1/2/3 from meter-info if no verify-result
+        if (ptList.size < 3
+                || ptList.find { it.pointName?.equals("Q2", true) == true } == null
+                || ptList.find { it.pointName?.equals("Q3", true) == true } == null
+                || meter.modelPointList?.size ?: 0 < 3
+                || meter.modelPointList?.find { it.pointName?.equals("Q2", true) == true } == null
+                || meter.modelPointList?.find { it.pointName?.equals("Q3", true) == true } == null) {
+            lgr.error("标准流量点不足3个或Q2/Q3不存在: ${meter.meterId} (${meter.meterName})")
+            return false
+        }
+
+        meter.pointList = ptList.sortedBy { it.pointFlow }.toList()
+        return true
+    }
+
+    /**
+     * fill point-list with decay-template.
+     */
+    private fun fillPointListFromDecay(meter: ZoneMeter): ArrayList<VcMeterVerifyPoint> {
+        val ptList = arrayListOf<VcMeterVerifyPoint>()
+
+        effMapper!!.selectEffDecay(EffParam().apply {
+            decayId = meter.decayId
+        }).firstOrNull()?.also { decay ->
+            if (decay.q1 ?: 0.0 > 1E-3) {
+                meter.q1 = decay.q1!!
+                meter.q1r = decay.q1r ?: 0.0
+            }
+            if (decay.q2 ?: 0.0 > meter.q1) {
+                meter.q2 = decay.q2!!
+                meter.q2r = decay.q2r ?: 0.0
+            }
+            if (decay.q3 ?: 0.0 > meter.q2) {
+                meter.q3 = decay.q3!!
+                meter.q3r = decay.q3r ?: 0.0
+            }
+            if (decay.q4 ?: 0.0 > meter.q3) {
+                meter.q4 = decay.q4!!
+                meter.q4r = decay.q4r ?: 0.0
+            }
+
+            qs1@ if (decay.qs1 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 11
+                    pointName = "QS1"
+                    pointFlow = decay.qs1
+                    pointDev = decay.qs1r
+                })
+            }
+            qs2@ if (decay.qs2 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 12
+                    pointName = "QS2"
+                    pointFlow = decay.qs2
+                    pointDev = decay.qs2r
+                })
+            }
+            qs3@ if (decay.qs3 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 13
+                    pointName = "QS3"
+                    pointFlow = decay.qs3
+                    pointDev = decay.qs3r
+                })
+            }
+            qs4@ if (decay.qs4 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 14
+                    pointName = "QS4"
+                    pointFlow = decay.qs4
+                    pointDev = decay.qs4r
+                })
+            }
+            qs5@ if (decay.qs5 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 15
+                    pointName = "QS5"
+                    pointFlow = decay.qs5
+                    pointDev = decay.qs5r
+                })
+            }
+            qs6@ if (decay.qs6 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 16
+                    pointName = "QS6"
+                    pointFlow = decay.qs6
+                    pointDev = decay.qs6r
+                })
+            }
+            qs7@ if (decay.qs7 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 17
+                    pointName = "QS7"
+                    pointFlow = decay.qs7
+                    pointDev = decay.qs7r
+                })
+            }
+            qs8@ if (decay.qs8 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 18
+                    pointName = "QS8"
+                    pointFlow = decay.qs8
+                    pointDev = decay.qs8r
+                })
+            }
+            qs9@ if (decay.qs9 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 19
+                    pointName = "QS9"
+                    pointFlow = decay.qs9
+                    pointDev = decay.qs9r
+                })
+            }
+            qs10@ if (decay.qs10 ?: 0.0 > 0.0) {
+                ptList.add(VcMeterVerifyPoint().apply {
+                    meterId = meter.meterId
+                    verifyDate = LocalDate(2010, 1, 1).toDate()
+                    pointNo = 20
+                    pointName = "QS10"
+                    pointFlow = decay.qs10
+                    pointDev = decay.qs10r
+                })
+            }
+        }
+
+        return ptList
+    }
+
+    /**
      * fill eff-meter for decay
+     * ['0', 0, '0'] default for all meters.
      */
     fun fillDecay(meter: BwMeter) {
         // if there's decay
         effMapper!!.selectEffDecay(EffParam().apply {
+            meterBrandId = meter.meterBrandId
             sizeId = meter.sizeId
             modelSize = meter.modelSize
         }).firstOrNull()?.also {
@@ -268,6 +468,7 @@ class EffTaskBean {
 
         if (meter.effDecay == null) {
             effMapper!!.selectEffDecay(EffParam().apply {
+                meterBrandId = "0"
                 sizeId = meter.sizeId
                 modelSize = "0"
             }).firstOrNull()?.also {
@@ -277,6 +478,7 @@ class EffTaskBean {
 
         if (meter.effDecay == null) {
             effMapper!!.selectEffDecay(EffParam().apply {
+                meterBrandId = "0"
                 sizeId = 0
                 modelSize = "0"
             }).firstOrNull()?.also {
@@ -361,11 +563,11 @@ class EffTaskBean {
 
                 q3 = meter.q3
                 q4 = meter.q4
-                if (meter.q1 > 1E-3) {
+                if (meter.q1 > 1E-3 && meter.q2 > meter.q1) {
                     q3toq1 = meter.q3 / meter.q1
                     q2toq1 = meter.q2 / meter.q1
                 }
-                if (meter.q3 > 1E-3) {
+                if (meter.q3 > meter.q2) {
                     q4toq3 = meter.q4 / meter.q3
                 }
             }
@@ -386,7 +588,7 @@ class EffTaskBean {
                             meterList = listOf(eff)
                         }),
                         effMapper!!.insertEffPoint(EffParam().apply {
-                            pointEffList = eff.pointEffList
+                            pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
                         })
                 )
 
@@ -412,8 +614,9 @@ class EffTaskBean {
          * @param eff
          */
         fun effSingleMeterDay(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
-            if (meter.meterId.isNullOrBlank() || meter.pointList.isNullOrEmpty()) {
-                throw IllegalArgumentException("计量点不存在: ${meter.meterId}")
+            if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
+                    || meter.modelPointList?.size ?: 0 < 3) {
+                throw IllegalArgumentException("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
             }
             if (day.withTimeAtStartOfDay() != day) {
                 throw IllegalArgumentException("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
@@ -447,6 +650,8 @@ class EffTaskBean {
                 EffMeterPoint().apply {
                     taskId = eff.taskId
                     meterId = meter.meterId
+                    pointTypeObj = EffPointType.EFF
+                    periodTypeObj = EffPeriodType.Day
 
                     pointNo = it.pointNo
                     pointName = it.pointName
@@ -461,9 +666,45 @@ class EffTaskBean {
             }.plus(EffMeterPoint().apply {
                 taskId = eff.taskId
                 meterId = meter.meterId
+                pointTypeObj = EffPointType.EFF
+                periodTypeObj = EffPeriodType.Day
 
-                pointNo = eff.pointList!!.size
-                pointName = "Q".plus(eff.pointList!!.size)
+                pointNo = 21
+                pointName = "Q21"
+                pointFlow = Double.MAX_VALUE
+                pointDev = 1.0
+                highLimit = 0.0
+                lowLimit = 0.0
+
+                pointWater = 0.0
+                realWater = 0.0
+            })
+
+            eff.modelPointList = eff.modelPointList!!.map {
+                EffMeterPoint().apply {
+                    taskId = eff.taskId
+                    meterId = meter.meterId
+                    pointTypeObj = EffPointType.MODEL
+                    periodTypeObj = EffPeriodType.Day
+
+                    pointNo = it.pointNo
+                    pointName = it.pointName
+                    pointFlow = it.pointFlow
+                    pointDev = it.pointDev
+                    highLimit = it.highLimit
+                    lowLimit = it.lowLimit
+
+                    pointWater = 0.0
+                    realWater = 0.0
+                }
+            }.plus(EffMeterPoint().apply {
+                taskId = eff.taskId
+                meterId = meter.meterId
+                pointTypeObj = EffPointType.MODEL
+                periodTypeObj = EffPeriodType.Day
+
+                pointNo = 21
+                pointName = "Q4+"
                 pointFlow = Double.MAX_VALUE
                 pointDev = 1.0
                 highLimit = 0.0
@@ -483,8 +724,12 @@ class EffTaskBean {
                 d1.avgFlow = d1.forwardSum?.div(
                         Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
 
-                val ep = eff.pointEffList!!.first { d1.avgFlow!!.absoluteValue <= it.pointFlow!! }
-                ep.pointWater = ep.pointWater!!.plus(d1.forwardSum!!)
+                eff.pointEffList!!.firstOrNull { d1.avgFlow!!.absoluteValue <= it.pointFlow!! }?.also { ep ->
+                    ep.pointWater = ep.pointWater!!.plus(d1.forwardSum!!)
+                }
+                eff.modelPointList!!.firstOrNull { d1.avgFlow!!.absoluteValue <= it.pointFlow!! }?.also { mp ->
+                    mp.pointWater = mp.pointWater!!.plus(d1.forwardSum!!)
+                }
 
                 // break if not same day
                 if (DateTime(d2.sampleTime!!).dayOfMonth != DateTime(d1.sampleTime!!).dayOfMonth) {
@@ -502,7 +747,12 @@ class EffTaskBean {
             }
 
             // to avoid numeric overflow
-            eff.pointEffList!!.last().pointFlow = eff.pointEffList!!.get(eff.pointEffList!!.size - 2).pointFlow?.times(2.0)
+            eff.pointEffList!!.also {
+                it.last().pointFlow = it[it.size - 2].pointFlow?.times(2.0)
+            }
+            eff.modelPointList!!.also {
+                it.last().pointFlow = it[it.size - 2].pointFlow?.times(2.0)
+            }
 
             eff.apply {
                 runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
@@ -523,9 +773,9 @@ class EffTaskBean {
                 }
 
                 q0v = pointEffList?.getOrNull(0)?.pointWater
-                q1v = pointEffList?.getOrNull(1)?.pointWater
-                q2v = pointEffList?.getOrNull(2)?.pointWater
-                q3v = pointEffList?.getOrNull(3)?.pointWater
+                q1v = pointEffList?.find { it.pointName?.equals("Q1", true) == true }?.pointWater ?: 0.0
+                q2v = pointEffList?.find { it.pointName?.equals("Q2", true) == true }?.pointWater ?: 0.0
+                q3v = pointEffList?.find { it.pointName?.equals("Q3", true) == true }?.pointWater ?: 0.0
                 q4v = pointEffList?.getOrNull(4)?.pointWater
                 qtv = pointEffList?.drop(5)?.sumByDouble { it.pointWater!! }
 
