@@ -810,6 +810,9 @@
         LEFT JOIN bw_dma_meter dm on m.meterid = dm.meterid
         LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
         <where>
+            <if test="keywords != null">
+                to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
+            </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
                     AND m.meterId IN
@@ -975,6 +978,9 @@
         LEFT JOIN bw_zone_meter zm on m.meterId = zm.meterId
         LEFT JOIN bw_zone z on z.zoneId = zm.zoneId
         <where>
+            <if test="keywords != null">
+                to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
+            </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
                     AND m.meterId IN

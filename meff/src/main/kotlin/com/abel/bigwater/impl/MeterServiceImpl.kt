@@ -383,6 +383,9 @@ open class MeterServiceImpl : MeterService {
                 if (!it.firmId!!.endsWith("%")) {
                     it.firmId = it.firmId + "%"
                 }
+                if (!it.keywords.isNullOrBlank() && !it.keywords!!.contains('&') && !it.keywords!!.contains('|')) {
+                    it.keywords = it.keywords!!.plus('|').plus(it.keywords)
+                }
             }
 
             return BwResult(

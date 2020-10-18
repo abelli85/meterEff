@@ -256,6 +256,35 @@ class MeterServiceImplTest {
     }
 
     @Test
+    fun testListMeterZoneText() {
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+        val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+            keywords = "福州|中国|花园"
+            firmId = "76%"
+        })
+
+        meterService!!.listMeter(holder).also { r1 ->
+            lgr.info("zone-meter list: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+        }
+    }
+
+    @Test
+    fun testListMeterDmaText() {
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+        val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+            keywords = "福州"
+            firmId = "76%"
+            dmaId = "%"
+        })
+
+        meterService!!.listMeter(holder).also { r1 ->
+            lgr.info("dma-meter list: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+        }
+    }
+
+    @Test
     fun testFetchMeterZone() {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"

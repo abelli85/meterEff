@@ -53,6 +53,8 @@ data class MeterParam(var meterId: String? = null,
                       var remoteBrandId: String? = null,
 
                       /**
+                       * 使用 & | 符号拼接自己需要的向量: 福州|福州, 福州|中国|花园, 福州&公司, etc.
+                       * @deprecated
                        * 请试用实体词前后加*，全文检索效率较高，如 *鹏兴* 、 *莲塘* 、 等
                        * 不支持量词、通用词的全文检索，如 *花园* 、 *一期* 、*五期* 等。
                        */

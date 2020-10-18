@@ -1,5 +1,6 @@
 package com.abel.bigwater.mapper
 
+import com.abel.bigwater.api.MeterParam
 import com.abel.bigwater.model.BwUser
 import com.alibaba.fastjson.JSON
 import org.junit.Test
@@ -19,6 +20,9 @@ open class MapperTest {
 
     @Autowired
     var configMapper: ConfigMapper? = null
+
+    @Autowired
+    var meterMapper: MeterMapper? = null
 
     @Test
     fun testConfig() {
@@ -56,6 +60,16 @@ open class MapperTest {
 
         val cnt = userMapper!!.kickUserLogin("11", "123456")
         lgr.info("kick login: $cnt")
+    }
+
+    @Test
+    fun testMeterText() {
+        val mp = MeterParam().apply {
+            keywords = "福州|中国|花园"
+            firmId = "76%"
+        }
+        val lst = meterMapper!!.selectMeterDma(mp)
+        lgr.info("${mp.keywords} matched list (${lst.size}): {}", JSON.toJSONString(lst, true))
     }
 
     companion object {
