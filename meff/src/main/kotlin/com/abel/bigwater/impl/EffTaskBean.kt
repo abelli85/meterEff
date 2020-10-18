@@ -13,6 +13,7 @@ import com.abel.bigwater.model.BwMeter
 import com.abel.bigwater.model.DataRange
 import com.abel.bigwater.model.eff.*
 import com.abel.bigwater.model.zone.ZoneMeter
+import com.alibaba.fastjson.JSON
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.joda.time.LocalDate
@@ -76,6 +77,7 @@ class EffTaskBean {
                 lgr.warn("计量点不足3个或Q2/Q3不存在: {}/{}", it.meterId, it.meterName)
                 return@forEach
             }
+            lgr.info("fill-point-list result: {}", JSON.toJSONString(it, true))
 
             val effList = effMeter(it, task, 31)
             lgr.info("analyze {} eff for {}/{} in {}", effList.size,
@@ -680,7 +682,7 @@ class EffTaskBean {
                 realWater = 0.0
             })
 
-            eff.modelPointList = eff.modelPointList!!.map {
+            eff.modelPointList = meter.modelPointList!!.map {
                 EffMeterPoint().apply {
                     taskId = eff.taskId
                     meterId = meter.meterId
