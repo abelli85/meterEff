@@ -585,14 +585,13 @@ class EffTaskBean {
                         effMapper!!.deleteEffMeter(param)
                 )
 
-                lgr.info("insert eff meter: {}/{}",
-                        effMapper!!.insertEffMeter(EffParam().apply {
-                            meterList = listOf(eff)
-                        }),
-                        effMapper!!.insertEffPoint(EffParam().apply {
-                            pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
-                        })
-                )
+                val cntEff = effMapper!!.insertEffMeterSingle(eff)
+                val pp = EffParam().apply {
+                    pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
+                    pointEffList?.forEach { it.effId = eff.effId }
+                }
+                val cntPt = effMapper!!.insertEffPoint(pp)
+                lgr.info("insert eff meter: {}/{}", cntEff, cntPt)
 
                 retList.add(eff)
             }
@@ -651,6 +650,9 @@ class EffTaskBean {
             eff.pointEffList = eff.pointList!!.map {
                 EffMeterPoint().apply {
                     taskId = eff.taskId
+                    effId = eff.effId
+                    taskStart = day.toDate()
+                    taskEnd = day.plusDays(1).toDate()
                     meterId = meter.meterId
                     pointTypeObj = EffPointType.EFF
                     periodTypeObj = EffPeriodType.Day
@@ -667,6 +669,9 @@ class EffTaskBean {
                 }
             }.plus(EffMeterPoint().apply {
                 taskId = eff.taskId
+                effId = eff.effId
+                taskStart = day.toDate()
+                taskEnd = day.plusDays(1).toDate()
                 meterId = meter.meterId
                 pointTypeObj = EffPointType.EFF
                 periodTypeObj = EffPeriodType.Day
@@ -685,6 +690,9 @@ class EffTaskBean {
             eff.modelPointList = meter.modelPointList!!.map {
                 EffMeterPoint().apply {
                     taskId = eff.taskId
+                    effId = eff.effId
+                    taskStart = day.toDate()
+                    taskEnd = day.plusDays(1).toDate()
                     meterId = meter.meterId
                     pointTypeObj = EffPointType.MODEL
                     periodTypeObj = EffPeriodType.Day
@@ -701,6 +709,9 @@ class EffTaskBean {
                 }
             }.plus(EffMeterPoint().apply {
                 taskId = eff.taskId
+                effId = eff.effId
+                taskStart = day.toDate()
+                taskEnd = day.plusDays(1).toDate()
                 meterId = meter.meterId
                 pointTypeObj = EffPointType.MODEL
                 periodTypeObj = EffPeriodType.Day
@@ -760,6 +771,11 @@ class EffTaskBean {
                 runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
                 meterWater = pointEffList!!.sumByDouble { it.pointWater!! }
                 realWater = pointEffList!!.sumByDouble { it.realWater!! }
+
+                // to avoid dividen-by-0 when matching match.
+                if (meterWater ?: 0.0 < 1.0E-3) meterWater = 1.0E-3
+                if (realWater ?: 0.0 < 1.0E-3) realWater = 1.0E-3
+
                 meterEff = if (realWater!! > 1.0E-3) {
                     meterWater!!.div(realWater!!).times(100.0)
                 } else 100.0

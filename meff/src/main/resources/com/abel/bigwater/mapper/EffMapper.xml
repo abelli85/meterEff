@@ -136,7 +136,8 @@
 
     <select id="listEffMeter" parameterType="com.abel.bigwater.api.EffParam"
             resultType="com.abel.bigwater.model.eff.EffMeter">
-        SELECT m.taskId
+        SELECT m.effId
+        , m.taskId
         , t.taskName
         , m.meterId
         , m.meterName
@@ -179,6 +180,9 @@
         <where>
             <if test="firmId != null">
                 t.firmId LIKE #{firmId}
+            </if>
+            <if test="effId != null">
+                AND m.effId = #{effId}
             </if>
             <if test="taskId != null">
                 AND m.taskId = #{taskId}
@@ -261,7 +265,8 @@
 
     <select id="matchMeter" parameterType="com.abel.bigwater.api.EffParam"
             resultType="com.abel.bigwater.model.eff.EffMeter">
-        SELECT m.taskId
+        SELECT m.effId
+        , m.taskId
         , m.meterId
         , m.meterName
         , m.taskName
@@ -278,7 +283,7 @@
         , m2.q3v
         , m2.q4v
         , m2.qtv
-        , (m2.meterWater / m2.meterWater) * 100 meterEff
+        , (case when m2.realWater > 0.0 then (m2.meterWater / m2.realWater) * 100 else 0.0 end) AS meterEff
         , m2.realWater
         , m2.startFwd
         , m2.endFwd
@@ -300,7 +305,7 @@
         FROM (
         SELECT
         meterId
-        , MAX(wid) wid
+        , MAX(effId) effId
         FROM bw_eff_meter
         <where>
             <if test="taskId != null">
@@ -347,7 +352,7 @@
         </where>
         GROUP BY meterId
         ) m1
-        JOIN bw_eff_meter m ON m.wid = m1.wid
+        JOIN bw_eff_meter m ON m.effId = m1.effId
         JOIN (
             SELECT
             m.meterId
@@ -367,7 +372,7 @@
             JOIN (
             SELECT meterId
             , taskStart
-            , MAX(wid) wid
+            , MAX(effId) effId
             FROM bw_eff_meter
             <where>
                 <if test="taskId != null">
@@ -376,6 +381,7 @@
                 <if test="periodType != null">
                     AND periodType LIKE #{periodType}
                 </if>
+                AND pointType = 'MODEL'
 
                 <choose>
                     <when test="meterIdList != null and meterIdList.size > 0">
@@ -411,7 +417,7 @@
             </where>
             GROUP BY meterId
             , taskStart
-            ) m1 ON m.wid = m1.wid
+            ) m1 ON m.effId = m1.effId
             <where>
                 <if test="taskId != null">
                     AND m.taskId = #{taskId}
@@ -635,6 +641,84 @@
         </foreach>
     </insert>
 
+    <insert id="insertEffMeterSingle" parameterType="com.abel.bigwater.model.eff.EffMeter"
+            useGeneratedKeys="true" keyProperty="effId" keyColumn="effid">
+        INSERT INTO bw_eff_meter( taskId
+        , meterId
+        , meterName
+        , taskName
+        , taskStart
+        , taskEnd
+        , periodType
+        , runTime
+        , runDuration
+        , taskResult
+        , meterWater
+        , q0v
+        , q1v
+        , q2v
+        , q3v
+        , q4v
+        , qtv
+        , meterEff
+        , realWater
+        , startFwd
+        , endFwd
+        , meterBrandId
+        , sizeId
+        , sizeName
+        , modelSize
+        , dataRows
+        , decayEff
+        , q4
+        , q3
+        , q3toq1
+        , q4toq3
+        , q2toq1
+        , qr1
+        , qr2
+        , qr3
+        , qr4)
+        VALUES
+            ( #{taskId}
+            , #{meterId}
+            , #{meterName}
+            , #{taskName}
+            , #{taskStart}
+            , #{taskEnd}
+            , #{periodType}
+            , #{runTime}
+            , #{runDuration}
+            , #{taskResult}
+            , #{meterWater}
+            , #{q0v}
+            , #{q1v}
+            , #{q2v}
+            , #{q3v}
+            , #{q4v}
+            , #{qtv}
+            , #{meterEff}
+            , #{realWater}
+            , #{startFwd}
+            , #{endFwd}
+            , #{meterBrandId}
+            , #{sizeId}
+            , #{sizeName}
+            , #{modelSize}
+            , #{dataRows}
+            , #{decayEff}
+            , #{q4}
+            , #{q3}
+            , #{q3toq1}
+            , #{q4toq3}
+            , #{q2toq1}
+            , #{qr1}
+            , #{qr2}
+            , #{qr3}
+            , #{qr4}
+            )
+    </insert>
+
     <insert id="buildEffMeterMonth" parameterType="com.abel.bigwater.api.EffParam">
     INSERT INTO bw_eff_meter( taskId
     , meterId
@@ -711,7 +795,7 @@
         FROM (
              SELECT
                  meterId
-                  , MAX(wid) wid
+                  , MAX(effId) effId
              FROM bw_eff_meter
             <where>
                 <if test="taskId != null">
@@ -756,7 +840,7 @@
             </where>
             GROUP BY meterId
              ) m1
-        JOIN bw_eff_meter m ON m.wid = m1.wid
+        JOIN bw_eff_meter m ON m.effId = m1.effId
         JOIN (
              SELECT
                  m.meterId
@@ -777,7 +861,7 @@
             JOIN (
                 SELECT meterId
                 , taskStart
-                , MAX(wid) wid
+                , MAX(effId) effId
                 FROM bw_eff_meter
                 <where>
                     <if test="taskId != null">
@@ -822,7 +906,7 @@
                 </where>
                 GROUP BY meterId
                        , taskStart
-            ) m1 ON m.wid = m1.wid
+            ) m1 ON m.effId = m1.effId
             <where>
                 <if test="taskId != null">
                     AND m.taskId = #{taskId}
@@ -956,7 +1040,8 @@
         FROM (
         VALUES
         <foreach collection="meterList" item="m1" separator=",">
-            (#{m1.taskId}
+            (#{m1.effId}
+            , #{m1.taskId}
             , #{m1.meterId}
             , #{m1.meterName}
             , #{m1.taskName}
@@ -994,7 +1079,8 @@
             , #{m1.qr4})
         </foreach>
         ) AS tmp (
-        taskId
+        effId
+        , taskId
         , meterId
         , meterName
         , taskName
@@ -1045,6 +1131,9 @@
         <where>
             m.taskId = t.taskId
 
+            <if test="effId != null">
+                AND m.effId LIKE #{effId}
+            </if>
             <if test="firmId != null">
                 AND t.firmId LIKE #{firmId}
             </if>
@@ -1127,6 +1216,9 @@
         FROM bw_eff_meter m
 
         <where>
+            <if test="effId != null">
+                AND m.effId LIKE #{effId}
+            </if>
             <if test="periodType != null">
                 AND m.periodType LIKE #{periodType}
             </if>
@@ -1173,6 +1265,9 @@
         SELECT p.wid
         , p.meterId
         , p.taskId
+        , p.effId
+        , p.taskStart
+        , p.taskEnd
         , p.periodType
         , p.pointType
         , p.pointNo
@@ -1188,6 +1283,9 @@
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
+            <if test="effId != null">
+                AND m.effId LIKE #{effId}
+            </if>
             <if test="firmId != null">
                 t.firmId LIKE #{firmId}
             </if>
@@ -1269,11 +1367,14 @@
 
     </select>
 
-    <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam" keyColumn="wid" keyProperty="wid">
+    <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam">
         INSERT INTO
         bw_meter_eff_point(
         meterId
         , taskId
+        , effId
+        , taskStart
+        , taskEnd
         , periodType
         , pointType
         , pointNo
@@ -1288,6 +1389,9 @@
         <foreach collection="pointEffList" item="pt" separator=",">
             (#{pt.meterId}
             , #{pt.taskId}
+            , #{pt.effId}
+            , #{pt.taskStart}
+            , #{pt.taskEnd}
             , #{pt.periodType}
             , #{pt.pointType}
             , #{pt.pointNo}
@@ -1299,6 +1403,95 @@
             , #{pt.pointWater}
             , #{pt.realWater})
         </foreach>
+    </insert>
+
+    <!-- build eff-point-monthly from eff-point-daily -->
+    <insert id="buildEffPointMonth" parameterType="com.abel.bigwater.api.EffParam">
+        INSERT INTO
+        bw_meter_eff_point(
+        meterId
+        , taskId
+        , effId
+        , taskStart
+        , taskEnd
+        , periodType
+        , pointType
+        , pointNo
+        , pointName
+        , pointFlow
+        , pointDev
+        , highLimit
+        , lowLimit
+        , pointWater
+        , realWater
+        )
+        SELECT mp.meterId
+             , mp.taskId
+             , mp.effId
+             , mp.taskStart
+             , mp.taskEnd
+             , 'Month' periodType
+             , mp.pointType
+             , mp.pointNo
+             , mp.pointName
+             , mp.pointFlow
+             , mp.pointDev
+             , mp.highLimit
+             , mp.lowLimit
+             , mp1.pointWater
+             , mp1.realWater
+        FROM bw_meter_eff_point mp
+        JOIN bw_eff_meter m ON mp.meterId = m.meterId
+                                   AND mp.taskId = m.taskId
+        JOIN (
+            SELECT MAX(wid) wid
+            , meterId
+            , taskId
+            , pointType
+            , pointName
+            , date_trunc('Month', taskStart) taskStart
+            , SUM(pointWater) pointWater
+            , SUM(realWater) realWater
+            FROM bw_meter_eff_point
+            <where>
+                <if test="taskId != null">
+                    AND taskId = #{taskId}
+                </if>
+
+                <choose>
+                    <when test="meterIdList != null and meterIdList.size > 0">
+                        AND meterId IN
+                        <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                            #{mid}
+                        </foreach>
+                    </when>
+                    <when test="meterId != null">
+                        AND meterId LIKE #{meterId}
+                    </when>
+                </choose>
+
+                <choose>
+                    <when test="taskStart != null and taskEnd != null">
+                        AND taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                    </when>
+                    <when test="taskStart != null">
+                        AND taskStart = #{taskStart}
+                    </when>
+                    <when test="taskEnd != null">
+                        AND taskEnd = #{taskEnd}
+                    </when>
+                </choose>
+            </where>
+            GROUP BY meterId
+                   , taskId
+                   , pointType
+                   , pointName
+                   , date_trunc('Month', taskStart)
+            ) mp1 ON mp.meterId = mp1.meterId
+                         AND mp.taskId = mp1.taskId
+                         AND mp.pointType = mp1.pointType
+                         AND mp.pointName = mp1.pointName
+                         AND mp.wid = mp1.wid
     </insert>
 
     <delete id="deleteEffPointWithTask" parameterType="com.abel.bigwater.api.EffParam">
@@ -1438,7 +1631,7 @@
 
     <select id="selectEffDecay" parameterType="com.abel.bigwater.api.EffParam"
             resultType="com.abel.bigwater.model.eff.VcEffDecay">
-        SELECT wid
+        SELECT decayId
              , meterBrandId
              , meterBrandName
              , sizeId
@@ -1482,7 +1675,7 @@
         FROM bw_eff_decay
         <where>
             <if test="decayId != null">
-                wid = #{decayId}
+                decayId = #{decayId}
             </if>
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
@@ -1593,38 +1786,29 @@
                 (VALUES
                     <foreach collection="decayList" item="d1" separator=",">
                         (
-                         #{d1.meterBrandId}
+                         #{d1.decayId}
+                         , #{d1.meterBrandId}
                          , #{d1.sizeId}
                          , #{d1.modelSize}
                         )
                     </foreach> )
-                AS tmp(meterBrandId
+                AS tmp(decayId
+                    , meterBrandId
                     , sizeId
                     , modelSize)
         <where>
-            ed.meterBrandId = tmp.meterBrandId
-            AND ed.sizeId = tmp.sizeId
-            AND ed.modelSize = tmp.modelSize
+            <choose>
+                <when test="decayId != null">
+                    AND ed.decayId = #{decayId}
+                </when>
+                <otherwise>
+                    AND ed.meterBrandId = tmp.meterBrandId
+                    AND ed.sizeId = tmp.sizeId
+                    AND ed.modelSize = tmp.modelSize
+                </otherwise>
+            </choose>
             <if test="sizeName != null">
                 AND ed.sizeName LIKE #{sizeName}
-            </if>
-        </where>
-    </delete>
-
-    <delete id="deleteEffDecaySingle" parameterType="com.abel.bigwater.model.eff.VcEffDecay">
-        DELETE FROM bw_eff_decay
-        <where>
-            <if test="meterBrandId != null">
-                meterBrandId = #{meterBrandId}
-            </if>
-            <if test="sizeId != null">
-                AND sizeId = #{sizeId}
-            </if>
-            <if test="sizeName != null">
-                AND sizeName LIKE #{sizeName}
-            </if>
-            <if test="modelSize != null">
-                AND modelSize LIKE #{modelSize}
             </if>
         </where>
     </delete>

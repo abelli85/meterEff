@@ -382,6 +382,11 @@ class EffServiceImplTest {
                 pointEffList = listOf(
                         EffMeterPoint().also {
                             it.taskId = task.taskId
+                            it.effId = 0
+                            it.taskStart = LocalDate(2020, 1, 1).toDate()
+                            it.taskEnd = LocalDate(2020, 1, 2).toDate()
+                            it.pointTypeObj = EffPointType.EFF
+                            it.periodTypeObj = EffPeriodType.Day
                             it.meterId = meterId
                             it.pointName = "Q1"
                             it.pointNo = 1
@@ -390,6 +395,11 @@ class EffServiceImplTest {
                         },
                         EffMeterPoint().also {
                             it.taskId = task.taskId
+                            it.effId = 0
+                            it.taskStart = LocalDate(2020, 1, 1).toDate()
+                            it.taskEnd = LocalDate(2020, 1, 2).toDate()
+                            it.pointTypeObj = EffPointType.EFF
+                            it.periodTypeObj = EffPeriodType.Day
                             it.meterId = meterId
                             it.pointName = "Q3"
                             it.pointNo = 3
@@ -428,17 +438,19 @@ class EffServiceImplTest {
     @Test
     fun testBuildEffMeter() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val dlist = listOf(VcEffDecay().also {
+            it.meterBrandId = "0"
+            it.sizeId = 0
+            it.modelSize = "0"
+            it.sizeName = "0"
+
+            it.totalFwd = 1E6
+            it.decayEff = 10.0
+        })
 
         try {
             effMapper!!.insertEffDecay(EffParam().apply {
-                decayList = listOf(VcEffDecay().also {
-                    it.sizeId = 0
-                    it.modelSize = "0"
-                    it.sizeName = "0"
-
-                    it.totalFwd = 1E6
-                    it.decayEff = 10.0
-                })
+                decayList = dlist
             })
 
             kotlin.run {
@@ -459,9 +471,8 @@ class EffServiceImplTest {
                 assertEquals(0, r2.code)
             }
         } finally {
-            effMapper!!.deleteEffDecaySingle(VcEffDecay().apply {
-                sizeId = 0
-                modelSize = "0"
+            effMapper!!.deleteEffDecay(EffParam().also {
+                it.decayList = dlist
             })
         }
     }
@@ -503,10 +514,9 @@ class EffServiceImplTest {
                     }))
             lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
         } finally {
-            var cnt = 0
-            dlist.forEach {
-                cnt += effMapper!!.deleteEffDecaySingle(it)
-            }
+            var cnt = effMapper!!.deleteEffDecay(EffParam().also {
+                it.decayList = dlist
+            })
             lgr.info("delete test decay: $cnt")
             assertEquals(2, cnt)
         }
@@ -557,10 +567,9 @@ class EffServiceImplTest {
                     }))
             lgr.info("decay list: {}", JSON.toJSONString(r2, true))
         } finally {
-            var cnt = 0
-            dlist.forEach {
-                cnt += effMapper!!.deleteEffDecaySingle(it)
-            }
+            var cnt = effMapper!!.deleteEffDecay(EffParam().also {
+                it.decayList = dlist
+            })
             lgr.info("delete test decay: $cnt")
             assertEquals(0, cnt)
         }

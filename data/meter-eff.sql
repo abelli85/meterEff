@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/17 16:13:30                          */
+/* Created on:     2020/10/19 13:53:30                          */
 /*==============================================================*/
 
 
@@ -355,7 +355,7 @@ create table bw_dma_meter (
 /* Table: bw_eff_decay                                          */
 /*==============================================================*/
 create table bw_eff_decay (
-   wid                  serial8              not null,
+   decayId              SERIAL8              not null,
    meterBrandId         VARCHAR(45)          null,
    meterBrandName       VARCHAR(45)          null,
    sizeId               INT4                 not null,
@@ -396,7 +396,7 @@ create table bw_eff_decay (
    qs8r                 DECIMAL(15,3)        null,
    qs9r                 DECIMAL(15,3)        null,
    qs10r                DECIMAL(15,3)        null,
-   constraint PK_BW_EFF_DECAY primary key (wid)
+   constraint PK_BW_EFF_DECAY primary key (decayId)
 );
 
 /*==============================================================*/
@@ -412,7 +412,7 @@ modelSize
 /* Table: bw_eff_meter                                          */
 /*==============================================================*/
 create table bw_eff_meter (
-   wid                  SERIAL               not null,
+   effId                SERIAL8              not null,
    taskId               INT8                 not null,
    meterId              VARCHAR(45)          not null,
    meterName            VARCHAR(45)          not null,
@@ -449,7 +449,7 @@ create table bw_eff_meter (
    qr2                  DECIMAL(15,3)        null,
    qr3                  DECIMAL(15,3)        null,
    qr4                  DECIMAL(15,3)        null,
-   constraint PK_BW_EFF_METER primary key (wid)
+   constraint PK_BW_EFF_METER primary key (effId)
 );
 
 /*==============================================================*/
@@ -460,7 +460,7 @@ meterId,
 periodType,
 taskStart,
 taskEnd,
-wid
+effId
 );
 
 /*==============================================================*/
@@ -677,13 +677,16 @@ onlineDate
 /* Table: bw_meter_eff_point                                    */
 /*==============================================================*/
 create table bw_meter_eff_point (
-   wid                  SERIAL               not null,
+   wid                  SERIAL8              not null,
    meterId              VARCHAR(45)          not null,
    taskId               INT8                 not null,
+   effId                INT8                 not null,
    periodType           VARCHAR(20)          not null,
+   taskStart            TIMESTAMP WITH TIME ZONE not null,
+   taskEnd              TIMESTAMP WITH TIME ZONE not null,
    pointType            varchar(20)          not null,
-   pointNo              INT4                 not null,
    pointName            varchar(20)          not null,
+   pointNo              INT4                 not null,
    pointFlow            DECIMAL(15,3)        not null,
    pointDev             DECIMAL(15,3)        null,
    highLimit            DECIMAL(15,3)        null,
@@ -702,6 +705,9 @@ comment on column bw_meter_eff_point.pointType is
 create  index idx_eff_meter_flow on bw_meter_eff_point (
 meterId,
 taskId,
+effId,
+taskStart,
+taskEnd,
 periodType,
 pointType,
 pointFlow
@@ -713,6 +719,9 @@ pointFlow
 create  index idx_eff_meter_point on bw_meter_eff_point (
 meterId,
 taskId,
+effId,
+taskStart,
+taskEnd,
 periodType,
 pointType,
 pointNo
@@ -802,7 +811,7 @@ meterId
 /* Table: bw_rtu_log                                            */
 /*==============================================================*/
 create table bw_rtu_log (
-   logId                serial8              not null,
+   logId                SERIAL8              not null,
    logTime              TIMESTAMP WITH TIME ZONE null,
    logCmd               VARCHAR(45)          null,
    logLen               INT4                 null,
