@@ -15,6 +15,11 @@ import java.util.*
  */
 data class EffMeter(
         /**
+         * 计量效率自增量
+         */
+        var effId: Long? = null,
+
+        /**
          * 任务自增量
          */
         var taskId: Long? = null,

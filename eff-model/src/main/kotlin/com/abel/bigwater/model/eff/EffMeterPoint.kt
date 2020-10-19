@@ -1,8 +1,14 @@
 package com.abel.bigwater.model.eff
 
 import com.abel.bigwater.model.BwBase
+import com.abel.bigwater.model.JsonDateDeserializer
+import com.abel.bigwater.model.JsonDateSerializer
+import com.abel.bigwater.model.JsonHelper
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import java.util.*
 
 /**
  * 水表的单个计量点用水模式
@@ -19,9 +25,30 @@ class EffMeterPoint : BwBase() {
     var taskId: Long? = null
 
     /**
+     * 计量效率自增量
+     */
+    var effId: Long? = null
+
+    /**
      * 水表标示
      */
     var meterId: String? = null
+
+    /**
+     * 任务开始时段
+     */
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
+    var taskStart: Date? = null
+
+    /**
+     * 任务结束时段
+     */
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
+    var taskEnd: Date? = null
 
     /**
      * 计量效率分析的时段类型

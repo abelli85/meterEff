@@ -9,7 +9,7 @@ class VcEffDecay : BwBase() {
     /**
      * serial
      */
-    var wid: Long? = null
+    var decayId: Long? = null
 
     /**
      * 水表品牌标示

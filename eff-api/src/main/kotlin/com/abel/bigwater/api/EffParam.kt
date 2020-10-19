@@ -23,6 +23,16 @@ class EffParam : BaseParam() {
     var taskId: Long? = null
 
     /**
+     * 计量效率自增量
+     */
+    var effId: Long? = null
+
+    /**
+     * 自增量
+     */
+    var wid: Long? = null
+
+    /**
      * 水表ID
      */
     var meterId: String? = null
