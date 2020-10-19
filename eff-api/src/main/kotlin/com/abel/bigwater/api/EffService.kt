@@ -1,6 +1,7 @@
 package com.abel.bigwater.api
 
 import com.abel.bigwater.model.eff.EffMeter
+import com.abel.bigwater.model.eff.EffMeterPoint
 import com.abel.bigwater.model.eff.EffTask
 import com.abel.bigwater.model.eff.VcEffDecay
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
@@ -105,6 +106,16 @@ interface EffService {
     @POST
     @Path(PATH_FETCH_METER_EFF)
     fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 获取计量点列表
+     * @see EffParam.meterId
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
+     * @see EffParam.periodType - 默认返回 Day (天); Month 返回月;  如需同时返回, 设为 %.
+     * @see EffParam.pointType - 默认返回 MODEL (消费模式的计量点); EFF 返回 计量效率的计量点; 如需同时返回, 设为 %.
+     */
+    fun listEffPoint(holder: BwHolder<EffParam>): BwResult<EffMeterPoint>
 
     /**
      * 修改单个水表的分析详情
