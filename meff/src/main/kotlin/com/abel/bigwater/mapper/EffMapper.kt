@@ -39,6 +39,8 @@ interface EffMapper {
 
     fun insertEffPoint(p: EffParam): Int
 
+    fun buildEffPointMonth(p: EffParam): Int
+
     fun deleteEffPoint(p: EffParam): Int
 
     fun deleteEffPointWithTask(p: EffParam): Int

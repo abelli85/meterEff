@@ -1279,25 +1279,36 @@
         , p.pointWater
         , p.realWater
         FROM bw_meter_eff_point p
-        JOIN bw_eff_meter m on p.meterId = m.meterId
-        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_eff_meter m ON p.effId = m.effId
+        LEFT JOIN bw_eff_task t ON p.taskId = t.taskId
 
         <where>
             <if test="effId != null">
-                AND m.effId LIKE #{effId}
-            </if>
-            <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                AND p.effId = #{effId}
             </if>
             <if test="taskId != null">
                 AND p.taskId = #{taskId}
             </if>
-            <if test="periodType != null">
-                AND p.periodType = #{periodType}
+            <if test="firmId != null">
+                AND (t.firmId IS NULL OR t.firmId LIKE #{firmId})
             </if>
-            <if test="pointType != null">
-                AND p.pointType = #{pointType}
-            </if>
+
+            <choose>
+                <when test="periodType != null">
+                    AND p.periodType LIKE #{periodType}
+                </when>
+                <otherwise>
+                    AND p.periodType LIKE 'Day'
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="pointType != null">
+                    AND p.pointType LIKE #{pointType}
+                </when>
+                <otherwise>
+                    AND p.pointType LIKE 'MODEL'
+                </otherwise>
+            </choose>
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
@@ -1323,48 +1334,22 @@
             </if>
 
             <choose>
-                <when test="createDateStart != null and createDateEnd != null">
-                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
-                </when>
-                <when test="createDate != null">
-                    AND t.createDate = #{createDate}
-                </when>
-                <when test="createDateStart != null">
-                    AND t.createDate &gt;= #{createDateStart}
-                </when>
-                <when test="createDateEnd != null">
-                    AND t.createDate &lt;= #{createDateEnd}
-                </when>
-            </choose>
-
-            <choose>
                 <when test="taskStart != null and taskEnd != null">
-                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                    AND p.taskStart BETWEEN #{taskStart} AND #{taskEnd}
                 </when>
                 <when test="taskStart != null">
-                    AND t.taskStart = #{taskStart}
+                    AND p.taskStart = #{taskStart}
                 </when>
                 <when test="taskEnd != null">
-                    AND t.taskEnd = #{taskEnd}
-                </when>
-            </choose>
-
-            <choose>
-                <when test="runTime1 != null and runTime2 != null">
-                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
-                </when>
-                <when test="runTime != null">
-                    AND t.runTime = #{runTime}
-                </when>
-                <when test="runTime1 != null">
-                    AND t.runTime &gt;= #{runTime1}
-                </when>
-                <when test="runTime2 != null">
-                    AND t.runTime &lt;= #{runTime2}
+                    AND p.taskEnd = #{taskEnd}
                 </when>
             </choose>
         </where>
-
+        ORDER BY p.meterId
+        , p.taskStart
+        , p.periodType
+        , p.pointType
+        , p.pointNo
     </select>
 
     <insert id="insertEffPoint" parameterType="com.abel.bigwater.api.EffParam">
@@ -1428,8 +1413,8 @@
         SELECT mp.meterId
              , mp.taskId
              , mp.effId
-             , mp.taskStart
-             , mp.taskEnd
+             , mp1.taskStart
+             , (mp1.taskStart + interval'1Month') taskEnd
              , 'Month' periodType
              , mp.pointType
              , mp.pointNo
@@ -1441,54 +1426,92 @@
              , mp1.pointWater
              , mp1.realWater
         FROM bw_meter_eff_point mp
-        JOIN bw_eff_meter m ON mp.meterId = m.meterId
-                                   AND mp.taskId = m.taskId
+
         JOIN (
-            SELECT MAX(wid) wid
-            , meterId
-            , taskId
-            , pointType
-            , pointName
-            , date_trunc('Month', taskStart) taskStart
-            , SUM(pointWater) pointWater
-            , SUM(realWater) realWater
-            FROM bw_meter_eff_point
+            SELECT p1.meterId
+            , p1.pointType
+            , p1.pointName
+            , date_trunc('Month', p1.taskStart) taskStart
+            , MAX(mpx.wid) wid
+            , SUM(p1.pointWater) pointWater
+            , SUM(p1.realWater) realWater
+            FROM bw_meter_eff_point p1
+            JOIN (
+
+                SELECT MAX(wid) wid
+                , meterId
+                , taskStart
+                , pointType
+                , pointName
+                FROM bw_meter_eff_point
+                <where>
+                    periodType = 'Day'
+
+                    <choose>
+                        <when test="meterIdList != null and meterIdList.size > 0">
+                            AND meterId IN
+                            <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                                #{mid}
+                            </foreach>
+                        </when>
+                        <when test="meterId != null">
+                            AND meterId LIKE #{meterId}
+                        </when>
+                    </choose>
+
+                    <choose>
+                        <when test="taskStart != null and taskEnd != null">
+                            AND taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                        </when>
+                        <when test="taskStart != null">
+                            AND taskStart = #{taskStart}
+                        </when>
+                        <when test="taskEnd != null">
+                            AND taskEnd = #{taskEnd}
+                        </when>
+                    </choose>
+                </where>
+                GROUP BY meterId
+                , taskStart
+                , pointType
+                , pointName
+                ORDER BY meterId
+                , taskStart
+                , pointType
+                , pointName
+            ) mpx ON p1.wid = mpx.wid
             <where>
-                <if test="taskId != null">
-                    AND taskId = #{taskId}
-                </if>
+                p1.periodType = 'Day'
 
                 <choose>
                     <when test="meterIdList != null and meterIdList.size > 0">
-                        AND meterId IN
+                        AND p1.meterId IN
                         <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
                             #{mid}
                         </foreach>
                     </when>
                     <when test="meterId != null">
-                        AND meterId LIKE #{meterId}
+                        AND p1.meterId LIKE #{meterId}
                     </when>
                 </choose>
 
                 <choose>
                     <when test="taskStart != null and taskEnd != null">
-                        AND taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                        AND p1.taskStart BETWEEN #{taskStart} AND #{taskEnd}
                     </when>
                     <when test="taskStart != null">
-                        AND taskStart = #{taskStart}
+                        AND p1.taskStart = #{taskStart}
                     </when>
                     <when test="taskEnd != null">
-                        AND taskEnd = #{taskEnd}
+                        AND p1.taskEnd = #{taskEnd}
                     </when>
                 </choose>
             </where>
-            GROUP BY meterId
-                   , taskId
-                   , pointType
-                   , pointName
-                   , date_trunc('Month', taskStart)
+            GROUP BY p1.meterId
+                   , p1.pointType
+                   , p1.pointName
+                   , date_trunc('Month', p1.taskStart)
             ) mp1 ON mp.meterId = mp1.meterId
-                         AND mp.taskId = mp1.taskId
                          AND mp.pointType = mp1.pointType
                          AND mp.pointName = mp1.pointName
                          AND mp.wid = mp1.wid
@@ -1511,10 +1534,10 @@
                 AND p.taskId = #{taskId}
             </if>
             <if test="periodType != null">
-                AND p.periodType = #{periodType}
+                AND p.periodType LIKE #{periodType}
             </if>
             <if test="pointType != null">
-                AND p.pointType = #{pointType}
+                AND p.pointType LIKE #{pointType}
             </if>
 
             <choose>
@@ -1587,10 +1610,14 @@
     <delete id="deleteEffPoint" parameterType="com.abel.bigwater.api.EffParam">
         DELETE
         FROM bw_meter_eff_point p
-        USING bw_eff_meter m
 
         <where>
-            p.meterId = m.meterId AND p.taskId = m.taskId
+            <if test="periodType != null">
+                AND p.periodType LIKE #{periodType}
+            </if>
+            <if test="pointType != null">
+                AND p.pointType LIKE #{pointType}
+            </if>
 
             <choose>
                 <when test="meterIdList != null and meterIdList.size > 0">
@@ -1604,26 +1631,15 @@
                 </when>
             </choose>
 
-            <if test="meterBrandId != null">
-                AND m.meterBrandId LIKE #{meterBrandId}
-            </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
-            </if>
-
-            <if test="modelSize != null">
-                AND m.modelSize LIKE #{modelSize}
-            </if>
-
             <choose>
                 <when test="taskStart != null and taskEnd != null">
-                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                    AND p.taskStart BETWEEN #{taskStart} AND #{taskEnd}
                 </when>
                 <when test="taskStart != null">
-                    AND m.taskStart = #{taskStart}
+                    AND p.taskStart = #{taskStart}
                 </when>
                 <when test="taskEnd != null">
-                    AND m.taskEnd = #{taskEnd}
+                    AND p.taskEnd = #{taskEnd}
                 </when>
             </choose>
         </where>

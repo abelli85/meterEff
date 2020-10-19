@@ -3,10 +3,7 @@ package com.abel.bigwater.impl
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
-import com.abel.bigwater.model.eff.EffMeter
-import com.abel.bigwater.model.eff.EffPeriodType
-import com.abel.bigwater.model.eff.EffTask
-import com.abel.bigwater.model.eff.VcEffDecay
+import com.abel.bigwater.model.eff.*
 import com.alibaba.fastjson.JSON
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -337,8 +334,7 @@ class EffServiceImpl : EffService {
      * @see EffParam.meterId
      */
     override fun fetchMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
-        if (holder.lr?.sessionId.isNullOrBlank()
-                || holder.single?.taskId == null || holder.single?.meterId.isNullOrBlank()) {
+        if (holder.lr?.sessionId.isNullOrBlank() || holder.single?.meterId.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
@@ -362,8 +358,51 @@ class EffServiceImpl : EffService {
             }
 
             val em = effMapper!!.listEffMeter(dp).firstOrNull()?.apply {
-                pointEffList = effMapper!!.listEffPoint(dp)
+                pointEffList = effMapper!!.listEffPoint(dp.also {
+                    it.effId = effId
+                })
             } ?: return BwResult(3, "水表计量效率未找到:${dp.taskId} / ${dp.meterId}")
+
+            return BwResult(em)
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 获取计量点列表
+     * @see EffParam.meterId
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
+     * @see EffParam.periodType - 默认返回 Day (天); Month 返回月;  如需同时返回, 设为 %.
+     * @see EffParam.pointType - 默认返回 MODEL (消费模式的计量点); EFF 返回 计量效率的计量点; 如需同时返回, 设为 %.
+     */
+    override fun listEffPoint(holder: BwHolder<EffParam>): BwResult<EffMeterPoint> {
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to fetch eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_FETCH_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val em = effMapper!!.listEffPoint(dp)
 
             return BwResult(em)
         } catch (ex: Exception) {

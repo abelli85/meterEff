@@ -1,7 +1,9 @@
 package com.abel.bigwater.mapper
 
+import com.abel.bigwater.api.EffParam
 import com.abel.bigwater.api.MeterParam
 import com.abel.bigwater.model.BwUser
+import com.abel.bigwater.model.eff.EffPeriodType
 import com.alibaba.fastjson.JSON
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,6 +25,9 @@ open class MapperTest {
 
     @Autowired
     var meterMapper: MeterMapper? = null
+
+    @Autowired
+    var effMapper: EffMapper? = null
 
     @Test
     fun testConfig() {
@@ -70,6 +75,19 @@ open class MapperTest {
         }
         val lst = meterMapper!!.selectMeterDma(mp)
         lgr.info("${mp.keywords} matched list (${lst.size}): {}", JSON.toJSONString(lst, true))
+    }
+
+    @Test
+    fun buildMonthlyPoint() {
+        effMapper!!.deleteEffPoint(EffParam().also {
+            it.periodTypeObj = EffPeriodType.Month
+        })
+        effMapper!!.deleteEffMeter(EffParam().also {
+            it.periodTypeObj = EffPeriodType.Month
+        })
+
+        effMapper!!.buildEffMeterMonth(EffParam())
+        effMapper!!.buildEffPointMonth(EffParam())
     }
 
     companion object {

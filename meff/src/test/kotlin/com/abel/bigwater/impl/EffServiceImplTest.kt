@@ -222,31 +222,23 @@ class EffServiceImplTest {
 
     @Test
     fun fetchMeterEff() {
-        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
 
-        try {
-            effService!!.createEffTask(BwHolder(TestHelper.buildLoginRequest(login), task)).also {
-                lgr.info("create task: {}", JSON.toJSONString(it, true))
-                assertEquals(0, it.code)
-            }
+        effService!!.fetchMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            meterId = "fz-XTI01800001"
+        })).also {
+            lgr.info("fetch eff-meter: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+        }
+    }
 
-            effService!!.fetchEffTask(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-                taskId = task.taskId
-            })).also {
-                lgr.info("fetch eff-task: {}", JSON.toJSONString(it, true))
-                assertEquals(0, it.code)
-                assertNotNull(it.single)
-                assertEquals(task.meterList?.size, it.single?.meterList?.size)
-            }
-        } finally {
-            if (task.taskId ?: -1 > 0) {
-                effMapper!!.deleteEffMeter(EffParam().apply {
-                    taskId = task.taskId
-                })
-                effMapper!!.deleteEffTask(EffParam().apply {
-                    taskId = task.taskId
-                })
-            }
+    @Test
+    fun listEffPoint() {
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+
+        effService!!.listEffPoint(BwHolder(TestHelper.buildLoginRequest(login), EffParam())).also {
+            lgr.info("eff point list: {}/{}", it.list?.size, JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
     }
 

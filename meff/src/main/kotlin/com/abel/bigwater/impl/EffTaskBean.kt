@@ -103,8 +103,9 @@ class EffTaskBean {
 
         }
         effMapper!!.deleteEffMeter(pmth)
-        val cnt = effMapper!!.buildEffMeterMonth(pmth)
-        lgr.info("build month eff: $cnt")
+        val cntEff = effMapper!!.buildEffMeterMonth(pmth)
+        val cntPt = effMapper!!.buildEffPointMonth(pmth)
+        lgr.info("build month eff: $cntEff / $cntPt")
     }
 
     /**
@@ -202,7 +203,7 @@ class EffTaskBean {
                 mpList.add(VcMeterVerifyPoint().apply {
                     meterId = meter.meterId
                     verifyDate = LocalDate(2010, 1, 1).toDate()
-                    pointNo = 4
+                    pointNo = 10
                     pointName = "Q4"
                     pointFlow = meter.q4
                     pointDev = meter.q4r
@@ -591,7 +592,7 @@ class EffTaskBean {
                     pointEffList?.forEach { it.effId = eff.effId }
                 }
                 val cntPt = effMapper!!.insertEffPoint(pp)
-                lgr.info("insert eff meter: {}/{}", cntEff, cntPt)
+                lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
 
                 retList.add(eff)
             }
