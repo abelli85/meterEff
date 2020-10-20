@@ -223,4 +223,9 @@ data class EffMeter(
      * 该品牌、型号、口径水表对应行度下的老化计量效率
      */
     var effDecay: VcEffDecay? = null
+
+    /**
+     * 分析无效后的处理结果
+     */
+    var checkResult: String? = null
 }

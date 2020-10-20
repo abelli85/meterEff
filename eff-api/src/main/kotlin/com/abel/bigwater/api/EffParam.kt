@@ -183,4 +183,9 @@ class EffParam : BaseParam() {
      */
     var decayId: Long? = null
 
+    /**
+     * 分析结论
+     */
+    var taskResult: String? = null
+
 }
