@@ -139,6 +139,11 @@ data class MeterParam(var meterId: String? = null,
      */
     var excludeExtIdList: List<String>? = null
 
+    /**
+     * 老化模板ID
+     */
+    var decayId: Long? = null
+
     var index: Int = 0
     var rows: Int = 20000
 

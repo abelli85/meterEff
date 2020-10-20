@@ -49,5 +49,9 @@ interface EffMapper {
 
     fun insertEffDecay(p: EffParam): Int
 
+    fun insertEffDecaySingle(decay: VcEffDecay): Int
+
     fun deleteEffDecay(p: EffParam): Int
+
+    fun deleteEffDecaySingle(p: EffParam): Int
 }

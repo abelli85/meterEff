@@ -1796,6 +1796,93 @@
         </foreach>
     </insert>
 
+    <insert id="insertEffDecaySingle" parameterType="com.abel.bigwater.model.eff.VcEffDecay"
+            useGeneratedKeys="true" keyColumn="decayid" keyProperty="decayId">
+        INSERT INTO bw_eff_decay(meterBrandId
+        , meterBrandName
+        , sizeId
+        , sizeName
+        , modelSize
+        , totalFwd
+        , decayEff
+        , createBy
+        , createDate
+        , updateBy
+        , updateDate
+        , deprecated
+        , q1
+        , q2
+        , q3
+        , q4
+        , q1r
+        , q2r
+        , q3r
+        , q4r
+        , qs1
+        , qs2
+        , qs3
+        , qs4
+        , qs5
+        , qs6
+        , qs7
+        , qs8
+        , qs9
+        , qs10
+        , qs1r
+        , qs2r
+        , qs3r
+        , qs4r
+        , qs5r
+        , qs6r
+        , qs7r
+        , qs8r
+        , qs9r
+        , qs10r
+        )
+        VALUES
+            ( #{meterBrandId}
+            , #{meterBrandName}
+            , #{sizeId}
+            , #{sizeName}
+            , #{modelSize}
+            , #{totalFwd}
+            , #{decayEff}
+            , #{createBy}
+            , #{createDate}
+            , #{updateBy}
+            , #{updateDate}
+            , #{deprecated}
+            , #{q1}
+            , #{q2}
+            , #{q3}
+            , #{q4}
+            , #{q1r}
+            , #{q2r}
+            , #{q3r}
+            , #{q4r}
+            , #{qs1}
+            , #{qs2}
+            , #{qs3}
+            , #{qs4}
+            , #{qs5}
+            , #{qs6}
+            , #{qs7}
+            , #{qs8}
+            , #{qs9}
+            , #{qs10}
+            , #{qs1r}
+            , #{qs2r}
+            , #{qs3r}
+            , #{qs4r}
+            , #{qs5r}
+            , #{qs6r}
+            , #{qs7r}
+            , #{qs8r}
+            , #{qs9r}
+            , #{qs10r}
+            )
+    </insert>
+
     <delete id="deleteEffDecay" parameterType="com.abel.bigwater.api.EffParam">
         DELETE FROM bw_eff_decay
             USING bw_eff_decay ed,
@@ -1825,6 +1912,25 @@
             </choose>
             <if test="sizeName != null">
                 AND ed.sizeName LIKE #{sizeName}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteEffDecaySingle" parameterType="com.abel.bigwater.api.EffParam">
+        DELETE FROM bw_eff_decay
+        <where>
+            <choose>
+                <when test="decayId != null">
+                    AND decayId = #{decayId}
+                </when>
+                <otherwise>
+                    AND meterBrandId LIKE #{meterBrandId}
+                    AND sizeId = #{sizeId}
+                    AND modelSize LIKE #{modelSize}
+                </otherwise>
+            </choose>
+            <if test="sizeName != null">
+                AND sizeName LIKE #{sizeName}
             </if>
         </where>
     </delete>

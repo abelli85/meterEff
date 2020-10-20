@@ -665,6 +665,72 @@ class EffServiceImpl : EffService {
     }
 
     /**
+     * 单个或批量设置水表的老化模板.
+     * 可指定水表ID或列表, 以老化模板设定:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     *
+     * 老化模板可单独指定, 则设置匹配品牌/口径/型号的水表老化.
+     * @see EffParam.decayId - 如为空, 则清除水表的老化模板
+     *
+     * 或者指定模板的类型:
+     * @see EffParam.meterBrandId
+     * @see EffParam.sizeId
+     * @see EffParam.modelSize
+     */
+    override fun configMeterDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || (holder.single?.decayId == null
+                        && (holder.single?.meterId.isNullOrBlank()
+                        && holder.single?.meterIdList.isNullOrEmpty())
+                        && (holder.single?.meterBrandId.isNullOrBlank()
+                        || holder.single?.sizeId == null
+                        || holder.single?.modelSize.isNullOrBlank()))) {
+            return BwResult(2, "$ERR_PARAM: 老化模板ID, 水表ID/列表, 品牌/口径/型号不能同时为空")
+        }
+
+        val dp = holder.single!!
+
+        val decay = if (dp.decayId == null)
+            null
+        else
+            effMapper!!.selectEffDecay(holder.single!!).firstOrNull()
+        if (dp.decayId != null && decay == null) {
+            return BwResult(2, "$ERR_PARAM: 老化模板不存在: ${dp.decayId}")
+        }
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_DELETE_EFF_DECAY
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+            dp.refineFirmId(login.single!!, true)
+
+            val cnt = meterMapper!!.updateMeterDecay(MeterParam().also {
+                it.meterId = dp.meterId
+                it.meterIdList = dp.meterIdList
+                it.decayId = dp.decayId
+
+                if (dp.meterId.isNullOrBlank() && dp.meterIdList.isNullOrEmpty() && decay != null) {
+                    it.meterBrandId = dp.meterBrandId ?: decay.meterBrandId
+                    it.sizeId = dp.sizeId ?: decay.sizeId
+                    it.modelSize = dp.modelSize ?: decay.modelSize
+                } else {
+                    it.meterBrandId = dp.meterBrandId
+                    it.sizeId = dp.sizeId
+                    it.modelSize = dp.modelSize
+                }
+            })
+
+            return BwResult(0, "配置水表老化模板: $cnt")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
      * 分析水表的计量效率, 可以是整个水司, 一只或多只水表, 不指定时段 或 指定时段的计量效率.
      * @see EffParam.taskStart
      * @see EffParam.taskEnd

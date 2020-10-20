@@ -227,6 +227,35 @@
         </where>
     </update>
 
+    <update id="updateMeterDecay" parameterType="com.abel.bigwater.api.MeterParam">
+        UPDATE bw_meter
+        SET decayId = #{decayId}
+        <where>
+            <if test="firmId != null">
+                firmId LIKE #{firmId}
+            </if>
+            <choose>
+                <when test="meterId != null">
+                    AND meterId = #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND meterBrandId LIKE #{meterBrandId}
+                    AND sizeId = #{sizeId}
+                    <if test="sizeName != null">
+                        AND sizeName LIKE #{sizeName}
+                    </if>
+                    AND modelSize LIKE #{modelSize}
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
     <select id="listMeterVerify" parameterType="com.abel.bigwater.api.MeterParam"
             resultType="com.abel.bigwater.model.eff.VcMeterVerify">
         SELECT wid AS verifyId

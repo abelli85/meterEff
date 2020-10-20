@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import kotlin.jvm.Throws
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.fail
 
@@ -564,6 +566,96 @@ class EffServiceImplTest {
             })
             lgr.info("delete test decay: $cnt")
             assertEquals(0, cnt)
+        }
+    }
+
+    @Test
+    fun testConfigMeterDecayFail() {
+        val login = TestHelper.login(loginService, "fuzhou", "test") ?: fail("fail to login")
+
+        effService!!.configMeterDecay(BwHolder(TestHelper.buildLoginRequest(login.single!!), EffParam().also {
+            it.decayId = 0
+        })).also {
+            lgr.info("none decay: {}", JSON.toJSONString(it, true))
+            assertNotEquals(0, it.code)
+        }
+    }
+
+    @Test
+    @Throws
+    fun testConfigMeterDecayMeter() {
+        val login = TestHelper.login(loginService, "fuzhou", "test") ?: fail("fail to login")
+
+        val decay = VcEffDecay().apply {
+            meterBrandId = "SC"
+            sizeId = 100
+            sizeName = "DN100"
+            modelSize = "MS"
+        }
+
+        try {
+            effMapper!!.insertEffDecaySingle(decay)
+
+            effService!!.configMeterDecay(BwHolder(TestHelper.buildLoginRequest(login.single!!), EffParam().also {
+                it.decayId = decay.decayId
+            })).also {
+                lgr.info("config meter decay: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            assertEquals(1, effMapper!!.deleteEffDecaySingle(EffParam().apply {
+                decayId = decay.decayId
+                sizeName = null
+            }))
+        }
+    }
+
+    @Test
+    @Throws
+    fun testConfigMeterDecayClear() {
+        val login = TestHelper.login(loginService, "fuzhou", "test") ?: fail("fail to login")
+
+        val p = EffParam().apply {
+            meterBrandId = "SC"
+            sizeId = 100
+            sizeName = "DN100"
+            modelSize = "MS"
+        }
+
+        effService!!.configMeterDecay(BwHolder(TestHelper.buildLoginRequest(login.single!!), p)).also {
+            lgr.info("clear meter decay: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+        }
+    }
+
+    @Test
+    @Throws
+    fun testConfigMeterDecayMeterId() {
+        val login = TestHelper.login(loginService, "fuzhou", "test") ?: fail("fail to login")
+
+        val decay = VcEffDecay().apply {
+            meterBrandId = "SC"
+            sizeId = 100
+            sizeName = "DN100"
+            modelSize = "MS"
+        }
+
+        try {
+            effMapper!!.insertEffDecaySingle(decay)
+
+            effService!!.configMeterDecay(BwHolder(TestHelper.buildLoginRequest(login.single!!), EffParam().also {
+                it.decayId = decay.decayId
+                it.meterId = "test-meter"
+                it.meterIdList = listOf("hello", "world")
+            })).also {
+                lgr.info("config meterId decay: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            assertEquals(1, effMapper!!.deleteEffDecaySingle(EffParam().apply {
+                decayId = decay.decayId
+                sizeName = null
+            }))
         }
     }
 
