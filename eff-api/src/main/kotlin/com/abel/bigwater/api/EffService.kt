@@ -38,6 +38,7 @@ interface EffService {
         const val PATH_LIST_EFF_DECAY = "/listEffDecay"
         const val PATH_INSERT_EFF_DECAY = "/insertEffDecay"
         const val PATH_DELETE_EFF_DECAY = "/deleteEffDecay"
+        const val PATH_CONFIG_METER_DECAY = "/configMeterDecay"
     }
 
     /**
@@ -187,6 +188,24 @@ interface EffService {
     @POST
     @Path(PATH_DELETE_EFF_DECAY)
     fun deleteEffDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
+
+    /**
+     * 单个或批量设置水表的老化模板.
+     * 可指定水表ID或列表, 以老化模板设定:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     *
+     * 老化模板可单独指定, 则设置匹配品牌/口径/型号的水表老化.
+     * @see EffParam.decayId - 如为空, 则清除水表的老化模板
+     *
+     * 或者指定模板的类型:
+     * @see EffParam.meterBrandId
+     * @see EffParam.sizeId
+     * @see EffParam.modelSize
+     */
+    @POST
+    @Path(PATH_CONFIG_METER_DECAY)
+    fun configMeterDecay(holder: BwHolder<EffParam>): BwResult<VcEffDecay>
 
     /**
      * 分析水表的计量效率, 可以是整个水司, 一只或多只水表, 不指定时段 或 指定时段的计量效率.
