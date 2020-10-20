@@ -33,6 +33,8 @@ interface EffService {
         const val PATH_BUILD_METER_EFF = "/buildMeterEff"
         const val PATH_PUSH_EFF_TASK = "/pushEffTask"
 
+        const val PATH_LIST_EFF_POINT = "/listEffPoint"
+
         const val PATH_LIST_EFF_DECAY = "/listEffDecay"
         const val PATH_INSERT_EFF_DECAY = "/insertEffDecay"
         const val PATH_DELETE_EFF_DECAY = "/deleteEffDecay"
@@ -115,6 +117,8 @@ interface EffService {
      * @see EffParam.periodType - 默认返回 Day (天); Month 返回月;  如需同时返回, 设为 %.
      * @see EffParam.pointType - 默认返回 MODEL (消费模式的计量点); EFF 返回 计量效率的计量点; 如需同时返回, 设为 %.
      */
+    @POST
+    @Path(PATH_LIST_EFF_POINT)
     fun listEffPoint(holder: BwHolder<EffParam>): BwResult<EffMeterPoint>
 
     /**

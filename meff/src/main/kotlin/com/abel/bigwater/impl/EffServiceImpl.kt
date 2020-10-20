@@ -360,7 +360,11 @@ class EffServiceImpl : EffService {
             val em = effMapper!!.listEffMeter(dp).firstOrNull()?.apply {
                 pointEffList = effMapper!!.listEffPoint(dp.also {
                     it.effId = effId
+                    it.periodType = "%"
+                    it.pointType = "%"
                 })
+                modelPointList = pointEffList?.filter { it.pointTypeObj == EffPointType.MODEL }
+                pointEffList = pointEffList?.filter { it.pointTypeObj == EffPointType.EFF }
             } ?: return BwResult(3, "水表计量效率未找到:${dp.taskId} / ${dp.meterId}")
 
             return BwResult(em)
