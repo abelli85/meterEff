@@ -19,6 +19,8 @@ interface EffMapper {
 
     fun listEffMeter(p: EffParam): List<EffMeter>
 
+    fun listEffFailure(p: EffParam): List<EffMeter>
+
     fun matchMeter(p: EffParam): List<EffMeter>
 
     fun buildEffMeterMonth(p: EffParam): Int
@@ -31,9 +33,13 @@ interface EffMapper {
 
     fun insertEffMeterSingle(eff: EffMeter): Int
 
+    fun insertEffFailureSingle(eff: EffMeter): Int
+
     fun updateEffMeter(p: EffParam): Int
 
     fun deleteEffMeter(p: EffParam): Int
+
+    fun deleteEffFailure(p: EffParam): Int
 
     fun deleteEffMeterWithTask(p: EffParam): Int
 

@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/19 13:53:30                          */
+/* Created on:     2020/10/20 18:04:14                          */
 /*==============================================================*/
 
 
@@ -29,6 +29,16 @@ drop table bw_dma_meter;
 drop index idx_meter_decay;
 
 drop table bw_eff_decay;
+
+drop index idx_eff_failure_result;
+
+drop index idx_eff_failure_task;
+
+drop index idx_eff_failure_size_model;
+
+drop index idx_eff_failure_time;
+
+drop table bw_eff_failure;
 
 drop index idx_meter_eff_task;
 
@@ -409,6 +419,96 @@ modelSize
 );
 
 /*==============================================================*/
+/* Table: bw_eff_failure                                        */
+/*==============================================================*/
+create table bw_eff_failure (
+   effId                SERIAL8              not null,
+   taskId               INT8                 not null,
+   meterId              VARCHAR(45)          not null,
+   meterName            VARCHAR(45)          not null,
+   taskName             VARCHAR(45)          not null,
+   taskStart            TIMESTAMP WITH TIME ZONE not null,
+   taskEnd              TIMESTAMP WITH TIME ZONE not null,
+   periodType           VARCHAR(20)          not null,
+   runTime              TIMESTAMP WITH TIME ZONE null,
+   runDuration          INT4                 null,
+   taskResult           VARCHAR(100)         not null,
+   checkResult          VARCHAR(500)         null,
+   meterWater           DECIMAL(15,3)        null,
+   q0v                  DECIMAL(15,3)        null,
+   q1v                  DECIMAL(15,3)        null,
+   q2v                  DECIMAL(15,3)        null,
+   q3v                  DECIMAL(15,3)        null,
+   q4v                  DECIMAL(15,3)        null,
+   qtv                  DECIMAL(15,3)        null,
+   meterEff             DECIMAL(15,3)        null,
+   dataRows             INT4                 null,
+   realWater            DECIMAL(15,3)        null,
+   startFwd             DECIMAL(15,3)        null,
+   endFwd               DECIMAL(15,3)        null,
+   meterBrandId         VARCHAR(45)          not null,
+   sizeId               INT4                 not null,
+   sizeName             VARCHAR(45)          not null,
+   modelSize            VARCHAR(100)         null,
+   decayEff             VARCHAR(20)          null,
+   q4                   DECIMAL(15,3)        null,
+   q3                   DECIMAL(15,3)        null,
+   q3toq1               DECIMAL(15,3)        null,
+   q4toq3               DECIMAL(15,3)        null,
+   q2toq1               DECIMAL(15,3)        null,
+   qr1                  DECIMAL(15,3)        null,
+   qr2                  DECIMAL(15,3)        null,
+   qr3                  DECIMAL(15,3)        null,
+   qr4                  DECIMAL(15,3)        null,
+   constraint PK_BW_EFF_FAILURE primary key (effId)
+);
+
+/*==============================================================*/
+/* Index: idx_eff_failure_time                                  */
+/*==============================================================*/
+create  index idx_eff_failure_time on bw_eff_failure (
+meterId,
+periodType,
+taskStart,
+taskEnd,
+effId
+);
+
+/*==============================================================*/
+/* Index: idx_eff_failure_size_model                            */
+/*==============================================================*/
+create  index idx_eff_failure_size_model on bw_eff_failure (
+meterBrandId,
+sizeId,
+modelSize,
+sizeName,
+meterId,
+periodType,
+taskStart
+);
+
+/*==============================================================*/
+/* Index: idx_eff_failure_task                                  */
+/*==============================================================*/
+create  index idx_eff_failure_task on bw_eff_failure (
+taskId,
+meterId,
+taskStart
+);
+
+/*==============================================================*/
+/* Index: idx_eff_failure_result                                */
+/*==============================================================*/
+create  index idx_eff_failure_result on bw_eff_failure (
+taskResult,
+periodType,
+taskStart,
+taskEnd,
+meterId,
+effId
+);
+
+/*==============================================================*/
 /* Table: bw_eff_meter                                          */
 /*==============================================================*/
 create table bw_eff_meter (
@@ -422,7 +522,7 @@ create table bw_eff_meter (
    periodType           VARCHAR(20)          not null,
    runTime              TIMESTAMP WITH TIME ZONE null,
    runDuration          INT4                 null,
-   taskResult           VARCHAR(500)         null,
+   taskResult           VARCHAR(100)         null,
    meterWater           DECIMAL(15,3)        null,
    q0v                  DECIMAL(15,3)        null,
    q1v                  DECIMAL(15,3)        null,

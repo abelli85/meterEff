@@ -186,6 +186,34 @@ class EffServiceImplTest {
     }
 
     @Test
+    fun listFailureEff() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        try {
+            effService!!.createEffTask(BwHolder(TestHelper.buildLoginRequest(login), task)).also {
+                lgr.info("create task: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            effService!!.listEffFailure(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+                meterIdList = listOf("0123", "0129")
+            })).also {
+                lgr.info("list failure-eff: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            if (task.taskId ?: -1 > 0) {
+                effMapper!!.deleteEffFailure(EffParam().apply {
+                    taskId = task.taskId
+                })
+                effMapper!!.deleteEffTask(EffParam().apply {
+                    taskId = task.taskId
+                })
+            }
+        }
+    }
+
+    @Test
     fun testListMeterEff() {
         val login = TestHelper.login(loginService, "fuzhou").single ?: fail("fail to login")
 
