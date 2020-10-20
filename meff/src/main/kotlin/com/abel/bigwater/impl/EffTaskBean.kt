@@ -29,7 +29,7 @@ import kotlin.math.absoluteValue
 
 @Component
 @EnableScheduling
-class EffTaskBean {
+open class EffTaskBean {
 
     @Autowired
     private var configMapper: ConfigMapper? = null
@@ -88,7 +88,10 @@ class EffTaskBean {
         }
     }
 
-    fun buildMonthEff(effList: List<EffMeter>) {
+    /**
+     * build monthly / annual eff from daily.
+     */
+    open fun buildMonthEff(effList: List<EffMeter>) {
         val pmth = EffParam().apply {
             meterId = effList.firstOrNull()?.meterId
             periodTypeObj = EffPeriodType.Month
@@ -103,9 +106,17 @@ class EffTaskBean {
 
         }
         effMapper!!.deleteEffMeter(pmth)
+        effMapper!!.deleteEffPoint(pmth)
         val cntEff = effMapper!!.buildEffMeterMonth(pmth)
         val cntPt = effMapper!!.buildEffPointMonth(pmth)
-        lgr.info("build month eff: $cntEff / $cntPt")
+        lgr.info("build monthly eff: $cntEff / $cntPt")
+
+        pmth.also { it.periodTypeObj = EffPeriodType.Year }
+        effMapper!!.deleteEffMeter(pmth)
+        effMapper!!.deleteEffPoint(pmth)
+        val cntEffYear = effMapper!!.buildEffMeterYear(pmth)
+        val cntPtYear = effMapper!!.buildEffPointYear(pmth)
+        lgr.info("build annual eff: $cntEffYear / $cntPtYear")
     }
 
     /**
