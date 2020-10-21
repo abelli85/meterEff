@@ -305,11 +305,12 @@
         , m.qr3
         , m.qr4
         FROM bw_eff_failure m
-        JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
             <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                bm.firmId LIKE #{firmId}
             </if>
             <if test="taskResult != null">
                 AND m.taskResult LIKE #{taskResult}
@@ -1761,6 +1762,9 @@
         <where>
             <if test="taskResult != null">
                 AND m.taskResult LIKE #{taskResult}
+            </if>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
             </if>
             <if test="effId != null">
                 AND m.effId LIKE #{effId}

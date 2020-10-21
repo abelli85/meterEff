@@ -187,7 +187,7 @@ class EffServiceImplTest {
 
     @Test
     fun listFailureEff() {
-        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
 
         try {
             effService!!.createEffTask(BwHolder(TestHelper.buildLoginRequest(login), task)).also {
@@ -196,7 +196,7 @@ class EffServiceImplTest {
             }
 
             effService!!.listEffFailure(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-                meterIdList = listOf("0123", "0129")
+                meterId = "fz-%"
             })).also {
                 lgr.info("list failure-eff: {}", JSON.toJSONString(it, true))
                 assertEquals(0, it.code)
@@ -496,6 +496,25 @@ class EffServiceImplTest {
             effMapper!!.deleteEffDecay(EffParam().also {
                 it.decayList = dlist
             })
+        }
+    }
+
+    @Test
+    fun testBuildEffFailure() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        try {
+            kotlin.run {
+                val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
+                        EffParam().apply {
+                            meterId = "fz-JTIJ1900015"
+                            taskStart = LocalDate(2020, 10, 1).toDate()
+                            taskEnd = LocalDate(2020, 10, 2).toDate()
+                        }))
+                lgr.info("build eff failure result: {}", JSON.toJSONString(r2, true))
+                assertEquals(0, r2.code)
+            }
+        } finally {
         }
     }
 

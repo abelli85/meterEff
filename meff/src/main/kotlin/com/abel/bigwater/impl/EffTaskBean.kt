@@ -606,6 +606,22 @@ open class EffTaskBean {
                 lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
 
                 retList.add(eff)
+            } else {
+                // failure
+                val param = EffParam().apply {
+                    meterId = meter.meterId
+                    periodType = "%"
+                    taskStart = day1.toDate()
+                }
+                lgr.info("remove eff failure: {}/{}",
+                        effMapper!!.deleteEffPoint(param),
+                        effMapper!!.deleteEffFailure(param)
+                )
+
+                val cntEff = effMapper!!.insertEffFailureSingle(eff)
+                lgr.info("insert eff failure: {}@ {} / {}", cntEff, eff.meterId, LocalDate(eff.taskStart))
+
+                retList.add(eff)
             }
 
             day1 = day1.plusDays(1)
@@ -629,15 +645,21 @@ open class EffTaskBean {
         fun effSingleMeterDay(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
             if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
                     || meter.modelPointList?.size ?: 0 < 3) {
-                throw IllegalArgumentException("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
+                lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
+                eff.taskResult = EffFailureType.ABSENTPOINT.name
+                return false
             }
             if (day.withTimeAtStartOfDay() != day) {
-                throw IllegalArgumentException("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                lgr.error("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                eff.taskResult = EffFailureType.ABSENTTIME.name
+                return false
             }
             eff.pointList = meter.pointList!!.sortedBy { it.pointFlow }
             eff.pointList!!.forEach {
                 if (it.pointFlow == null) {
-                    throw IllegalArgumentException("计量点不能为空")
+                    lgr.error("计量点不能为空")
+                    eff.taskResult = EffFailureType.ABSENTPOINT.name
+                    return false
                 }
             }
 
@@ -647,11 +669,14 @@ open class EffTaskBean {
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                eff.taskResult = EffFailureType.DATA.name
                 return false
             }
             dlist.forEach {
                 if (it.sampleTime == null) {
-                    throw IllegalArgumentException("采样时间不能为空: ${meter.meterId}")
+                    lgr.error("采样时间不能为空: ${meter.meterId}")
+                    eff.taskResult = EffFailureType.ABSENTTIME.name
+                    return false
                 }
             }
 
