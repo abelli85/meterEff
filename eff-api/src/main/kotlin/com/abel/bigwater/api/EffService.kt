@@ -28,6 +28,7 @@ interface EffService {
         const val PATH_UPDATE_METER_EFF = "/updateMeterEff"
 
         const val PATH_LIST_FAILURE_EFF = "/listEffFailure"
+        const val PATH_DELETE_EFF_FAILURE = "/deleteEffFailure"
 
         const val PATH_FETCH_METER_EFF = "/fetchMeterEff"
         const val PATH_REPLACE_METER_EFF = "/replaceMeterEff"
@@ -105,6 +106,18 @@ interface EffService {
     @POST
     @Path(PATH_DELETE_METER_EFF)
     fun deleteMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 删除水表的分析失败记录
+     * @see EffParam.taskId - 可选
+     * @see EffParam.meterId 或
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - 日期范围
+     * @see EffParam.taskEnd - 日期范围
+     */
+    @POST
+    @Path(PATH_DELETE_EFF_FAILURE)
+    fun deleteEffFailure(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
      * 修改水表的分析结果
