@@ -102,7 +102,7 @@ open class EffTaskBean {
         // truncate to month
         pmth.also {
             it.taskStart = it.jodaTaskStart?.withDayOfMonth(1)?.toDate()
-            it.taskEnd = it.jodaTaskEnd?.plusMonths(1)?.withDayOfMonth(1)?.toDate()
+            it.taskEnd = it.jodaTaskEnd?.withDayOfMonth(2)?.toDate()
 
         }
         effMapper!!.deleteEffMeter(pmth)
@@ -111,7 +111,10 @@ open class EffTaskBean {
         val cntPt = effMapper!!.buildEffPointMonth(pmth)
         lgr.info("build monthly eff: $cntEff / $cntPt")
 
-        pmth.also { it.periodTypeObj = EffPeriodType.Year }
+        pmth.also {
+            it.taskStart = it.jodaTaskStart?.withDayOfYear(1)?.toDate()
+            it.periodTypeObj = EffPeriodType.Year
+        }
         effMapper!!.deleteEffMeter(pmth)
         effMapper!!.deleteEffPoint(pmth)
         val cntEffYear = effMapper!!.buildEffMeterYear(pmth)

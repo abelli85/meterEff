@@ -345,6 +345,21 @@ class EffServiceImplTest {
     }
 
     @Test
+    fun deleteEffFailure() {
+        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+
+        try {
+            effService!!.deleteEffFailure(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+                meterId = "fz-%"
+            })).also {
+                lgr.info("delete eff-failure: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+        }
+    }
+
+    @Test
     fun updateMeterEff() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 

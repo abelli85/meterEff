@@ -299,9 +299,12 @@ class EffServiceImpl : EffService {
                 return BwResult(login.code, login.error!!)
             }
 
-            var mlist = if (dp.meterId.isNullOrBlank()) dp.meterIdList!!
-            else dp.meterIdList.orEmpty().plus(dp.meterId!!)
+            if (!dp.meterId.isNullOrBlank()) {
+                val cnt = effMapper!!.deleteEffMeter(dp)
+                return BwResult(0, "删除水表计量效率： ${cnt}")
+            }
 
+            var mlist = dp.meterIdList!!
             var cnt = 0
             do {
                 val bp = EffParam().apply {
@@ -314,6 +317,54 @@ class EffServiceImpl : EffService {
             } while (mlist.isNotEmpty())
 
             return BwResult(0, "删除水表计量效率： ${cnt}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 删除水表的分析失败记录
+     * @see EffParam.taskId - 可选
+     * @see EffParam.meterId 或
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - 日期范围
+     * @see EffParam.taskEnd - 日期范围
+     */
+    override fun deleteEffFailure(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to delete eff-failure: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_DELETE_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            if (!dp.meterId.isNullOrBlank()) {
+                val cnt = effMapper!!.deleteEffFailure(dp)
+                return BwResult(0, "删除水表计量效率： ${cnt}")
+            }
+
+            var mlist = dp.meterIdList!!
+            var cnt = 0
+            do {
+                val bp = EffParam().apply {
+                    taskId = dp.taskId
+                    meterIdList = mlist.take(500)
+                }
+                mlist = mlist.drop(500)
+
+                cnt += effMapper!!.deleteEffFailure(bp)
+            } while (mlist.isNotEmpty())
+
+            return BwResult(0, "删除水表分析失败记录： ${cnt}")
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
             return BwResult(1, "内部错误: ${ex.message}")

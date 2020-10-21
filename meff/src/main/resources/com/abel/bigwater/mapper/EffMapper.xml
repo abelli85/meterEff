@@ -34,7 +34,7 @@
                 AND t.taskId = #{taskId}
             </if>
             <if test="periodType != null">
-                AND t.periodType = #{periodType}
+                AND t.periodType LIKE #{periodType}
             </if>
 
             <choose>
@@ -1711,6 +1711,9 @@
         FROM bw_eff_meter m
 
         <where>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
+            </if>
             <if test="effId != null">
                 AND m.effId LIKE #{effId}
             </if>
