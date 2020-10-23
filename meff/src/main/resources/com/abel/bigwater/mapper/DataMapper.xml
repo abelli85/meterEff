@@ -121,7 +121,7 @@
                 <when test="extId != null">
                     r.extId LIKE #{extId}
                 </when>
-                <when test="extIdList != null">
+                <when test="extIdList != null and extIdList.size > 0">
                     r.extId IN
                     <foreach collection="extIdList" item="eid" open="(" close=")" separator=",">
                         #{eid}
@@ -148,7 +148,7 @@
                 <when test="meterId != null">
                     AND (m.meterId IS NULL OR m.meterId LIKE #{meterId})
                 </when>
-                <when test="meterIdList != null">
+                <when test="meterIdList != null and meterIdList.size > 0">
                     AND (m.meterId IS NULL OR m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
@@ -157,7 +157,7 @@
             </choose>
 
             <choose>
-                <when test="dmaIdList != null">
+                <when test="dmaIdList != null and dmaIdList.size > 0">
                     AND (d.dmaId IS NULL OR d.dmaId IN
                     <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
                         #{did}
