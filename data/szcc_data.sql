@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/10/24 17:03:42                          */
+/* Created on:     2020/10/24 21:42:34                          */
 /*==============================================================*/
 
 
@@ -60,12 +60,6 @@ create or replace package body IntegrityPackage AS
 
 
 drop trigger "tib_szv_data"
-/
-
-drop trigger "CompoundInsertTrigger_szv_data"
-/
-
-drop trigger "CompoundUpdateTrigger_szv_data"
 /
 
 drop trigger "tib_szv_data_device"
@@ -206,62 +200,6 @@ exception
     when integrity_error then
        raise_application_error(errno, errmsg);
 end;
-/
-
-
-create or replace trigger "CompoundInsertTrigger_szv_data"
-for insert on SZV_DATA_DEVICE compound trigger
-// Declaration
-// Body
-  before statement is
-  begin
-     NULL;
-  end before statement;
-
-  before each row is
-  begin
-     NULL;
-  end before each row;
-
-  after each row is
-  begin
-     NULL;
-  end after each row;
-
-  after statement is
-  begin
-     NULL;
-  end after statement;
-
-END
-/
-
-
-create or replace trigger "CompoundUpdateTrigger_szv_data"
-for update on SZV_DATA_DEVICE compound trigger
-// Declaration
-// Body
-  before statement is
-  begin
-     NULL;
-  end before statement;
-
-  before each row is
-  begin
-     NULL;
-  end before each row;
-
-  after each row is
-  begin
-     NULL;
-  end after each row;
-
-  after statement is
-  begin
-     NULL;
-  end after statement;
-
-END
 /
 
 
