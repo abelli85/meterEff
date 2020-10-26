@@ -1,10 +1,12 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/20 18:04:14                          */
+/* Created on:     2020/10/26 10:22:24                          */
 /*==============================================================*/
 
 
 drop table bw_config;
+
+drop index idx_data_ext;
 
 drop index idx_data_time;
 
@@ -211,6 +213,7 @@ create table bw_config (
 /* Table: bw_data                                               */
 /*==============================================================*/
 create table bw_data (
+   dataId               SERIAL not null,
    extId                VARCHAR(45)          not null,
    sampleTime           TIMESTAMP WITH TIME ZONE not null,
    endTime              TIMESTAMP WITH TIME ZONE null,
@@ -235,7 +238,7 @@ create table bw_data (
    q4Sum                DECIMAL(15,3)        null,
    firmId               VARCHAR(45)          null,
    rssi                 INT4                 null,
-   constraint PK_BW_DATA primary key (extId, sampleTime)
+   constraint PK_BW_DATA primary key (dataId)
 );
 
 /*==============================================================*/
@@ -244,6 +247,14 @@ create table bw_data (
 create  index idx_data_time on bw_data (
 sampleTime,
 extId
+);
+
+/*==============================================================*/
+/* Index: idx_data_ext                                          */
+/*==============================================================*/
+create unique index idx_data_ext on bw_data (
+extId,
+sampleTime
 );
 
 /*==============================================================*/
