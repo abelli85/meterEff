@@ -1,8 +1,10 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/26 10:22:24                          */
+/* Created on:     2020/10/26 10:52:07                          */
 /*==============================================================*/
 
+
+drop trigger rule_ignore_dupkey_data on bw_data;
 
 drop table bw_config;
 
@@ -1592,4 +1594,8 @@ yr,
 startDate,
 endDate
 );
+
+
+CREATE RULE rule_ignore_dupkey_data AS ON INSERT TO bw_data
+WHERE EXISTS (SELECT 1 FROM bw_data where extId = new.extId and sampleTime = new.sampleTime) DO INSTEAD NOTHING;
 
