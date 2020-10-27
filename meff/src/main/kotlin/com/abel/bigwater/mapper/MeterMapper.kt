@@ -27,6 +27,8 @@ interface MeterMapper {
 
     fun updateMeter(meter: ZoneMeter): Int
 
+    fun updateMeterBatch(dp: MeterParam): Int
+
     fun updateMeterDecay(mp: MeterParam): Int
 
     fun updateMeterLoc(meter: ZoneMeter): Int

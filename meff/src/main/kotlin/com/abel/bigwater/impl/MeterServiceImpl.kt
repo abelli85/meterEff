@@ -179,6 +179,7 @@ open class MeterServiceImpl : MeterService {
             var cnt = 0
             list.forEach {
                 // 只能更新 所在机构及分公司
+                it.subFirmId = login.single!!.firmId!!.plus('%')
                 if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                     it.firmId = login.single!!.firmId
                 }

@@ -3,8 +3,10 @@ package com.abel.bigwater.api
 import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
+import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.annotation.JSONField
 import com.alibaba.fastjson.serializer.DateCodec
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
@@ -147,4 +149,18 @@ data class MeterParam(var meterId: String? = null,
     var index: Int = 0
     var rows: Int = 20000
 
+    /**
+     * 仅供后端批量更新使用.
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var meterList: List<ZoneMeter>? = null
+
+    /**
+     * 仅供后端批量更新使用.
+     * 下级机构ID, 一般采用 {@see firmId}%, 供后台统计查询.
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var subFirmId: String? = null
 }

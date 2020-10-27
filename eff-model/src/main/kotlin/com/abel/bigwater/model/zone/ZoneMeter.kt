@@ -1,7 +1,8 @@
 package com.abel.bigwater.model.zone
 
 import com.abel.bigwater.model.BwMeter
-import java.io.Serializable
+import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 class ZoneMeter : BwMeter() {
     override fun toString(): String {
@@ -18,4 +19,12 @@ class ZoneMeter : BwMeter() {
 
     /** 流入/流出标示，默认流入，即消费水量；流出~供水量 */
     var flowOut: Int = 0
+
+    /**
+     * 仅供后端批量更新使用.
+     * 下级机构ID, 一般采用 {@see firmId}%, 供后台统计查询.
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var subFirmId: String? = null
 }

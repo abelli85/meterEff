@@ -153,7 +153,7 @@ class MeterServiceImplTest {
             val holder = BwHolder(TestHelper.buildLoginRequest(login), meter)
 
             val r1 = meterService!!.updateMeter(holder)
-            lgr.info("delete result: {}", JSON.toJSONString(r1, true))
+            lgr.info("update firstly result: {}", JSON.toJSONString(r1, true))
             assertEquals(0, r1.code)
 
             meterService!!.insertMeter(holder).also {
@@ -164,10 +164,11 @@ class MeterServiceImplTest {
                 sizeId = 150
                 userCode = "123456"
                 meterCode = "12345678"
+                firmId = "27123456"
             }
             meterService!!.updateMeter(holder).also {
                 assertEquals(0, it.code)
-                lgr.info("delete again result: {}", JSON.toJSONString(it, true))
+                lgr.info("update meter again result: {}", JSON.toJSONString(it, true))
                 assertEquals(0, it.code)
             }
 

@@ -221,8 +221,179 @@
         , updateDate = now()
         <where>
             meterId = #{meterId}
-            <if test="firmId != null">
-                AND firmId = #{firmId}
+            <if test="subFirmId != null">
+                AND firmId LIKE #{subFirmId}
+            </if>
+        </where>
+    </update>
+
+    <update id="updateMeterBatch" parameterType="com.abel.bigwater.api.MeterParam">
+        UPDATE bw_meter
+        SET userCode = #{tmp.userCode}
+        , meterCode = #{tmp.meterCode}
+        , meterName = #{tmp.meterName}
+        , meterOrder = #{tmp.meterOrder}
+        , extId = #{tmp.extId}
+        , location = #{tmp.location}
+        , installDate = #{tmp.installDate}
+        , meterPulse = #{tmp.meterPulse}
+        , q1 = #{tmp.q1}
+        , q2 = #{tmp.q2}
+        , q3 = #{tmp.q3}
+        , q4 = #{tmp.q4}
+        , q1r = #{tmp.q1r}
+        , q2r = #{tmp.q2r}
+        , q3r = #{tmp.q3r}
+        , q4r = #{tmp.q4r}
+        , sizeId = #{tmp.sizeId}
+        , sizeName = #{tmp.sizeName}
+        , modelSize = #{tmp.modelSize}
+        , typeId = #{tmp.typeId}
+        , userType = #{tmp.userType}
+        , waterPrice = #{tmp.waterPrice}
+        , serviceArea = #{tmp.serviceArea}
+        , servicePopulation = #{tmp.servicePopulation}
+        , contactNumber = #{tmp.contactNumber}
+        , chargable = #{tmp.chargable}
+        , firmId = #{tmp.firmId}
+        , meterBrandId = #{tmp.meterBrandId}
+        , steelNo = #{tmp.steelNo}
+        , remoteBrandId = #{tmp.remoteBrandId}
+        , rtuId = #{tmp.rtuId}
+        , rtuCode = #{tmp.rtuCode}
+        , rtuAddr = #{tmp.rtuAddr}
+        , rtuInstallDate = #{tmp.rtuInstallDate}
+        , rtuInstallPerson = #{tmp.rtuInstallPerson}
+        , rtuContact = #{tmp.rtuContact}
+        , commCard = #{tmp.commCard}
+        , remoteModel = #{tmp.remoteModel}
+        , remoteMemo = #{tmp.remoteMemo}
+        , commIsp = #{tmp.commIsp}
+        , pressureRange = #{tmp.pressureRange}
+        , pressureMaxLimit = #{tmp.pressureMaxLimit}
+        , pressureMinLimit = #{tmp.pressureMinLimit}
+        , powerType = #{tmp.powerType}
+        , meterStatus = #{tmp.meterStatus}
+        , adminMobile = #{tmp.adminMobile}
+        , meterLoc = st_geomFromText(#{tmp.meterLoc})
+        , lastCalib = #{tmp.lastCalib}
+        , memo = #{tmp.memo}
+        , decayId = #{tmp.decayId}
+        , updateBy = #{tmp.updateBy}
+        , updateDate = now()
+        FROM (
+            VALUES
+            <foreach collection="meterList" item="m1" separator=",">
+                (#{m1.userCode}
+                , #{m1.meterCode}
+                , #{m1.meterName}
+                , #{m1.meterOrder}
+                , #{m1.extId}
+                , #{m1.location}
+                , #{m1.installDate}
+                , #{m1.meterPulse}
+                , #{m1.q1}
+                , #{m1.q2}
+                , #{m1.q3}
+                , #{m1.q4}
+                , #{m1.q1r}
+                , #{m1.q2r}
+                , #{m1.q3r}
+                , #{m1.q4r}
+                , #{m1.sizeId}
+                , #{m1.sizeName}
+                , #{m1.modelSize}
+                , #{m1.typeId}
+                , #{m1.userType}
+                , #{m1.waterPrice}
+                , #{m1.serviceArea}
+                , #{m1.servicePopulation}
+                , #{m1.contactNumber}
+                , #{m1.chargable}
+                , #{m1.firmId}
+                , #{m1.meterBrandId}
+                , #{m1.steelNo}
+                , #{m1.remoteBrandId}
+                , #{m1.rtuId}
+                , #{m1.rtuCode}
+                , #{m1.rtuAddr}
+                , #{m1.rtuInstallDate}
+                , #{m1.rtuInstallPerson}
+                , #{m1.rtuContact}
+                , #{m1.commCard}
+                , #{m1.remoteModel}
+                , #{m1.remoteMemo}
+                , #{m1.commIsp}
+                , #{m1.pressureRange}
+                , #{m1.pressureMaxLimit}
+                , #{m1.pressureMinLimit}
+                , #{m1.powerType}
+                , #{m1.meterStatus}
+                , #{m1.adminMobile}
+                , #{m1.meterLoc}
+                , #{m1.lastCalib}
+                , #{m1.memo}
+                , #{m1.decayId}
+                , #{m1.updateBy}
+                )
+            </foreach>
+            ) AS tmp
+            (userCode
+            , meterCode
+            , meterName
+            , meterOrder
+            , extId
+            , location
+            , installDate
+            , meterPulse
+            , q1
+            , q2
+            , q3
+            , q4
+            , q1r
+            , q2r
+            , q3r
+            , q4r
+            , sizeId
+            , sizeName
+            , modelSize
+            , typeId
+            , userType
+            , waterPrice
+            , serviceArea
+            , servicePopulation
+            , contactNumber
+            , chargable
+            , firmId
+            , meterBrandId
+            , steelNo
+            , remoteBrandId
+            , rtuId
+            , rtuCode
+            , rtuAddr
+            , rtuInstallDate
+            , rtuInstallPerson
+            , rtuContact
+            , commCard
+            , remoteModel
+            , remoteMemo
+            , commIsp
+            , pressureRange
+            , pressureMaxLimit
+            , pressureMinLimit
+            , powerType
+            , meterStatus
+            , adminMobile
+            , meterLoc
+            , lastCalib
+            , memo
+            , decayId
+            , updateBy
+            )
+        <where>
+            bw_meter.meterId = tmp.meterId
+            <if test="subFirmId != null">
+                AND bw_meter.firmId LIKE #{subFirmId}
             </if>
         </where>
     </update>
