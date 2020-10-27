@@ -11,10 +11,10 @@ create unique index uidx_data_device_data on szv_data (devicecode, pipe, postdat
  */
 
 set serveroutput on;
+grant execute on utl_file to public;
 
 create or replace directory tmp as '/tmp/';
 grant read, write on directory tmp to public;
-grant execute on utl_file to public;
 create or replace procedure copy_szcc(devid1 integer, devid2 integer)
 as
     pcnt   integer;
@@ -71,10 +71,14 @@ begin
                     WHERE deviceCode = dcode.deviceCode;
 
                     utl_file.put_line(lgr,
-                                      'pgsql data ' || dcode.devicecode || ' from ' || pdate1 || ' - ' || pdate2,
+                                      'pgsql data ' || dcode.devicecode || ' from ' ||
+                                      to_char(pdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
+                                      to_char(pdate2, 'YYYY-MM-DD HH24:MI:SS'),
                                       true);
                     utl_file.put_line(lgr,
-                                      'oracle data ' || dcode.devicecode || ' from ' || vdate1 || ' - ' || vdate2,
+                                      'oracle data ' || dcode.devicecode || ' from ' ||
+                                      to_char(vdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
+                                      to_char(vdate2, 'YYYY-MM-DD HH24:MI:SS'),
                                       true);
 
                     -- left period
