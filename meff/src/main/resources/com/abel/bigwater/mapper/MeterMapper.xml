@@ -229,62 +229,63 @@
 
     <update id="updateMeterBatch" parameterType="com.abel.bigwater.api.MeterParam">
         UPDATE bw_meter
-        SET userCode = #{tmp.userCode}
-        , meterCode = #{tmp.meterCode}
-        , meterName = #{tmp.meterName}
-        , meterOrder = #{tmp.meterOrder}
-        , extId = #{tmp.extId}
-        , location = #{tmp.location}
-        , installDate = #{tmp.installDate}
-        , meterPulse = #{tmp.meterPulse}
-        , q1 = #{tmp.q1}
-        , q2 = #{tmp.q2}
-        , q3 = #{tmp.q3}
-        , q4 = #{tmp.q4}
-        , q1r = #{tmp.q1r}
-        , q2r = #{tmp.q2r}
-        , q3r = #{tmp.q3r}
-        , q4r = #{tmp.q4r}
-        , sizeId = #{tmp.sizeId}
-        , sizeName = #{tmp.sizeName}
-        , modelSize = #{tmp.modelSize}
-        , typeId = #{tmp.typeId}
-        , userType = #{tmp.userType}
-        , waterPrice = #{tmp.waterPrice}
-        , serviceArea = #{tmp.serviceArea}
-        , servicePopulation = #{tmp.servicePopulation}
-        , contactNumber = #{tmp.contactNumber}
-        , chargable = #{tmp.chargable}
-        , firmId = #{tmp.firmId}
-        , meterBrandId = #{tmp.meterBrandId}
-        , steelNo = #{tmp.steelNo}
-        , remoteBrandId = #{tmp.remoteBrandId}
-        , rtuId = #{tmp.rtuId}
-        , rtuCode = #{tmp.rtuCode}
-        , rtuAddr = #{tmp.rtuAddr}
-        , rtuInstallDate = #{tmp.rtuInstallDate}
-        , rtuInstallPerson = #{tmp.rtuInstallPerson}
-        , rtuContact = #{tmp.rtuContact}
-        , commCard = #{tmp.commCard}
-        , remoteModel = #{tmp.remoteModel}
-        , remoteMemo = #{tmp.remoteMemo}
-        , commIsp = #{tmp.commIsp}
-        , pressureRange = #{tmp.pressureRange}
-        , pressureMaxLimit = #{tmp.pressureMaxLimit}
-        , pressureMinLimit = #{tmp.pressureMinLimit}
-        , powerType = #{tmp.powerType}
-        , meterStatus = #{tmp.meterStatus}
-        , adminMobile = #{tmp.adminMobile}
-        , meterLoc = st_geomFromText(#{tmp.meterLoc})
-        , lastCalib = #{tmp.lastCalib}
-        , memo = #{tmp.memo}
-        , decayId = #{tmp.decayId}
-        , updateBy = #{tmp.updateBy}
+        SET userCode = tmp.userCode
+        , meterCode = tmp.meterCode
+        , meterName = tmp.meterName
+        , meterOrder = tmp.meterOrder
+        , extId = tmp.extId
+        , location = tmp.location
+        , installDate = tmp.installDate
+        , meterPulse = tmp.meterPulse
+        , q1 = tmp.q1
+        , q2 = tmp.q2
+        , q3 = tmp.q3
+        , q4 = tmp.q4
+        , q1r = tmp.q1r
+        , q2r = tmp.q2r
+        , q3r = tmp.q3r
+        , q4r = tmp.q4r
+        , sizeId = tmp.sizeId
+        , sizeName = tmp.sizeName
+        , modelSize = tmp.modelSize
+        , typeId = tmp.typeId
+        , userType = tmp.userType
+        , waterPrice = tmp.waterPrice
+        , serviceArea = tmp.serviceArea
+        , servicePopulation = tmp.servicePopulation
+        , contactNumber = tmp.contactNumber
+        , chargable = tmp.chargable
+        , firmId = tmp.firmId
+        , meterBrandId = tmp.meterBrandId
+        , steelNo = tmp.steelNo
+        , remoteBrandId = tmp.remoteBrandId
+        , rtuId = tmp.rtuId
+        , rtuCode = tmp.rtuCode
+        , rtuAddr = tmp.rtuAddr
+        , rtuInstallDate = tmp.rtuInstallDate
+        , rtuInstallPerson = tmp.rtuInstallPerson
+        , rtuContact = tmp.rtuContact
+        , commCard = tmp.commCard
+        , remoteModel = tmp.remoteModel
+        , remoteMemo = tmp.remoteMemo
+        , commIsp = tmp.commIsp
+        , pressureRange = tmp.pressureRange
+        , pressureMaxLimit = tmp.pressureMaxLimit
+        , pressureMinLimit = tmp.pressureMinLimit
+        , powerType = tmp.powerType
+        , meterStatus = tmp.meterStatus
+        , adminMobile = tmp.adminMobile
+        , meterLoc = st_geomFromText(tmp.meterLoc)
+        , lastCalib = tmp.lastCalib
+        , memo = tmp.memo
+        , decayId = tmp.decayId
+        , updateBy = tmp.updateBy
         , updateDate = now()
         FROM (
             VALUES
             <foreach collection="meterList" item="m1" separator=",">
-                (#{m1.userCode}
+                (#{m1.meterId}
+                , #{m1.userCode}
                 , #{m1.meterCode}
                 , #{m1.meterName}
                 , #{m1.meterOrder}
@@ -338,7 +339,8 @@
                 )
             </foreach>
             ) AS tmp
-            (userCode
+            (meterId
+            , userCode
             , meterCode
             , meterName
             , meterOrder
