@@ -411,7 +411,7 @@ class UserServiceImplTest {
 
     @Test
     fun firmList() {
-        val ul = login("fuzhou", "test")
+        val ul = login()
 
         val user = bean!!.firmList(BwHolder(buildLoginRequest(ul.single!!), ""))
         lgr.info("firm list: {}", ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(user))

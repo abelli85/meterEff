@@ -706,12 +706,14 @@ open class UserServiceImpl : UserService {
 
             val firmList = configMapper?.selectFirm(dp.firmId)!!
             val sizeList = meterMapper!!.statFirmSize(dp)
+            val gfirm = firmList.first()
             firmList.forEachIndexed { index, firm ->
                 // skip 0
                 when {
                     index > 0 -> {
                         val last = firmList[index - 1]
-                        if (!firm.firmId!!.startsWith(last.firmId!!)) {
+                        if (!firm.firmId!!.startsWith(last.firmId!!) // sub-firm of last or sub-firm of top-most.
+                                && !firm.firmId!!.startsWith(gfirm.firmId!!)) {
                             if (firmList.take(index - 1).firstOrNull { firm.firmId!!.startsWith(it.firmId!!) } == null) {
                                 return BwResult(firmList).apply {
                                     code = 3
