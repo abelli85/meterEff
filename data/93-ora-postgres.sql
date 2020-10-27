@@ -1,0 +1,4 @@
+CREATE EXTENSION oracle_fdw;
+CREATE SERVER jdora FOREIGN DATA WRAPPER oracle_fdw
+    OPTIONS (dbserver 'test');
+GRANT USAGE ON FOREIGN SERVER jdora TO test;
