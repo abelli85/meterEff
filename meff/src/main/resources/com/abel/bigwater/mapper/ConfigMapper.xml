@@ -98,6 +98,7 @@
             f.firmId LIKE #{firmId}
         </where>
         GROUP BY f.firmId
+        ORDER BY f.firmId
     </select>
 
     <insert id="addFirm" parameterType="com.abel.bigwater.model.BwFirm">
