@@ -159,6 +159,7 @@
         , m.realWater
         , m.startFwd
         , m.endFwd
+        , m.powerType
         , m.meterBrandId
         , m.sizeId
         , m.sizeName
@@ -175,7 +176,7 @@
         , m.qr3
         , m.qr4
         FROM bw_eff_meter m
-        JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
 
         <where>
             <if test="firmId != null">
@@ -208,13 +209,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -289,6 +292,7 @@
         , m.realWater
         , m.startFwd
         , m.endFwd
+        , m.powerType
         , m.meterBrandId
         , m.sizeId
         , m.sizeName
@@ -343,6 +347,9 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
@@ -422,6 +429,7 @@
         , m2.realWater
         , m2.startFwd
         , m2.endFwd
+        , m.powerType
         , m.meterBrandId
         , m.sizeId
         , m.sizeName
@@ -462,13 +470,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
             </if>
@@ -530,10 +540,15 @@
                     </when>
                 </choose>
 
+                <if test="powerType != null">
+                    AND powerType LIKE #{powerType}
+                </if>
+                <if test="meterBrandId != null">
+                    AND meterBrandId LIKE #{meterBrandId}
+                </if>
                 <if test="sizeId != null">
                     AND sizeId LIKE #{sizeId}
                 </if>
-
                 <if test="modelSize != null">
                     AND modelSize LIKE #{modelSize}
                 </if>
@@ -573,13 +588,15 @@
                     </when>
                 </choose>
 
+                <if test="powerType != null">
+                    AND m.powerType LIKE #{powerType}
+                </if>
                 <if test="meterBrandId != null">
                     AND m.meterBrandId LIKE #{meterBrandId}
                 </if>
                 <if test="sizeId != null">
                     AND m.sizeId LIKE #{sizeId}
                 </if>
-
                 <if test="modelSize != null">
                     AND m.modelSize LIKE #{modelSize}
                 </if>
@@ -623,13 +640,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -660,6 +679,9 @@
         , bm.meterName
         , MIN(em.taskStart) minTime
         , MAX(em.taskStart) maxTime
+        , COUNT(1) dataRows
+        , MIN(em.effId) minDataId
+        , MAX(em.effId) maxDataId
         FROM bw_eff_meter em
         LEFT JOIN bw_eff_task et ON em.taskId = et.taskId
         LEFT JOIN bw_meter bm ON em.meterId = bm.meterId
@@ -720,6 +742,7 @@
         , realWater
         , startFwd
         , endFwd
+        , powerType
         , meterBrandId
         , sizeId
         , sizeName
@@ -758,6 +781,7 @@
             , #{m1.realWater}
             , #{m1.startFwd}
             , #{m1.endFwd}
+            , #{m1.powerType}
             , #{m1.meterBrandId}
             , #{m1.sizeId}
             , #{m1.sizeName}
@@ -799,6 +823,7 @@
         , realWater
         , startFwd
         , endFwd
+        , powerType
         , meterBrandId
         , sizeId
         , sizeName
@@ -836,6 +861,7 @@
             , #{realWater}
             , #{startFwd}
             , #{endFwd}
+            , #{powerType}
             , #{meterBrandId}
             , #{sizeId}
             , #{sizeName}
@@ -878,6 +904,7 @@
                                 , realWater
                                 , startFwd
                                 , endFwd
+                                , powerType
                                 , meterBrandId
                                 , sizeId
                                 , sizeName
@@ -916,6 +943,7 @@
         , #{realWater}
         , #{startFwd}
         , #{endFwd}
+        , #{powerType}
         , #{meterBrandId}
         , #{sizeId}
         , #{sizeName}
@@ -956,6 +984,7 @@
     , realWater
     , startFwd
     , endFwd
+    , powerType
     , meterBrandId
     , sizeId
     , sizeName
@@ -992,6 +1021,7 @@
          , m2.realWater
          , m2.startFwd
          , m2.endFwd
+         , m.powerType
          , m.meterBrandId
          , m.sizeId
          , m.sizeName
@@ -1030,13 +1060,15 @@
                     </when>
                 </choose>
 
+                <if test="powerType != null">
+                    AND powerType LIKE #{powerType}
+                </if>
                 <if test="meterBrandId != null">
                     AND meterBrandId LIKE #{meterBrandId}
                 </if>
                 <if test="sizeId != null">
                     AND sizeId LIKE #{sizeId}
                 </if>
-
                 <if test="modelSize != null">
                     AND modelSize LIKE #{modelSize}
                 </if>
@@ -1096,13 +1128,15 @@
                         </when>
                     </choose>
 
+                    <if test="powerType != null">
+                        AND powerType LIKE #{powerType}
+                    </if>
                     <if test="meterBrandId != null">
                         AND meterBrandId LIKE #{meterBrandId}
                     </if>
                     <if test="sizeId != null">
                         AND sizeId LIKE #{sizeId}
                     </if>
-
                     <if test="modelSize != null">
                         AND modelSize LIKE #{modelSize}
                     </if>
@@ -1140,13 +1174,15 @@
                     </when>
                 </choose>
 
+                <if test="powerType != null">
+                    AND m.powerType LIKE #{powerType}
+                </if>
                 <if test="meterBrandId != null">
                     AND m.meterBrandId LIKE #{meterBrandId}
                 </if>
                 <if test="sizeId != null">
                     AND m.sizeId LIKE #{sizeId}
                 </if>
-
                 <if test="modelSize != null">
                     AND m.modelSize LIKE #{modelSize}
                 </if>
@@ -1189,13 +1225,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1236,6 +1274,7 @@
         , realWater
         , startFwd
         , endFwd
+        , powerType
         , meterBrandId
         , sizeId
         , sizeName
@@ -1272,6 +1311,7 @@
         , m2.realWater
         , m2.startFwd
         , m2.endFwd
+        , m.powerType
         , m.meterBrandId
         , m.sizeId
         , m.sizeName
@@ -1310,13 +1350,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
             </if>
@@ -1376,13 +1418,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
             </if>
@@ -1420,13 +1464,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1469,6 +1515,9 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
@@ -1516,6 +1565,7 @@
             , realWater = tmp.realWater
             , startFwd = tmp.startFwd
             , endFwd = tmp.endFwd
+            , powerType = tmp.powerType
             , meterBrandId = tmp.meterBrandId
             , sizeId = tmp.sizeId
             , sizeName = tmp.sizeName
@@ -1557,6 +1607,7 @@
             , #{m1.realWater}
             , #{m1.startFwd}
             , #{m1.endFwd}
+            , #{m1.powerType}
             , #{m1.meterBrandId}
             , #{m1.sizeId}
             , #{m1.sizeName}
@@ -1596,6 +1647,7 @@
         , realWater
         , startFwd
         , endFwd
+        , powerType
         , meterBrandId
         , sizeId
         , sizeName
@@ -1651,13 +1703,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1733,13 +1787,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1788,13 +1844,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1832,7 +1890,7 @@
         , p.pointWater
         , p.realWater
         FROM bw_meter_eff_point p
-        LEFT JOIN bw_eff_meter m ON p.effId = m.effId
+        JOIN bw_eff_meter m ON p.effId = m.effId
         LEFT JOIN bw_eff_task t ON p.taskId = t.taskId
 
         <where>
@@ -1875,13 +1933,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>
@@ -1901,6 +1961,91 @@
         ORDER BY p.meterId
         , p.taskStart
         , p.periodType
+        , p.pointType
+        , p.pointNo
+    </select>
+
+    <select id="statEffPointManual" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.EffMeterPoint">
+        SELECT p.periodType
+        , p.pointType
+        , p.pointNo
+        , p.pointName
+        , MAX(p.pointFlow) pointFlow
+        , AVG(p.pointWater) pointWater
+        , AVG(p.realWater) realWater
+        FROM bw_meter_eff_point p
+        JOIN bw_eff_meter m ON p.effId = m.effId
+        LEFT JOIN bw_eff_task t ON p.taskId = t.taskId
+
+        <where>
+            <if test="firmId != null">
+                AND (t.firmId IS NULL OR t.firmId LIKE #{firmId})
+            </if>
+
+            <choose>
+                <when test="lowDayConsume != null and highDayConsume != null">
+                    AND p.periodType = 'Month'
+                    AND (m.meterWater / m.dataRows) BETWEEN #{lowDayConsume} AND #{highDayConsume}
+                </when>
+                <when test="periodType != null">
+                    AND p.periodType LIKE #{periodType}
+                </when>
+                <otherwise>
+                    AND p.periodType LIKE 'Day'
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="pointType != null">
+                    AND p.pointType LIKE #{pointType}
+                </when>
+                <otherwise>
+                    AND p.pointType LIKE 'MODEL'
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND p.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND p.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND p.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND p.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND p.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+        </where>
+        GROUP BY p.periodType
+        , p.pointType
+        , p.pointNo
+        , p.pointName
+        ORDER BY p.periodType
         , p.pointType
         , p.pointNo
     </select>
@@ -2230,13 +2375,15 @@
                 </when>
             </choose>
 
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
             <if test="sizeId != null">
                 AND m.sizeId LIKE #{sizeId}
             </if>
-
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
             </if>

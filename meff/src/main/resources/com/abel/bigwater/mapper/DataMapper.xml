@@ -978,9 +978,13 @@
 
     <select id="realtimeDateRange" parameterType="com.abel.bigwater.api.DataParam"
             resultType="com.abel.bigwater.model.DataRange">
-        SELECT r.extId
+        SELECT m.meterId
+        , r.extId
         , MIN(r.sampleTime) AS minTime
         , MAX(r.sampleTime) AS maxTime
+        , COUNT(1) AS dataRows
+        , MIN(r.dataId) AS minDataId
+        , MAX(r.dataId) AS maxDataId
         FROM bw_data r
         LEFT JOIN bw_meter m ON (r.extId = m.extId)
         <where>
@@ -1024,7 +1028,8 @@
                 </when>
             </choose>
         </where>
-        GROUP BY r.extId
+        GROUP BY m.meterId
+                 , r.extId
     </select>
 
     <select id="realtimeDateRangeZone" parameterType="com.abel.bigwater.api.DataParam"
@@ -1033,6 +1038,9 @@
         , d.zoneName
         , MIN(r.sampleTime) AS minTime
         , MAX(r.sampleTime) AS maxTime
+        , COUNT(1) AS dataRows
+        , MIN(r.dataId) AS minDataId
+        , MAX(r.dataId) AS maxDataId
         FROM bw_data r
         JOIN bw_meter m ON (r.extId = m.extId)
         JOIN bw_zone_meter dm ON m.meterId = dm.meterId
@@ -1098,6 +1106,9 @@
         , d.dmaName
         , MIN(r.sampleTime) AS minTime
         , MAX(r.sampleTime) AS maxTime
+        , COUNT(1) AS dataRows
+        , MIN(r.dataId) AS minDataId
+        , MAX(r.dataId) AS maxDataId
         FROM bw_data r
         JOIN bw_meter m ON (r.extId = m.extId)
         JOIN bw_dma_meter dm ON m.meterId = dm.meterId

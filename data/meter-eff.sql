@@ -1,12 +1,14 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/26 10:52:07                          */
+/* Created on:     2020/10/28 17:36:01                          */
 /*==============================================================*/
 
 
 drop trigger rule_ignore_dupkey_data on bw_data;
 
 drop table bw_config;
+
+drop index idx_data_szid;
 
 drop index idx_data_ext;
 
@@ -240,6 +242,7 @@ create table bw_data (
    q4Sum                DECIMAL(15,3)        null,
    firmId               VARCHAR(45)          null,
    rssi                 INT4                 null,
+   szid                 INT8                 null,
    constraint PK_BW_DATA primary key (dataId)
 );
 
@@ -257,6 +260,13 @@ extId
 create unique index idx_data_ext on bw_data (
 extId,
 sampleTime
+);
+
+/*==============================================================*/
+/* Index: idx_data_szid                                         */
+/*==============================================================*/
+create  index idx_data_szid on bw_data (
+szid
 );
 
 /*==============================================================*/
@@ -459,6 +469,7 @@ create table bw_eff_failure (
    realWater            DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
+   powerType            VARCHAR(45)          null,
    meterBrandId         VARCHAR(45)          not null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,
@@ -548,6 +559,7 @@ create table bw_eff_meter (
    realWater            DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
+   powerType            VARCHAR(45)          null,
    meterBrandId         VARCHAR(45)          not null,
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          not null,

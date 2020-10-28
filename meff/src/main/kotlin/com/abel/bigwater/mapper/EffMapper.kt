@@ -45,6 +45,8 @@ interface EffMapper {
 
     fun listEffPoint(p: EffParam): List<EffMeterPoint>
 
+    fun statEffPointManual(p: EffParam): List<EffMeterPoint>
+
     fun insertEffPoint(p: EffParam): Int
 
     fun buildEffPointMonth(p: EffParam): Int

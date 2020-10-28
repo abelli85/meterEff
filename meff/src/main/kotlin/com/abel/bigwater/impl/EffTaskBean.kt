@@ -7,10 +7,7 @@ import com.abel.bigwater.mapper.ConfigMapper
 import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
-import com.abel.bigwater.model.BwData
-import com.abel.bigwater.model.BwFirm
-import com.abel.bigwater.model.BwMeter
-import com.abel.bigwater.model.DataRange
+import com.abel.bigwater.model.*
 import com.abel.bigwater.model.eff.*
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
@@ -564,9 +561,6 @@ open class EffTaskBean {
                 meterName = meter.meterName
                 taskId = task.taskId
                 taskName = task.taskName
-                periodTypeObj = EffPeriodType.Day
-                taskStart = day1.toDate()
-                taskEnd = day1.plusDays(1).toDate()
 
                 meterBrandId = meter.meterBrandId ?: "0"
                 sizeId = meter.sizeId ?: 0
@@ -587,6 +581,61 @@ open class EffTaskBean {
                 if (meter.q3 > meter.q2) {
                     q4toq3 = meter.q4 / meter.q3
                 }
+            }
+
+            if (meter.powerTypeObj == PowerType.MANUAL) {
+                eff.apply {
+                    periodTypeObj = EffPeriodType.Month
+                    taskStart = day1.toDate()
+                    taskEnd = day1.plusMonths(1).toDate()
+                }
+
+                if (effMeterMonth(meter, day1, dlist, eff)) {
+                    val param = EffParam().apply {
+                        meterId = meter.meterId
+                        periodType = "%"
+                        taskStart = day1.toDate()
+                    }
+                    lgr.info("remove eff meter: {}/{}",
+                            effMapper!!.deleteEffPoint(param),
+                            effMapper!!.deleteEffMeter(param)
+                    )
+
+                    val cntEff = effMapper!!.insertEffMeterSingle(eff)
+                    val pp = EffParam().apply {
+                        pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
+                        pointEffList?.forEach { it.effId = eff.effId }
+                    }
+                    val cntPt = effMapper!!.insertEffPoint(pp)
+                    lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
+
+                    retList.add(eff)
+                } else {
+                    // failure
+                    val param = EffParam().apply {
+                        meterId = meter.meterId
+                        periodType = "%"
+                        taskStart = day1.toDate()
+                    }
+                    lgr.info("remove eff failure: {}/{}",
+                            effMapper!!.deleteEffPoint(param),
+                            effMapper!!.deleteEffFailure(param)
+                    )
+
+                    val cntEff = effMapper!!.insertEffFailureSingle(eff)
+                    lgr.info("insert eff failure: {}@ {} / {}", cntEff, eff.meterId, LocalDate(eff.taskStart))
+
+                    retList.add(eff)
+                }
+
+                day1 = day1.plusMonths(1)
+                continue
+            }
+
+            eff.apply {
+                periodTypeObj = EffPeriodType.Day
+                taskStart = day1.toDate()
+                taskEnd = day1.plusDays(1).toDate()
             }
 
             if (effSingleMeterDay(meter, day1, dlist, eff)) {
@@ -633,6 +682,121 @@ open class EffTaskBean {
         return retList
     }
 
+    fun effMeterMonth(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
+        if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
+                || meter.modelPointList?.size ?: 0 < 3) {
+            lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
+            eff.taskResult = EffFailureType.ABSENT_POINT.name
+            return false
+        }
+        if (eff.periodTypeObj != EffPeriodType.Month || day.withTimeAtStartOfDay().withDayOfMonth(1) != day) {
+            lgr.error("必须为当月1日: ${day.toString(ISODateTimeFormat.basicDateTime())}")
+            eff.taskResult = EffFailureType.ABSENT_TIME.name
+            return false
+        }
+
+        // decayed eff
+        eff.effDecay = meter.effDecay
+
+        eff.apply {
+            runTime = Date()
+        }
+
+        if (!fillMeterEffPoint(eff, meter)) return false
+
+        val dstart = dataList.firstOrNull { it.jodaSample?.monthOfYear == day.monthOfYear }
+        val dend = dataList.firstOrNull { it.jodaSample?.monthOfYear ?: 0 > day.monthOfYear }
+        if (dstart == null || dend == null) {
+            lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
+            eff.taskResult = EffFailureType.DATA.name
+            return false
+        }
+        if (dstart.sampleTime == null || dend.sampleTime == null) {
+            lgr.error("采样时间不能为空: ${meter.meterId}")
+            eff.taskResult = EffFailureType.ABSENT_TIME.name
+            return false
+        }
+
+        eff.startFwd = dstart.forwardReading
+        eff.endFwd = dend.forwardReading
+        eff.dataRows = Duration(DateTime(eff.taskStart!!), DateTime(eff.taskEnd!!)).standardDays.toInt()
+        eff.meterWater = (eff.endFwd ?: 0.0) - (eff.startFwd ?: 0.0)
+
+        val monthParam = EffParam().apply {
+            firmId = meter.firmId?.plus('%')
+            pointTypeObj = EffPointType.EFF
+            lowDayConsume = eff.meterWater!!.times(0.9)
+            highDayConsume = eff.meterWater!!.times(1.1)
+        }
+        val pteList = effMapper!!.statEffPointManual(monthParam)
+        val modelList = effMapper!!.statEffPointManual(monthParam.also {
+            it.pointTypeObj = EffPointType.MODEL
+        })
+
+        if (pteList.isNullOrEmpty() || modelList.isNullOrEmpty()) {
+            eff.taskResult = EffFailureType.ABSENT_LIKE.name
+            lgr.error("${EffFailureType.ABSENT_LIKE}: ${meter.meterId}")
+            return false
+        }
+
+        val ratioEff = eff.meterWater!! / pteList.sumByDouble { it.pointWater ?: 0.0 }
+        eff.pointEffList!!.forEach {
+            val lk = pteList.find { p1 -> p1.pointNo == it.pointNo }
+            if (lk == null) {
+                lgr.warn("LIKE absent pointNo: ${it.pointNo} / ${it.pointName}")
+                eff.taskResult = EffFailureType.ABSENT_LIKE.name
+                return false
+            }
+            it.pointWater = (lk.pointWater ?: 0.0).times(ratioEff)
+            it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev ?: 0.0)
+        }
+
+        val ratioModel = eff.meterWater!! / modelList.sumByDouble { it.pointWater ?: 0.0 }
+        eff.modelPointList!!.forEach {
+            val lk = modelList.find { p1 -> p1.pointNo == it.pointNo }
+            if (lk == null) {
+                lgr.warn("LIKE absent pointNo: ${it.pointNo} / ${it.pointName}")
+                eff.taskResult = EffFailureType.ABSENT_LIKE.name
+                return false
+            }
+            it.pointWater = (lk.pointWater ?: 0.0).times(ratioModel)
+        }
+
+        eff.apply {
+            runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
+            realWater = pointEffList!!.sumByDouble { it.realWater!! }
+
+            // to avoid dividen-by-0 when matching match.
+            if (meterWater ?: 0.0 < 1.0E-3) meterWater = 1.0E-3
+            if (realWater ?: 0.0 < 1.0E-3) realWater = 1.0E-3
+
+            meterEff = if (realWater!! > 1.0E-3) {
+                meterWater!!.div(realWater!!).times(100.0)
+            } else 100.0
+
+            // decayed eff
+            decayEff = if (eff.effDecay?.decayEff == null)
+                String.format("%.3f", meterEff)
+            else {
+                var tfwd = effDecay!!.totalFwd ?: 1.0E6
+                if (tfwd < 1.0E5) tfwd = 1.0E6
+                val decay = endFwd?.div(tfwd)?.times(effDecay!!.decayEff?.div(100.0) ?: 0.0) ?: 0.0
+                String.format("%.3f", meterEff?.minus(decay) ?: 0.0)
+            }
+
+            q0v = pointEffList?.getOrNull(0)?.pointWater
+            q1v = pointEffList?.find { it.pointName?.equals("Q1", true) == true }?.pointWater ?: 0.0
+            q2v = pointEffList?.find { it.pointName?.equals("Q2", true) == true }?.pointWater ?: 0.0
+            q3v = pointEffList?.find { it.pointName?.equals("Q3", true) == true }?.pointWater ?: 0.0
+            q4v = pointEffList?.getOrNull(4)?.pointWater
+            qtv = pointEffList?.drop(5)?.sumByDouble { it.pointWater!! }
+
+            taskResult = ""
+        }
+
+        return true
+    }
+
     companion object {
         private val lgr = LoggerFactory.getLogger(EffTaskBean::class.java)
 
@@ -649,25 +813,23 @@ open class EffTaskBean {
             if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
                     || meter.modelPointList?.size ?: 0 < 3) {
                 lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
-                eff.taskResult = EffFailureType.ABSENTPOINT.name
+                eff.taskResult = EffFailureType.ABSENT_POINT.name
                 return false
             }
             if (day.withTimeAtStartOfDay() != day) {
                 lgr.error("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
-                eff.taskResult = EffFailureType.ABSENTTIME.name
+                eff.taskResult = EffFailureType.ABSENT_TIME.name
                 return false
-            }
-            eff.pointList = meter.pointList!!.sortedBy { it.pointFlow }
-            eff.pointList!!.forEach {
-                if (it.pointFlow == null) {
-                    lgr.error("计量点不能为空")
-                    eff.taskResult = EffFailureType.ABSENTPOINT.name
-                    return false
-                }
             }
 
             // decayed eff
             eff.effDecay = meter.effDecay
+
+            eff.apply {
+                runTime = Date()
+            }
+
+            if (!fillMeterEffPoint(eff, meter)) return false
 
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
             if (dlist.size < 2) {
@@ -678,94 +840,10 @@ open class EffTaskBean {
             dlist.forEach {
                 if (it.sampleTime == null) {
                     lgr.error("采样时间不能为空: ${meter.meterId}")
-                    eff.taskResult = EffFailureType.ABSENTTIME.name
+                    eff.taskResult = EffFailureType.ABSENT_TIME.name
                     return false
                 }
             }
-
-            eff.apply {
-                runTime = Date()
-            }
-
-            eff.pointEffList = eff.pointList!!.map {
-                EffMeterPoint().apply {
-                    taskId = eff.taskId
-                    effId = eff.effId
-                    taskStart = day.toDate()
-                    taskEnd = day.plusDays(1).toDate()
-                    meterId = meter.meterId
-                    pointTypeObj = EffPointType.EFF
-                    periodTypeObj = EffPeriodType.Day
-
-                    pointNo = it.pointNo
-                    pointName = it.pointName
-                    pointFlow = it.pointFlow
-                    pointDev = it.pointDev
-                    highLimit = it.highLimit
-                    lowLimit = it.lowLimit
-
-                    pointWater = 0.0
-                    realWater = 0.0
-                }
-            }.plus(EffMeterPoint().apply {
-                taskId = eff.taskId
-                effId = eff.effId
-                taskStart = day.toDate()
-                taskEnd = day.plusDays(1).toDate()
-                meterId = meter.meterId
-                pointTypeObj = EffPointType.EFF
-                periodTypeObj = EffPeriodType.Day
-
-                pointNo = 21
-                pointName = "Q21"
-                pointFlow = Double.MAX_VALUE
-                pointDev = 1.0
-                highLimit = 0.0
-                lowLimit = 0.0
-
-                pointWater = 0.0
-                realWater = 0.0
-            })
-
-            eff.modelPointList = meter.modelPointList!!.map {
-                EffMeterPoint().apply {
-                    taskId = eff.taskId
-                    effId = eff.effId
-                    taskStart = day.toDate()
-                    taskEnd = day.plusDays(1).toDate()
-                    meterId = meter.meterId
-                    pointTypeObj = EffPointType.MODEL
-                    periodTypeObj = EffPeriodType.Day
-
-                    pointNo = it.pointNo
-                    pointName = it.pointName
-                    pointFlow = it.pointFlow
-                    pointDev = it.pointDev
-                    highLimit = it.highLimit
-                    lowLimit = it.lowLimit
-
-                    pointWater = 0.0
-                    realWater = 0.0
-                }
-            }.plus(EffMeterPoint().apply {
-                taskId = eff.taskId
-                effId = eff.effId
-                taskStart = day.toDate()
-                taskEnd = day.plusDays(1).toDate()
-                meterId = meter.meterId
-                pointTypeObj = EffPointType.MODEL
-                periodTypeObj = EffPeriodType.Day
-
-                pointNo = 21
-                pointName = "Q4+"
-                pointFlow = Double.MAX_VALUE
-                pointDev = 1.0
-                highLimit = 0.0
-                lowLimit = 0.0
-
-                pointWater = 0.0
-                realWater = 0.0
-            })
 
             eff.startFwd = dlist.first().forwardReading
             for (idx in 1.until(dlist.size)) {
@@ -839,6 +917,98 @@ open class EffTaskBean {
 
                 taskResult = ""
             }
+
+            return true
+        }
+
+        private fun fillMeterEffPoint(eff: EffMeter, meter: BwMeter): Boolean {
+            eff.pointList = meter.pointList!!.sortedBy { it.pointFlow }
+            eff.pointList!!.forEach {
+                if (it.pointFlow == null) {
+                    lgr.error("计量点不能为空")
+                    eff.taskResult = EffFailureType.ABSENT_POINT.name
+                    return false
+                }
+            }
+            eff.pointEffList = eff.pointList!!.map {
+                EffMeterPoint().apply {
+                    taskId = eff.taskId
+                    effId = eff.effId
+                    taskStart = eff.taskStart
+                    taskEnd = eff.taskEnd
+                    meterId = meter.meterId
+                    pointTypeObj = EffPointType.EFF
+                    periodTypeObj = EffPeriodType.Day
+
+                    pointNo = it.pointNo
+                    pointName = it.pointName
+                    pointFlow = it.pointFlow
+                    pointDev = it.pointDev
+                    highLimit = it.highLimit
+                    lowLimit = it.lowLimit
+
+                    pointWater = 0.0
+                    realWater = 0.0
+                }
+            }.plus(EffMeterPoint().apply {
+                taskId = eff.taskId
+                effId = eff.effId
+                taskStart = eff.taskStart
+                taskEnd = eff.taskEnd
+                meterId = meter.meterId
+                pointTypeObj = EffPointType.EFF
+                periodTypeObj = EffPeriodType.Day
+
+                pointNo = 21
+                pointName = "Q21"
+                pointFlow = Double.MAX_VALUE
+                pointDev = 1.0
+                highLimit = 0.0
+                lowLimit = 0.0
+
+                pointWater = 0.0
+                realWater = 0.0
+            })
+
+            eff.modelPointList = meter.modelPointList!!.map {
+                EffMeterPoint().apply {
+                    taskId = eff.taskId
+                    effId = eff.effId
+                    taskStart = eff.taskStart
+                    taskEnd = eff.taskEnd
+                    meterId = meter.meterId
+                    pointTypeObj = EffPointType.MODEL
+                    periodTypeObj = EffPeriodType.Day
+
+                    pointNo = it.pointNo
+                    pointName = it.pointName
+                    pointFlow = it.pointFlow
+                    pointDev = it.pointDev
+                    highLimit = it.highLimit
+                    lowLimit = it.lowLimit
+
+                    pointWater = 0.0
+                    realWater = 0.0
+                }
+            }.plus(EffMeterPoint().apply {
+                taskId = eff.taskId
+                effId = eff.effId
+                taskStart = eff.taskStart
+                taskEnd = eff.taskEnd
+                meterId = meter.meterId
+                pointTypeObj = EffPointType.MODEL
+                periodTypeObj = EffPeriodType.Day
+
+                pointNo = 21
+                pointName = "Q4+"
+                pointFlow = Double.MAX_VALUE
+                pointDev = 1.0
+                highLimit = 0.0
+                lowLimit = 0.0
+
+                pointWater = 0.0
+                realWater = 0.0
+            })
 
             return true
         }
