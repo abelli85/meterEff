@@ -1,9 +1,6 @@
 package com.abel.bigwater.model.eff
 
-import com.abel.bigwater.model.BwBase
-import com.abel.bigwater.model.JsonDateDeserializer
-import com.abel.bigwater.model.JsonDateSerializer
-import com.abel.bigwater.model.JsonHelper
+import com.abel.bigwater.model.*
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -136,6 +133,24 @@ data class EffMeter(
      * 结束行度
      */
     var endFwd: Double? = null
+
+    /**
+     * 供电类型
+     * the powerType to set
+     */
+    var powerType: String? = null
+
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var powerTypeObj: PowerType? = null
+        get() {
+            field = PowerType.values().find { it.name == powerType }
+            return field
+        }
+        set(value) {
+            field = value
+            powerType = field?.name
+        }
 
     /**
      * 水表品牌标示

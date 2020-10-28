@@ -3,6 +3,7 @@ package com.abel.bigwater.api
 import com.abel.bigwater.model.JsonDateDeserializer
 import com.abel.bigwater.model.JsonDateSerializer
 import com.abel.bigwater.model.JsonHelper
+import com.abel.bigwater.model.PowerType
 import com.abel.bigwater.model.eff.*
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -118,6 +119,24 @@ class EffParam : BaseParam() {
         }
 
     /**
+     * 供电类型
+     * the powerType to set
+     */
+    var powerType: String? = null
+
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var powerTypeObj: PowerType? = null
+        get() {
+            field = PowerType.values().find { it.name == powerType }
+            return field
+        }
+        set(value) {
+            field = value
+            powerType = field?.name
+        }
+
+    /**
      * 口径
      * the size to set
      */
@@ -187,5 +206,20 @@ class EffParam : BaseParam() {
      * 分析结论
      */
     var taskResult: String? = null
+
+    /**
+     * 数据页
+     */
+    var index: Int = 0
+    var rows: Int = 2000
+
+    /**
+     * 日水量范围, 从
+     * @see lowDayConsume 到
+     * @see highDayConsume
+     */
+    var lowDayConsume: Double? = null
+
+    var highDayConsume: Double? = null
 
 }

@@ -121,6 +121,21 @@ class DataRange : BwBase() {
             this.maxTime = value?.toDate()
         }
 
+    /**
+     * 引用的数据行数
+     */
+    var dataRows: Int = 0
+
+    /**
+     * 最小数据标识
+     */
+    var minDataId: Long? = null
+
+    /**
+     * 最大数据标识
+     */
+    var maxDataId: Long? = null
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

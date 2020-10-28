@@ -321,7 +321,19 @@ open class BwMeter : BwBase() {
      * 供电类型
      * the powerType to set
      */
-    var powerType: PowerType? = null
+    var powerType: String? = null
+
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var powerTypeObj: PowerType? = null
+        get() {
+            field = PowerType.values().find { it.name == powerType }
+            return field
+        }
+        set(value) {
+            field = value
+            powerType = field?.name
+        }
 
     /**
      * 水表状态

@@ -10,6 +10,11 @@ enum class PowerType {
     /** 太阳能 */
     SOLARPOWER,
 
+    /**
+     * 人工
+     */
+    MANUAL,
+
     /** 数据库 */
     DATABASE,
 
