@@ -157,6 +157,9 @@
         , m.qtv
         , m.meterEff
         , m.realWater
+        , m.startTime
+        , m.endTime
+        , m.stdDays
         , m.startFwd
         , m.endFwd
         , m.powerType
@@ -740,6 +743,9 @@
         , qtv
         , meterEff
         , realWater
+        , startTime
+        , endTime
+        , stdDays
         , startFwd
         , endFwd
         , powerType
@@ -779,6 +785,9 @@
             , #{m1.qtv}
             , #{m1.meterEff}
             , #{m1.realWater}
+            , #{m1.startTime}
+            , #{m1.endTime}
+            , #{m1.stdDays}
             , #{m1.startFwd}
             , #{m1.endFwd}
             , #{m1.powerType}
@@ -821,6 +830,9 @@
         , qtv
         , meterEff
         , realWater
+        , startTime
+        , endTime
+        , stdDays
         , startFwd
         , endFwd
         , powerType
@@ -859,6 +871,9 @@
             , #{qtv}
             , #{meterEff}
             , #{realWater}
+            , #{startTime}
+            , #{endTime}
+            , #{stdDays}
             , #{startFwd}
             , #{endFwd}
             , #{powerType}
@@ -982,6 +997,9 @@
     , qtv
     , meterEff
     , realWater
+    , startTime
+    , endTime
+    , stdDays
     , startFwd
     , endFwd
     , powerType
@@ -1019,6 +1037,9 @@
          , m2.qtv
          , (case when (m2.realWater &lt; 0.001) then 0.0 else (m2.meterWater / m2.realWater) * 100 end) AS meterEff
          , m2.realWater
+         , m2.startTime
+         , m2.endTime
+         , m2.stdDays
          , m2.startFwd
          , m2.endFwd
          , m.powerType
@@ -1101,6 +1122,9 @@
                   , SUM(q4v) q4v
                   , SUM(qtv) qtv
                   , SUM(realWater) realWater
+                  , MIN(startTime) startTime
+                  , MAX(endTime) endTime
+                  , SUM(stdDays) stdDays
                   , MIN(startFwd) startFwd
                   , MAX(endFwd) endFwd
                   , COUNT(1) dataRows
@@ -1272,6 +1296,9 @@
         , qtv
         , meterEff
         , realWater
+        , startTime
+        , endTime
+        , stdDays
         , startFwd
         , endFwd
         , powerType
@@ -1309,6 +1336,9 @@
         , m2.qtv
         , (case when (m2.realWater &lt; 0.001) then 0.0 else (m2.meterWater / m2.realWater) * 100 end) AS meterEff
         , m2.realWater
+        , m2.startTime
+        , m2.endTime
+        , m2.stdDays
         , m2.startFwd
         , m2.endFwd
         , m.powerType
@@ -1391,6 +1421,9 @@
         , SUM(q4v) q4v
         , SUM(qtv) qtv
         , SUM(realWater) realWater
+        , MIN(startTime) startTime
+        , MAX(endTime) endTime
+        , SUM(stdDays) stdDays
         , MIN(startFwd) startFwd
         , MAX(endFwd) endFwd
         , COUNT(1) dataRows
@@ -1563,6 +1596,9 @@
             , qtv = tmp.qtv
             , meterEff = tmp.meterEff
             , realWater = tmp.realWater
+            , startTime = tmp.startTime
+            , endTime = tmp.endTime
+            , stdDays = tmp.stdDays
             , startFwd = tmp.startFwd
             , endFwd = tmp.endFwd
             , powerType = tmp.powerType
@@ -1605,6 +1641,9 @@
             , #{m1.qtv}
             , #{m1.meterEff}
             , #{m1.realWater}
+            , #{m1.startTime}
+            , #{m1.endTime}
+            , #{m1.stdDays}
             , #{m1.startFwd}
             , #{m1.endFwd}
             , #{m1.powerType}
@@ -1645,6 +1684,9 @@
         , qtv
         , meterEff
         , realWater
+        , startTime
+        , endTime
+        , stdDays
         , startFwd
         , endFwd
         , powerType

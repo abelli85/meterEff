@@ -717,6 +717,9 @@ open class EffTaskBean {
             return false
         }
 
+        eff.startTime = dstart.sampleTime
+        eff.endTime = dend.endTime
+        eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
         eff.startFwd = dstart.forwardReading
         eff.endFwd = dend.forwardReading
         eff.dataRows = Duration(DateTime(eff.taskStart!!), DateTime(eff.taskEnd!!)).standardDays.toInt()
@@ -846,6 +849,7 @@ open class EffTaskBean {
             }
 
             eff.startFwd = dlist.first().forwardReading
+            eff.startTime = dlist.first().sampleTime
             for (idx in 1.until(dlist.size)) {
                 val d1 = dlist[idx - 1]
                 val d2 = dlist[idx]
@@ -865,13 +869,16 @@ open class EffTaskBean {
                 // break if not same day
                 if (DateTime(d2.sampleTime!!).dayOfMonth != DateTime(d1.sampleTime!!).dayOfMonth) {
                     eff.endFwd = d2.forwardReading
+                    eff.endTime = d2.sampleTime
                     eff.dataRows = idx
                     break
                 }
             }
             if (eff.endFwd == null) {
                 eff.endFwd = dlist.last().forwardReading
+                eff.endTime = dlist.last().sampleTime
             }
+            eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
 
             eff.pointEffList!!.forEach {
                 it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev!!).div(100.0)

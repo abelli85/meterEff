@@ -125,6 +125,21 @@ data class EffMeter(
     var meterEff: Double? = null
 
     /**
+     * 该结果对应的数据时段 - 起始时间
+     */
+    var startTime: Date? = null
+
+    /**
+     * 该结果对应的数据时段 - 结束时间
+     */
+    var endTime: Date? = null
+
+    /**
+     * 该结果对应的数据时段天数
+     */
+    var stdDays: Double? = null
+
+    /**
      * 起始行度
      */
     var startFwd: Double? = null
