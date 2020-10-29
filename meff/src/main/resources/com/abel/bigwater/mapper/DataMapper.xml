@@ -990,13 +990,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m.meterId IS NULL OR m.meterId LIKE #{meterId})
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m.meterId IS NULL OR m.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
