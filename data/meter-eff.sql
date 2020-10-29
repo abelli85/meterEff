@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/29 10:27:33                          */
+/* Created on:     2020/10/29 15:42:20                          */
 /*==============================================================*/
 
 
@@ -467,6 +467,9 @@ create table bw_eff_failure (
    meterEff             DECIMAL(15,3)        null,
    dataRows             INT4                 null,
    realWater            DECIMAL(15,3)        null,
+   startTime            TIMESTAMP WITH TIME ZONE null,
+   endTime              TIMESTAMP WITH TIME ZONE null,
+   stdDays              DECIMAL(15,3)        null,
    startFwd             DECIMAL(15,3)        null,
    endFwd               DECIMAL(15,3)        null,
    powerType            VARCHAR(45)          null,

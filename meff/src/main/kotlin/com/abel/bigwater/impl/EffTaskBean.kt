@@ -76,30 +76,41 @@ open class EffTaskBean {
             }
             lgr.info("fill-point-list result: {}", JSON.toJSONString(it, true))
 
-            val effList = effMeter(it, task, 31)
-            lgr.info("analyze {} eff for {}/{} in {}", effList.size,
-                    it.meterId, it.meterName, firm.title)
-            if (effList.isEmpty()) return@forEach
+            if (it.powerTypeObj != PowerType.MANUAL) {
+                val effList = effMeter(it, task, 31)
+                lgr.info("analyze {} eff for {}/{} in {}", effList.size,
+                        it.meterId, it.meterName, firm.title)
+                if (effList.isEmpty()) return@forEach
 
-            buildMonthEff(effList)
+                buildMonthEff(DataRange().apply {
+                    meterId = it.meterId
+                    minTime = effList.minOf { e1 -> e1.taskStart!! }
+                    maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
+                })
+            } else {
+                val effList = effMeter(it, task)
+                lgr.info("analyze {} eff for {}/{} in {}", effList.size,
+                        it.meterId, it.meterName, firm.title)
+                if (effList.isEmpty()) return@forEach
+            }
         }
     }
 
     /**
      * build monthly / annual eff from daily.
      */
-    open fun buildMonthEff(effList: List<EffMeter>) {
+    open fun buildMonthEff(drange: DataRange) {
         val pmth = EffParam().apply {
-            meterId = effList.firstOrNull()?.meterId
+            meterId = drange.meterId
             periodTypeObj = EffPeriodType.Month
-            taskStart = effList.minOf { e1 -> e1.taskStart!! }
-            taskEnd = effList.maxOf { e1 -> e1.taskStart!! }
+            taskStart = drange.minTime
+            taskEnd = drange.maxTime
         }
 
         // truncate to month
         pmth.also {
-            it.taskStart = it.jodaTaskStart?.withDayOfMonth(1)?.toDate()
-            it.taskEnd = it.jodaTaskEnd?.withDayOfMonth(2)?.toDate()
+            it.taskStart = it.jodaTaskStart?.withDayOfMonth(1)?.withTimeAtStartOfDay()?.toDate()
+            it.taskEnd = it.jodaTaskEnd?.plusMonths(1)?.withDayOfMonth(1)?.minusSeconds(1)?.toDate()
 
         }
         effMapper!!.deleteEffMeter(pmth)
@@ -471,6 +482,13 @@ open class EffTaskBean {
      * ['0', 0, '0'] default for all meters.
      */
     fun fillDecay(meter: BwMeter) {
+        effMapper!!.selectEffDecay(EffParam().apply {
+            decayId = meter.decayId
+        }).firstOrNull()?.also {
+            meter.effDecay = it
+        }
+        if (meter.effDecay != null) return
+
         // if there's decay
         effMapper!!.selectEffDecay(EffParam().apply {
             meterBrandId = meter.meterBrandId
@@ -479,25 +497,27 @@ open class EffTaskBean {
         }).firstOrNull()?.also {
             meter.effDecay = it
         }
-
-        if (meter.effDecay == null) {
-            effMapper!!.selectEffDecay(EffParam().apply {
-                meterBrandId = "0"
-                sizeId = meter.sizeId
-                modelSize = "0"
-            }).firstOrNull()?.also {
-                meter.effDecay = it
-            }
+        if (meter.effDecay != null) {
+            return
         }
 
+        effMapper!!.selectEffDecay(EffParam().apply {
+            meterBrandId = "0"
+            sizeId = meter.sizeId
+            modelSize = "0"
+        }).firstOrNull()?.also {
+            meter.effDecay = it
+        }
         if (meter.effDecay == null) {
-            effMapper!!.selectEffDecay(EffParam().apply {
-                meterBrandId = "0"
-                sizeId = 0
-                modelSize = "0"
-            }).firstOrNull()?.also {
-                meter.effDecay = it
-            }
+            return
+        }
+
+        effMapper!!.selectEffDecay(EffParam().apply {
+            meterBrandId = "0"
+            sizeId = 0
+            modelSize = "0"
+        }).firstOrNull()?.also {
+            meter.effDecay = it
         }
     }
 
@@ -542,17 +562,6 @@ open class EffTaskBean {
     }
 
     fun effMeterRange(meter: BwMeter, startDay: DateTime, endDay: DateTime, task: EffTask): List<EffMeter> {
-        val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
-            meterId = meter.meterId
-            sampleTime1 = startDay.toDate()
-            sampleTime2 = endDay.toDate()
-            rows = 20000
-        })
-
-        if (dlist.isEmpty()) {
-            lgr.info("empty realtime for {}", meter.meterId)
-        }
-
         val retList = arrayListOf<EffMeter>()
         var day1 = startDay.withTimeAtStartOfDay()
         while (day1.isBefore(endDay)) {
@@ -584,13 +593,25 @@ open class EffTaskBean {
             }
 
             if (meter.powerTypeObj == PowerType.MANUAL) {
+                // truncate to month
+                day1 = day1.withDayOfMonth(1)
+
                 eff.apply {
                     periodTypeObj = EffPeriodType.Month
+                    powerTypeObj = meter.powerTypeObj
                     taskStart = day1.toDate()
                     taskEnd = day1.plusMonths(1).toDate()
                 }
 
-                if (effMeterMonth(meter, day1, dlist, eff)) {
+                val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
+                    meterId = meter.meterId
+                    sampleTime1 = day1.toDate()
+                    sampleTime2 = day1.plusMonths(3).toDate()
+                    rows = 20000
+                })
+                if (dlist.isEmpty()) eff.taskResult = EffFailureType.DATA.name
+
+                if (dlist.isNotEmpty() && effMeterManual(meter, day1, dlist, eff)) {
                     val param = EffParam().apply {
                         meterId = meter.meterId
                         periodType = "%"
@@ -638,7 +659,15 @@ open class EffTaskBean {
                 taskEnd = day1.plusDays(1).toDate()
             }
 
-            if (effSingleMeterDay(meter, day1, dlist, eff)) {
+            val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
+                meterId = meter.meterId
+                sampleTime1 = day1.toDate()
+                sampleTime2 = day1.plusMonths(1).plusHours(1).toDate()
+                rows = 20000
+            })
+            if (dlist.isEmpty()) eff.taskResult = EffFailureType.DATA.name
+
+            if (dlist.isNotEmpty() && effSingleMeterDay(meter, day1, dlist, eff)) {
                 val param = EffParam().apply {
                     meterId = meter.meterId
                     periodType = "%"
@@ -682,7 +711,7 @@ open class EffTaskBean {
         return retList
     }
 
-    fun effMeterMonth(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
+    fun effMeterManual(meter: BwMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
         if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
                 || meter.modelPointList?.size ?: 0 < 3) {
             lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
@@ -705,7 +734,14 @@ open class EffTaskBean {
         if (!fillMeterEffPoint(eff, meter)) return false
 
         val dstart = dataList.firstOrNull { it.jodaSample?.monthOfYear == day.monthOfYear }
-        val dend = dataList.firstOrNull { it.jodaSample?.monthOfYear ?: 0 > day.monthOfYear }
+        val dend = dataList.firstOrNull { it.jodaSample?.monthOfYear ?: 0 != day.monthOfYear }
+        eff.also {
+            it.startTime = dstart?.sampleTime
+            it.endTime = dend?.sampleTime
+            it.startFwd = dstart?.forwardReading
+            it.endFwd = dend?.forwardReading
+        }
+
         if (dstart == null || dend == null) {
             lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
             eff.taskResult = EffFailureType.DATA.name
@@ -717,19 +753,15 @@ open class EffTaskBean {
             return false
         }
 
-        eff.startTime = dstart.sampleTime
-        eff.endTime = dend.endTime
         eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
-        eff.startFwd = dstart.forwardReading
-        eff.endFwd = dend.forwardReading
         eff.dataRows = Duration(DateTime(eff.taskStart!!), DateTime(eff.taskEnd!!)).standardDays.toInt()
         eff.meterWater = (eff.endFwd ?: 0.0) - (eff.startFwd ?: 0.0)
 
         val monthParam = EffParam().apply {
             firmId = meter.firmId?.plus('%')
             pointTypeObj = EffPointType.EFF
-            lowDayConsume = eff.meterWater!!.times(0.9)
-            highDayConsume = eff.meterWater!!.times(1.1)
+            lowDayConsume = eff.meterWater!!.div(eff.stdDays!!).times(0.9)
+            highDayConsume = eff.meterWater!!.div(eff.stdDays!!).times(1.1)
         }
         val pteList = effMapper!!.statEffPointManual(monthParam)
         val modelList = effMapper!!.statEffPointManual(monthParam.also {
@@ -750,8 +782,17 @@ open class EffTaskBean {
                 eff.taskResult = EffFailureType.ABSENT_LIKE.name
                 return false
             }
+
+            it.periodTypeObj = EffPeriodType.Month
+
             it.pointWater = (lk.pointWater ?: 0.0).times(ratioEff)
             it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev ?: 0.0)
+        }
+        eff.pointEffList!!.last().also {
+            if ((it.pointFlow ?: 0.0) > 1.0E12) {
+                val q3pt = eff.pointEffList!!.takeLast(2).firstOrNull()
+                it.pointFlow = q3pt?.pointFlow?.times(2.0)
+            }
         }
 
         val ratioModel = eff.meterWater!! / modelList.sumByDouble { it.pointWater ?: 0.0 }
@@ -762,7 +803,15 @@ open class EffTaskBean {
                 eff.taskResult = EffFailureType.ABSENT_LIKE.name
                 return false
             }
+
+            it.periodTypeObj = EffPeriodType.Month
             it.pointWater = (lk.pointWater ?: 0.0).times(ratioModel)
+        }
+        eff.modelPointList!!.last().also {
+            if ((it.pointFlow ?: 0.0) > 1.0E12) {
+                val q3pt = eff.pointEffList!!.takeLast(2).firstOrNull()
+                it.pointFlow = q3pt?.pointFlow?.times(2.0)
+            }
         }
 
         eff.apply {
@@ -835,11 +884,19 @@ open class EffTaskBean {
             if (!fillMeterEffPoint(eff, meter)) return false
 
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
+            eff.also {
+                it.startFwd = dlist.firstOrNull()?.forwardReading
+                it.startTime = dlist.firstOrNull()?.sampleTime
+                it.endFwd = dlist.firstOrNull()?.forwardReading
+                it.endTime = dlist.firstOrNull()?.sampleTime
+            }
+
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
                 eff.taskResult = EffFailureType.DATA.name
                 return false
             }
+
             dlist.forEach {
                 if (it.sampleTime == null) {
                     lgr.error("采样时间不能为空: ${meter.meterId}")
@@ -848,8 +905,6 @@ open class EffTaskBean {
                 }
             }
 
-            eff.startFwd = dlist.first().forwardReading
-            eff.startTime = dlist.first().sampleTime
             for (idx in 1.until(dlist.size)) {
                 val d1 = dlist[idx - 1]
                 val d2 = dlist[idx]
@@ -868,15 +923,13 @@ open class EffTaskBean {
 
                 // break if not same day
                 if (DateTime(d2.sampleTime!!).dayOfMonth != DateTime(d1.sampleTime!!).dayOfMonth) {
-                    eff.endFwd = d2.forwardReading
-                    eff.endTime = d2.sampleTime
-                    eff.dataRows = idx
+                    eff.also {
+                        it.endFwd = d2.forwardReading
+                        it.endTime = d2.sampleTime
+                        it.dataRows = idx
+                    }
                     break
                 }
-            }
-            if (eff.endFwd == null) {
-                eff.endFwd = dlist.last().forwardReading
-                eff.endTime = dlist.last().sampleTime
             }
             eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
 

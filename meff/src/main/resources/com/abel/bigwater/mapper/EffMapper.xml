@@ -917,6 +917,9 @@
                                 , qtv
                                 , meterEff
                                 , realWater
+                                , startTime
+                                , endTime
+                                , stdDays
                                 , startFwd
                                 , endFwd
                                 , powerType
@@ -956,6 +959,9 @@
         , #{qtv}
         , #{meterEff}
         , #{realWater}
+        , #{startTime}
+        , #{endTime}
+        , #{stdDays}
         , #{startFwd}
         , #{endFwd}
         , #{powerType}
@@ -2028,7 +2034,7 @@
             <choose>
                 <when test="lowDayConsume != null and highDayConsume != null">
                     AND p.periodType = 'Month'
-                    AND (m.meterWater / m.dataRows) BETWEEN #{lowDayConsume} AND #{highDayConsume}
+                    AND m.meterWater / m.stdDays BETWEEN #{lowDayConsume} AND #{highDayConsume}
                 </when>
                 <when test="periodType != null">
                     AND p.periodType LIKE #{periodType}

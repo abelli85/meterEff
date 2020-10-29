@@ -3,6 +3,8 @@ package com.abel.bigwater.impl
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
+import com.abel.bigwater.model.DataRange
+import com.abel.bigwater.model.PowerType
 import com.abel.bigwater.model.eff.*
 import com.alibaba.fastjson.JSON
 import org.slf4j.LoggerFactory
@@ -663,7 +665,13 @@ class EffServiceImpl : EffService {
                     effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!, task)
 
                 // 月度效率
-                effTaskBean!!.buildMonthEff(lst)
+                if (it.powerTypeObj != PowerType.MANUAL) {
+                    effTaskBean!!.buildMonthEff(DataRange().apply {
+                        meterId = it.meterId
+                        minTime = effList.minOf { e1 -> e1.taskStart!! }
+                        maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
+                    })
+                }
 
                 effList.addAll(lst)
 
