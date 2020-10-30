@@ -63,11 +63,15 @@ data class DataParam(
      * 60 - 在服务器端计算，返回的是小时数据.
      */
     @JsonIgnore
-    var duration: DataDuration? = DataDuration.DURATION_0
-        get() = DataDuration.findByPeriod(durationInt ?: 0)
+    var duration: DataDuration? = null
+        get() = DataDuration.findByPeriod(durationInt)
+        set(value) {
+            field = value
+            durationInt = field?.period
+        }
 
     /** 时间间隔，默认为原始数据 */
-    var durationInt: Int? = 0
+    var durationInt: Int? = null
 
     /**
      * 用来选择单条数据.
@@ -124,6 +128,11 @@ data class DataParam(
      */
     @JsonIgnore
     var dataList: List<BwData>? = null
+
+    /**
+     * 默认返回的最后数据天数
+     */
+    var lastDays: Int? = null
 }
 
 /**
@@ -144,6 +153,6 @@ enum class DataDuration(var period: Int = 60) {
         /**
          * 根据间隔查找枚举对象
          */
-        fun findByPeriod(_period: Int) = values().find { it.period == _period } ?: DURATION_0
+        fun findByPeriod(_period: Int?) = values().find { it.period == _period }
     }
 }
