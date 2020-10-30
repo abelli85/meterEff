@@ -444,6 +444,9 @@
         , m.sizeId
         , m.sizeName
         , m.modelSize
+        , bm.firmId
+        , bf.firmName
+        , bm.location
         , m.dataRows
         , m.decayEff
         , m.q4
@@ -509,6 +512,7 @@
         ) m1
         JOIN bw_eff_meter m ON m.effId = m1.effId
         LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_firm bf ON bm.firmId = bf.firmId
         <where>
             <if test="firmId != null">
                 AND bm.firmId LIKE #{firmId}
