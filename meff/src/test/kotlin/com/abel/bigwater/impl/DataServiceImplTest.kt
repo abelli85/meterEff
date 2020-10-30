@@ -1,10 +1,7 @@
 package com.abel.bigwater.impl
 
 import com.abel.bigwater.TestHelper
-import com.abel.bigwater.api.BwHolder
-import com.abel.bigwater.api.DataParam
-import com.abel.bigwater.api.DataService
-import com.abel.bigwater.api.UserService
+import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.model.BwData
 import com.alibaba.fastjson.JSON
@@ -51,6 +48,17 @@ class DataServiceImplTest {
         val r1 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam()))
 
         lgr.info("realtime list: {}", JSON.toJSONString(r1))
+        assertEquals(0, r1.code)
+    }
+
+    @Test
+    fun listRealtimeLast() {
+        val ul = TestHelper.login(loginService)
+        val r1 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            lastDays = 1
+        }))
+
+        lgr.info("last realtime list: {}", JSON.toJSONString(r1))
         assertEquals(0, r1.code)
     }
 
@@ -127,7 +135,9 @@ class DataServiceImplTest {
             assertEquals(0, r1.code)
 
             val r2 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!),
-                    DataParam(extId = list.first().extId)))
+                    DataParam(extId = list.first().extId).apply {
+                        duration = DataDuration.DURATION_0
+                    }))
             lgr.info("data list: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
             assertEquals(2, r2.list?.size)

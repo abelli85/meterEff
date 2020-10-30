@@ -178,8 +178,14 @@
         , m.qr2
         , m.qr3
         , m.qr4
+
+        , bm.location
+        , bm.firmId
+        , bf.firmName
         FROM bw_eff_meter m
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_firm bf ON bf.firmId = bm.firmId
 
         <where>
             <if test="firmId != null">
@@ -267,6 +273,7 @@
                 </when>
             </choose>
         </where>
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="listEffFailure" parameterType="com.abel.bigwater.api.EffParam"

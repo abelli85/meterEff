@@ -4,10 +4,12 @@ import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.model.*
 import com.alibaba.fastjson.JSON
+import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service("dataService")
 class DataServiceImpl : DataService {
@@ -41,9 +43,22 @@ class DataServiceImpl : DataService {
             if (!dp.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
                 dp.firmId = login.single!!.firmId!!.plus("%")
             }
+
+            // last 3 days or not
+            if (dp.lastDays ?: 0 > 0) {
+                val drange = dataMapper!!.realtimeDateRange(dp)
+                val lastTime = drange.filter { it.maxTime != null }.maxOfOrNull { it.maxTime!! }
+                if (lastTime != null) {
+                    dp.also {
+                        it.sampleTime2 = lastTime
+                        it.sampleTime1 = DateTime(lastTime).minusDays(3).toDate()
+                    }
+                }
+            }
+
             val list = when (dp.duration) {
-                DataDuration.DURATION_60_MIN ->
-                    dataMapper!!.selectRealtimeHourly(dp)
+                DataDuration.DURATION_0 ->
+                    dataMapper!!.selectRealtime(dp)
 
                 DataDuration.DURATION_30_MIN ->
                     dataMapper!!.selectRealtimeHalf(dp)
@@ -51,7 +66,9 @@ class DataServiceImpl : DataService {
                 DataDuration.DURATION_15_MIN ->
                     dataMapper!!.selectRealtimeQuarter(dp)
 
-                else -> dataMapper!!.selectRealtime(dp)
+                // DataDuration.DURATION_60_MIN
+                else ->
+                    dataMapper!!.selectRealtimeHourly(dp)
             }
 
             return BwResult(list).apply {

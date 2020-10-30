@@ -146,25 +146,25 @@
 
             <choose>
                 <when test="meterId != null">
-                    AND (m.meterId IS NULL OR m.meterId LIKE #{meterId})
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND (m.meterId IS NULL OR m.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
             <choose>
                 <when test="dmaIdList != null and dmaIdList.size > 0">
-                    AND (d.dmaId IS NULL OR d.dmaId IN
+                    AND d.dmaId IN
                     <foreach collection="dmaIdList" item="did" open="(" close=")" separator=",">
                         #{did}
-                    </foreach>)
+                    </foreach>
                 </when>
                 <when test="dmaId != null">
-                    AND (d.dmaId IS NULL OR m.dmaId LIKE #{dmaId})
+                    AND m.dmaId LIKE #{dmaId}
                 </when>
             </choose>
 
@@ -473,13 +473,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m1.meterId IS NULL OR m1.meterId LIKE #{meterId})
+                    AND m1.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m1.meterId IS NULL OR m1.meterId IN
+                    AND m1.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -518,13 +518,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m.meterId IS NULL OR m.meterId LIKE #{meterId})
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m.meterId IS NULL OR m.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -570,13 +570,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m1.meterId IS NULL OR m1.meterId LIKE #{meterId})
+                    AND m1.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m1.meterId IS NULL OR m1.meterId IN
+                    AND m1.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -616,13 +616,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m.meterId IS NULL OR m.meterId LIKE #{meterId})
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m.meterId IS NULL OR m.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -668,13 +668,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m1.meterId IS NULL OR m1.meterId LIKE #{meterId})
+                    m1.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m1.meterId IS NULL OR m1.meterId IN
+                    m1.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -714,13 +714,13 @@
         <where>
             <choose>
                 <when test="meterId != null">
-                    (m.meterId IS NULL OR m.meterId LIKE #{meterId})
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    (m.meterId IS NULL OR m.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -1209,13 +1209,13 @@
 
             <choose>
                 <when test="meterId != null">
-                    AND (bm.meterId IS NULL OR bm.meterId LIKE #{meterId})
+                    AND bm.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND (bm.meterId IS NULL OR bm.meterId IN
+                    AND bm.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
@@ -1276,13 +1276,13 @@
 
             <choose>
                 <when test="meterId != null">
-                    AND (bm.meterId IS NULL OR bm.meterId LIKE #{meterId})
+                    AND bm.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND (bm.meterId IS NULL OR bm.meterId IN
+                    AND bm.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
-                    </foreach>)
+                    </foreach>
                 </when>
             </choose>
 
