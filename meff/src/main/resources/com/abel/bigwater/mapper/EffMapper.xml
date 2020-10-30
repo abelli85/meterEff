@@ -426,25 +426,25 @@
         , #{taskEnd} taskEnd
         , m.periodType
         , m.runTime
-        , m2.runDuration
+        , m.runDuration
         , m.taskResult
-        , m2.meterWater
-        , m2.q0v
-        , m2.q1v
-        , m2.q2v
-        , m2.q3v
-        , m2.q4v
-        , m2.qtv
-        , (case when m2.realWater &gt; 0.0 then (m2.meterWater / m2.realWater) * 100 else 0.0 end) AS meterEff
-        , m2.realWater
-        , m2.startFwd
-        , m2.endFwd
+        , m.meterWater
+        , m.q0v
+        , m.q1v
+        , m.q2v
+        , m.q3v
+        , m.q4v
+        , m.qtv
+        , m.meterEff
+        , m.realWater
+        , m.startFwd
+        , m.endFwd
         , m.powerType
         , m.meterBrandId
         , m.sizeId
         , m.sizeName
         , m.modelSize
-        , m2.dataRows
+        , m.dataRows
         , m.decayEff
         , m.q4
         , m.q3
@@ -508,128 +508,10 @@
         GROUP BY meterId
         ) m1
         JOIN bw_eff_meter m ON m.effId = m1.effId
-        JOIN (
-            SELECT
-            m.meterId
-            , SUM(runDuration) runDuration
-            , SUM(meterWater) meterWater
-            , SUM(q0v) q0v
-            , SUM(q1v) q1v
-            , SUM(q2v) q2v
-            , SUM(q3v) q3v
-            , SUM(q4v) q4v
-            , SUM(qtv) qtv
-            , SUM(realWater) realWater
-            , MIN(startFwd) startFwd
-            , MAX(endFwd) endFwd
-            , COUNT(1) dataRows
-            FROM bw_eff_meter m
-            JOIN (
-            SELECT meterId
-            , taskStart
-            , MAX(effId) effId
-            FROM bw_eff_meter
-            <where>
-                <if test="taskId != null">
-                    AND taskId = #{taskId}
-                </if>
-                <if test="periodType != null">
-                    AND periodType LIKE #{periodType}
-                </if>
-                -- AND pointType = 'MODEL'
-
-                <choose>
-                    <when test="meterIdList != null and meterIdList.size > 0">
-                        AND meterId IN
-                        <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
-                            #{mid}
-                        </foreach>
-                    </when>
-                    <when test="meterId != null">
-                        AND meterId LIKE #{meterId}
-                    </when>
-                </choose>
-
-                <if test="powerType != null">
-                    AND powerType LIKE #{powerType}
-                </if>
-                <if test="meterBrandId != null">
-                    AND meterBrandId LIKE #{meterBrandId}
-                </if>
-                <if test="sizeId != null">
-                    AND sizeId LIKE #{sizeId}
-                </if>
-                <if test="modelSize != null">
-                    AND modelSize LIKE #{modelSize}
-                </if>
-
-                <choose>
-                    <when test="taskStart != null and taskEnd != null">
-                        AND taskStart BETWEEN #{taskStart} AND #{taskEnd}
-                    </when>
-                    <when test="taskStart != null">
-                        AND taskStart = #{taskStart}
-                    </when>
-                    <when test="taskEnd != null">
-                        AND taskEnd = #{taskEnd}
-                    </when>
-                </choose>
-            </where>
-            GROUP BY meterId
-            , taskStart
-            ) m1 ON m.effId = m1.effId
-            <where>
-                <if test="taskId != null">
-                    AND m.taskId = #{taskId}
-                </if>
-                <if test="periodType != null">
-                    AND m.periodType LIKE #{periodType}
-                </if>
-
-                <choose>
-                    <when test="meterIdList != null and meterIdList.size > 0">
-                        AND m.meterId IN
-                        <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
-                            #{mid}
-                        </foreach>
-                    </when>
-                    <when test="meterId != null">
-                        AND m.meterId LIKE #{meterId}
-                    </when>
-                </choose>
-
-                <if test="powerType != null">
-                    AND m.powerType LIKE #{powerType}
-                </if>
-                <if test="meterBrandId != null">
-                    AND m.meterBrandId LIKE #{meterBrandId}
-                </if>
-                <if test="sizeId != null">
-                    AND m.sizeId LIKE #{sizeId}
-                </if>
-                <if test="modelSize != null">
-                    AND m.modelSize LIKE #{modelSize}
-                </if>
-
-                <choose>
-                    <when test="taskStart != null and taskEnd != null">
-                        AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
-                    </when>
-                    <when test="taskStart != null">
-                        AND m.taskStart = #{taskStart}
-                    </when>
-                    <when test="taskEnd != null">
-                        AND m.taskEnd = #{taskEnd}
-                    </when>
-                </choose>
-            </where>
-            GROUP BY
-            m.meterId
-        ) m2 ON m1.meterId = m2.meterId
-        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
         <where>
             <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                AND bm.firmId LIKE #{firmId}
             </if>
             <if test="taskId != null">
                 AND m.taskId = #{taskId}
@@ -676,7 +558,7 @@
             </choose>
 
             <if test="matchQ2v > 0.0">
-                AND m2.q2v >= m2.meterWater * #{matchQ2v} / 100.0
+                AND m.q2v >= m.meterWater * #{matchQ2v} / 100.0
             </if>
         </where>
     </select>

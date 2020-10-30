@@ -233,11 +233,11 @@ class EffServiceImplTest {
 
     @Test
     fun testMatchMeter() {
-        val login = TestHelper.login(loginService, "fuzhou").single ?: fail("fail to login")
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
         effService!!.matchMeter(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-            firmId = "76%"
-
+            firmId = "27%"
+            matchQ2v = 80.0
         })).also {
             lgr.info("match meter Day: {}", JSON.toJSONString(it, true))
             assertEquals(0, it.code)
@@ -246,6 +246,7 @@ class EffServiceImplTest {
         effService!!.matchMeter(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
             firmId = "76%"
             periodTypeObj = EffPeriodType.Month
+            matchQ2v = 10.0
         })).also {
             lgr.info("match meter Month: {}", JSON.toJSONString(it, true))
             assertEquals(0, it.code)
