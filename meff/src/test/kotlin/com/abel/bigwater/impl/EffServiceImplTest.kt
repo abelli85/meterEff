@@ -240,6 +240,7 @@ class EffServiceImplTest {
 
         })).also {
             lgr.info("match meter Day: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
 
         effService!!.matchMeter(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
@@ -247,6 +248,7 @@ class EffServiceImplTest {
             periodTypeObj = EffPeriodType.Month
         })).also {
             lgr.info("match meter Month: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
     }
 

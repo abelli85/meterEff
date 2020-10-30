@@ -536,7 +536,7 @@
                 <if test="periodType != null">
                     AND periodType LIKE #{periodType}
                 </if>
-                AND pointType = 'MODEL'
+                -- AND pointType = 'MODEL'
 
                 <choose>
                     <when test="meterIdList != null and meterIdList.size > 0">
