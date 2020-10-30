@@ -187,16 +187,17 @@ class EffServiceImplTest {
 
     @Test
     fun listFailureEff() {
-        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
         try {
-            effService!!.createEffTask(BwHolder(TestHelper.buildLoginRequest(login), task)).also {
-                lgr.info("create task: {}", JSON.toJSONString(it, true))
+            effService!!.listEffFailure(BwHolder(TestHelper.buildLoginRequest(login), EffParam())).also {
+                lgr.info("list failure-eff: {}", JSON.toJSONString(it, true))
                 assertEquals(0, it.code)
             }
 
             effService!!.listEffFailure(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-                meterId = "fz-%"
+                taskStart = LocalDate(2020, 7, 1).toDate()
+                taskEnd = LocalDate(2020, 8, 1).toDate()
             })).also {
                 lgr.info("list failure-eff: {}", JSON.toJSONString(it, true))
                 assertEquals(0, it.code)
@@ -221,13 +222,17 @@ class EffServiceImplTest {
             firmId = "76%"
         })).also {
             lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
 
         effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
             firmId = "76%"
             periodTypeObj = EffPeriodType.Month
+            taskStart = LocalDate(2020, 7, 1).toDate()
+            taskEnd = LocalDate(2020, 8, 1).toDate()
         })).also {
             lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
     }
 

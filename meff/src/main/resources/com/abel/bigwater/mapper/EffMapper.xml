@@ -189,7 +189,7 @@
 
         <where>
             <if test="firmId != null">
-                t.firmId LIKE #{firmId}
+                bm.firmId LIKE #{firmId}
             </if>
             <if test="effId != null">
                 AND m.effId = #{effId}
@@ -232,6 +232,18 @@
             </if>
 
             <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
                 <when test="createDateStart != null and createDateEnd != null">
                     AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
                 </when>
@@ -243,18 +255,6 @@
                 </when>
                 <when test="createDateEnd != null">
                     AND t.createDate &lt;= #{createDateEnd}
-                </when>
-            </choose>
-
-            <choose>
-                <when test="taskStart != null and taskEnd != null">
-                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
-                </when>
-                <when test="taskStart != null">
-                    AND t.taskStart = #{taskStart}
-                </when>
-                <when test="taskEnd != null">
-                    AND t.taskEnd = #{taskEnd}
                 </when>
             </choose>
 
@@ -318,9 +318,14 @@
         , m.qr2
         , m.qr3
         , m.qr4
+
+        , bm.location
+        , bm.firmId
+        , bf.firmName
         FROM bw_eff_failure m
-        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_firm bf ON bm.firmId = bf.firmId
 
         <where>
             <if test="firmId != null">
@@ -372,6 +377,18 @@
             </if>
 
             <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
                 <when test="createDateStart != null and createDateEnd != null">
                     AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
                 </when>
@@ -383,18 +400,6 @@
                 </when>
                 <when test="createDateEnd != null">
                     AND t.createDate &lt;= #{createDateEnd}
-                </when>
-            </choose>
-
-            <choose>
-                <when test="taskStart != null and taskEnd != null">
-                    AND t.taskStart BETWEEN #{taskStart} AND #{taskEnd}
-                </when>
-                <when test="taskStart != null">
-                    AND t.taskStart = #{taskStart}
-                </when>
-                <when test="taskEnd != null">
-                    AND t.taskEnd = #{taskEnd}
                 </when>
             </choose>
 
