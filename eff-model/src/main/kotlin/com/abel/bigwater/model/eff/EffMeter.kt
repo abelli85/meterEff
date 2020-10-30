@@ -192,6 +192,12 @@ data class EffMeter(
     var modelSize: String? = null
 
     /**
+     * 安装地址
+     * the location to set
+     */
+    var location: String? = null
+
+    /**
      * 引用的数据行数
      */
     var dataRows: Int = 0
