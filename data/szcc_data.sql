@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/10/24 21:42:34                          */
+/* Created on:     2020/10/30 19:28:15                          */
 /*==============================================================*/
 
 
@@ -84,6 +84,12 @@ drop index INDEX_DEVICE_SIZE
 /
 
 drop table SZV_DATA_DEVICE cascade constraints
+/
+
+drop index "idx_time_meter"
+/
+
+drop table "szv_meter_info" cascade constraints
 /
 
 drop sequence SEQ_DATA
@@ -178,6 +184,45 @@ create table SZV_DATA_DEVICE
 create index INDEX_DEVICE_SIZE on SZV_DATA_DEVICE (
    DEVICECODE ASC,
    DIAMETERNAME ASC
+)
+/
+
+/*==============================================================*/
+/* Table: "szv_meter_info"                                      */
+/*==============================================================*/
+create table "szv_meter_info" 
+(
+   "deptId"             NUMBER(6),
+   "firmId"             VARCHAR2(50),
+   "subFirmId"          VARCHAR2(50),
+   "meterCode"          VARCHAR2(12)         not null,
+   "userName"           VARCHAR2(100),
+   "userAddr"           VARCHAR2(200),
+   "meterBrandName"     VARCHAR2(50),
+   "modelSize"          VARCHAR2(20),
+   "sizeName"           VARCHAR2(20),
+   "userType"           VARCHAR2(32767),
+   "meterType"          VARCHAR2(150),
+   "installDate"        DATE,
+   "lastInstallDate"    DATE,
+   "readDate"           DATE,
+   "readForward"        NUMBER(10),
+   "businessYearMonth"  NUMBER(6),
+   "lastReadDate"       DATE,
+   "lastForward"        NUMBER(10),
+   "thisForward"        NUMBER(10),
+   "thisReadingTime"    DATE                 not null,
+   "readWater"          NUMBER,
+   constraint PK_SZV_METER_INFO primary key ("meterCode", "thisReadingTime")
+)
+/
+
+/*==============================================================*/
+/* Index: "idx_time_meter"                                      */
+/*==============================================================*/
+create index "idx_time_meter" on "szv_meter_info" (
+   "thisReadingTime" ASC,
+   "meterCode" ASC
 )
 /
 
