@@ -1,9 +1,7 @@
 package com.abel.bigwater.api
 
-import com.abel.bigwater.model.eff.EffMeter
-import com.abel.bigwater.model.eff.EffMeterPoint
-import com.abel.bigwater.model.eff.EffTask
-import com.abel.bigwater.model.eff.VcEffDecay
+import com.abel.bigwater.model.eff.*
+import com.abel.bigwater.model.zone.ZoneMeter
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
 import javax.ws.rs.Consumes
 import javax.ws.rs.POST
@@ -184,6 +182,11 @@ interface EffService {
      * @see EffParam.meterIdList
      * @see EffParam.taskStart - can be null
      * @see EffParam.taskEnd - can be null
+     *
+     * 填充计量点. 按照顺序:
+     * @see ZoneMeter.decayId - 先检索老化, 如果检索不到, 则检索:
+     * @see VcMeterVerifyPoint
+     * @see ZoneMeter.q1 - 2/3/4 如果填充了, 则总是被使用.
      */
     @POST
     @Path(PATH_BUILD_METER_EFF)
