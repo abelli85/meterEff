@@ -6,6 +6,7 @@ import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.DataRange
 import com.abel.bigwater.model.PowerType
 import com.abel.bigwater.model.eff.*
+import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -609,6 +610,11 @@ class EffServiceImpl : EffService {
      * @see EffParam.meterIdList
      * @see EffParam.taskStart - can be null
      * @see EffParam.taskEnd - can be null
+     *
+     * 填充计量点. 按照顺序:
+     * @see ZoneMeter.decayId - 先检索老化, 如果检索不到, 则检索:
+     * @see VcMeterVerifyPoint
+     * @see ZoneMeter.q1 - 2/3/4 如果填充了, 则总是被使用.
      */
     override fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
         if (holder.lr?.sessionId.isNullOrBlank()

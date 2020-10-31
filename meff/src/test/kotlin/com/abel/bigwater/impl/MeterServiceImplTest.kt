@@ -292,6 +292,7 @@ class MeterServiceImplTest {
             meterName = "测试水表01"
             sizeId = 100
             sizeName = "DN100"
+            decayId = 44
         }
 
         try {

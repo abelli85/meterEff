@@ -1,6 +1,7 @@
 package com.abel.bigwater.impl
 
 import com.abel.bigwater.api.*
+import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.*
 import com.abel.bigwater.model.zone.ZoneMeter
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Service
 open class MeterServiceImpl : MeterService {
     @Autowired
     var meterMapper: MeterMapper? = null
+
+    @Autowired
+    var effMapper: EffMapper? = null
 
     @Autowired
     private var loginManager: LoginManager? = null
@@ -404,7 +408,11 @@ open class MeterServiceImpl : MeterService {
     }
 
     /**
-     * 大表列表.
+     * 返回单只大表的详情, 包括:
+     * @see ZoneMeter.verifyList - 检定结果列表
+     * @see ZoneMeter.pointList - 检定点列表
+     * @see ZoneMeter.effDecay - 绑定的老化模板
+     *
      * 如果填充了如下字段, 则返回的水表包含DMA信息:
      * @see MeterParam.dmaId
      * @see MeterParam.dmaName
@@ -445,6 +453,11 @@ open class MeterServiceImpl : MeterService {
 
             meter!!.verifyList = meterMapper!!.listMeterVerify(dp)
             meter.pointList = meterMapper!!.listVerifyPoint(dp)
+            if (meter.decayId ?: 0 > 0) {
+                meter.effDecay = effMapper!!.selectEffDecay(EffParam().apply {
+                    decayId = meter.decayId
+                }).firstOrNull()
+            }
 
             return BwResult(meter)
         } catch (ex: Exception) {
