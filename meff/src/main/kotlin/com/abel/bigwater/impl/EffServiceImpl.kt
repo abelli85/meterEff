@@ -674,8 +674,9 @@ class EffServiceImpl : EffService {
                 if (it.powerTypeObj != PowerType.MANUAL) {
                     effTaskBean!!.buildMonthEff(DataRange().apply {
                         meterId = it.meterId
-                        minTime = effList.minOf { e1 -> e1.taskStart!! }
-                        maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
+                        val mlst = lst.filter { e1 -> e1.taskStart != null && e1.taskEnd != null }
+                        minTime = mlst.minOfOrNull { e1 -> e1.taskStart!! }
+                        maxTime = mlst.maxOfOrNull { e1 -> e1.taskEnd!! }
                     })
                 }
 
