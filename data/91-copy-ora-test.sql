@@ -119,3 +119,107 @@ create or replace directory tmp as '/tmp/';
 grant read, write on directory tmp to public;
 execute copy_szcc(1201, 1250);
 /
+
+
+-- 账册
+insert into szv_firm(deptId, subFirm, subBranch, rootDeptId)
+select distinct deptId, "分公司", "水务所", rootDeptId
+from ucis.v_jsb_metercheck@ucislnk
+/
+
+INSERT INTO SZV_USERINFO(
+DEPTID       
+, SUBFIRM      
+, SUBBRANCH    
+, ROOTDEPTID   
+, METERCODE    
+, USERNAME     
+, USERADDR     
+, METERBRAND   
+, MODELSIZE    
+, SIZENAME     
+, USETYPE      
+, METERTYPE    
+, FIRSTINSTALL 
+, RECENTINSTALL
+, RECENTREAD   
+, RECENTFWD    
+)
+SELECT DISTINCT
+DEPTID
+, "分公司"
+, "水务所"
+, ROOTDEPTID   
+, "水表编号"
+, "客户名称"
+, "用水地址"
+, "水表品牌"
+, "水表型号"
+, "水表口径"
+, SUBSTR("用水类型", 0, 500)
+, "水表类型"
+, "初装日期"
+, "最近安装日期"
+, "最近抄表日期"
+, "最近抄表行度"
+FROM UCIS.V_JSB_METERCHECK@UCISLNK
+/
+
+INSERT INTO SZV_METER_READ
+( DEPTID
+, SUBFIRM
+, SUBBRANCH
+, ROOTDEPTID
+, METERCODE
+, USERNAME
+, USERADDR
+, METERBRAND
+, MODELSIZE
+, SIZENAME
+, USETYPE
+, METERTYPE
+, FIRSTINSTALL
+, RECENTINSTALL
+, RECENTREAD
+, RECENTFWD
+, BUSINESSYEARMONTH
+, LASTREAD
+, LASTFWD
+, THISFWD
+, THISREADINGTIME
+, READWATER)
+SELECT
+    DEPTID
+     , "分公司"
+     , "水务所"
+     , ROOTDEPTID
+     , "水表编号"
+     , "客户名称"
+     , "用水地址"
+     , "水表品牌"
+     , "水表型号"
+     , "水表口径"
+     , SUBSTR("用水类型", 0, 500)
+     , "水表类型"
+     , "初装日期"
+     , "最近安装日期"
+     , "最近抄表日期"
+     , "最近抄表行度"
+     , "BUSINESSYEARMONTH"
+     , "上次抄表日期"
+     , "上次抄表行度"
+     , "本次抄表行度"
+     , "THISREADINGTIME"
+     , "抄表水量"
+FROM UCIS.V_JSB_METERCHECK@UCISLNK
+WHERE ROOTDEPTID = 1
+AND "水表编号" = ""
+/
+
+
+
+
+
+
+
+

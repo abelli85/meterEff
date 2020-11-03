@@ -35,3 +35,34 @@ CREATE FOREIGN TABLE szv_data(
     diameterName character varying(60) not null)
     Server jdora
     options (schema 'TEST', "table" 'SZV_DATA');
+
+
+CREATE FOREIGN TABLE szv_firm(
+    fid bigint options (key 'true') not null,
+    deptId numeric(6) not null ,
+    subFirm character varying(50),
+    subBranch character varying(50),
+    rootDeptId numeric(6) not null )
+    Server jdora
+    options (schema 'TEST', "table" 'SZV_FIRM');
+
+CREATE FOREIGN TABLE szv_userInfo(
+    muid bigint options (key 'true') not null,
+    deptId numeric(6) not null ,
+    subFirm character varying(50),
+    subBranch character varying(50),
+    rootDeptId numeric(6) not null,
+    meterCode character varying(12) not null ,
+    userName character varying(100) not null ,
+    userAddr character varying(200) not null ,
+    meterBrand character varying(50),
+    modelSize character varying(20) not null ,
+    sizeName character varying(20) not null ,
+    useType character varying(500),
+    meterType character varying(150),
+    firstInstall timestamp with time zone not null,
+    recentInstall timestamp with time zone,
+    recentRead timestamp with time zone,
+    recentFwd numeric(10))
+    Server jdora
+    options (schema 'TEST', "table" 'SZV_USERINFO');

@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/10/30 19:28:15                          */
+/* Created on:     2020/11/3 17:11:04                           */
 /*==============================================================*/
 
 
@@ -65,6 +65,15 @@ drop trigger "tib_szv_data"
 drop trigger "tib_szv_data_device"
 /
 
+drop trigger "tib_szv_firm"
+/
+
+drop trigger "tib_szv_meter_read"
+/
+
+drop trigger "tib_szv_userinfo"
+/
+
 drop index INDEX_DATA_ID
 /
 
@@ -86,16 +95,34 @@ drop index INDEX_DEVICE_SIZE
 drop table SZV_DATA_DEVICE cascade constraints
 /
 
-drop index "idx_time_meter"
+drop table SZV_FIRM cascade constraints
 /
 
-drop table "szv_meter_info" cascade constraints
+drop index IDX_METER_READ
+/
+
+drop table SZV_METER_READ cascade constraints
+/
+
+drop index IDX_USER_DEPT
+/
+
+drop table SZV_USERINFO cascade constraints
 /
 
 drop sequence SEQ_DATA
 /
 
+drop sequence SEQ_DEPT
+/
+
 drop sequence SEQ_DEVICE
+/
+
+drop sequence SEQ_METER_READ
+/
+
+drop sequence SEQ_MUSER
 /
 
 create sequence SEQ_DATA
@@ -103,7 +130,22 @@ increment by 1
 start with 1
 /
 
+create sequence SEQ_DEPT
+increment by 1
+start with 1
+/
+
 create sequence SEQ_DEVICE
+increment by 1
+start with 1
+/
+
+create sequence SEQ_METER_READ
+increment by 1
+start with 1
+/
+
+create sequence SEQ_MUSER
 increment by 1
 start with 1
 /
@@ -188,41 +230,95 @@ create index INDEX_DEVICE_SIZE on SZV_DATA_DEVICE (
 /
 
 /*==============================================================*/
-/* Table: "szv_meter_info"                                      */
+/* Table: SZV_FIRM                                              */
 /*==============================================================*/
-create table "szv_meter_info" 
+create table SZV_FIRM 
 (
-   "deptId"             NUMBER(6),
-   "firmId"             VARCHAR2(50),
-   "subFirmId"          VARCHAR2(50),
-   "meterCode"          VARCHAR2(12)         not null,
-   "userName"           VARCHAR2(100),
-   "userAddr"           VARCHAR2(200),
-   "meterBrandName"     VARCHAR2(50),
-   "modelSize"          VARCHAR2(20),
-   "sizeName"           VARCHAR2(20),
-   "userType"           VARCHAR2(32767),
-   "meterType"          VARCHAR2(150),
-   "installDate"        DATE,
-   "lastInstallDate"    DATE,
-   "readDate"           DATE,
-   "readForward"        NUMBER(10),
-   "businessYearMonth"  NUMBER(6),
-   "lastReadDate"       DATE,
-   "lastForward"        NUMBER(10),
-   "thisForward"        NUMBER(10),
-   "thisReadingTime"    DATE                 not null,
-   "readWater"          NUMBER,
-   constraint PK_SZV_METER_INFO primary key ("meterCode", "thisReadingTime")
+   FID                  NUMBER(38)           not null,
+   DEPTID               NUMBER(6)            not null,
+   SUBFIRM              VARCHAR2(50),
+   SUBBRANCH            VARCHAR2(50),
+   ROOTDEPTID           NUMBER(6)            not null,
+   constraint PK_SZV_FIRM primary key (FID)
 )
 /
 
 /*==============================================================*/
-/* Index: "idx_time_meter"                                      */
+/* Table: SZV_METER_READ                                        */
 /*==============================================================*/
-create index "idx_time_meter" on "szv_meter_info" (
-   "thisReadingTime" ASC,
-   "meterCode" ASC
+create table SZV_METER_READ 
+(
+   READID               NUMBER(38)           not null,
+   DEPTID               NUMBER(6)            not null,
+   SUBFIRM              VARCHAR2(50),
+   SUBBRANCH            VARCHAR2(50),
+   ROOTDEPTID           NUMBER(6)            not null,
+   METERCODE            VARCHAR2(12)         not null,
+   USERNAME             NVARCHAR2(100)       not null,
+   USERADDR             VARCHAR2(200)        not null,
+   METERBRAND           NVARCHAR2(50),
+   MODELSIZE             VARCHAR2(20)        not null,
+   SIZENAME              VARCHAR2(20)        not null,
+   USETYPE              NVARCHAR2(500),
+   METERTYPE             VARCHAR2(150),
+   FIRSTINSTALL         DATE                 not null,
+   RECENTINSTALL        DATE,
+   RECENTREAD           DATE,
+   RECENTFWD            NUMBER(10),
+   BUSINESSYEARMONTH    NUMBER(6),
+   LASTREAD             DATE,
+   LASTFWD              NUMBER(10),
+   THISFWD              NUMBER(10),
+   THISREADINGTIME      DATE,
+   READWATER            NUMBER,
+   constraint PK_SZV_METER_READ primary key (READID)
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_METER_READ                                        */
+/*==============================================================*/
+create index IDX_METER_READ on SZV_METER_READ (
+   ROOTDEPTID ASC,
+   DEPTID ASC,
+   METERCODE ASC,
+   THISREADINGTIME ASC
+)
+/
+
+/*==============================================================*/
+/* Table: SZV_USERINFO                                          */
+/*==============================================================*/
+create table SZV_USERINFO 
+(
+   MUID                 NUMBER(38)           not null,
+   DEPTID               NUMBER(6)            not null,
+   SUBFIRM              VARCHAR2(50),
+   SUBBRANCH            VARCHAR2(50),
+   ROOTDEPTID           NUMBER(6)            not null,
+   METERCODE            VARCHAR2(12)         not null,
+   USERNAME             NVARCHAR2(100)       not null,
+   USERADDR             VARCHAR2(200)        not null,
+   METERBRAND           NVARCHAR2(50),
+   MODELSIZE             VARCHAR2(20)        not null,
+   SIZENAME              VARCHAR2(20)        not null,
+   USETYPE              NVARCHAR2(500),
+   METERTYPE             VARCHAR2(150),
+   FIRSTINSTALL         DATE                 not null,
+   RECENTINSTALL        DATE,
+   RECENTREAD           DATE,
+   RECENTFWD            NUMBER(10),
+   constraint PK_SZV_USERINFO primary key (MUID)
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_USER_DEPT                                         */
+/*==============================================================*/
+create index IDX_USER_DEPT on SZV_USERINFO (
+   ROOTDEPTID ASC,
+   DEPTID ASC,
+   METERCODE ASC
 )
 /
 
@@ -260,6 +356,69 @@ declare
 begin
     --  Column "DEVICEID" uses sequence SEQ_DEVICE
     select SEQ_DEVICE.NEXTVAL INTO :new.DEVICEID from dual;
+
+--  Errors handling
+exception
+    when integrity_error then
+       raise_application_error(errno, errmsg);
+end;
+/
+
+
+create trigger "tib_szv_firm" before insert
+on SZV_FIRM for each row
+declare
+    integrity_error  exception;
+    errno            integer;
+    errmsg           char(200);
+    dummy            integer;
+    found            boolean;
+
+begin
+    --  Column "FID" uses sequence SEQ_DEPT
+    select SEQ_DEPT.NEXTVAL INTO :new.FID from dual;
+
+--  Errors handling
+exception
+    when integrity_error then
+       raise_application_error(errno, errmsg);
+end;
+/
+
+
+create trigger "tib_szv_meter_read" before insert
+on SZV_METER_READ for each row
+declare
+    integrity_error  exception;
+    errno            integer;
+    errmsg           char(200);
+    dummy            integer;
+    found            boolean;
+
+begin
+    --  Column "READID" uses sequence SEQ_METER_READ
+    select SEQ_METER_READ.NEXTVAL INTO :new.READID from dual;
+
+--  Errors handling
+exception
+    when integrity_error then
+       raise_application_error(errno, errmsg);
+end;
+/
+
+
+create trigger "tib_szv_userinfo" before insert
+on SZV_USERINFO for each row
+declare
+    integrity_error  exception;
+    errno            integer;
+    errmsg           char(200);
+    dummy            integer;
+    found            boolean;
+
+begin
+    --  Column "MUID" uses sequence SEQ_MUSER
+    select SEQ_MUSER.NEXTVAL INTO :new.MUID from dual;
 
 --  Errors handling
 exception

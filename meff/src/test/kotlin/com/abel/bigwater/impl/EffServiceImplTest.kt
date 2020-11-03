@@ -216,17 +216,19 @@ class EffServiceImplTest {
 
     @Test
     fun testListMeterEff() {
-        val login = TestHelper.login(loginService, "fuzhou").single ?: fail("fail to login")
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
         effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-            firmId = "76%"
+            firmId = "27%"
+            meterId = "164"
         })).also {
             lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
             assertEquals(0, it.code)
         }
 
         effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
-            firmId = "76%"
+            firmId = "27%"
+            meterIdList = listOf("164")
             periodTypeObj = EffPeriodType.Month
             taskStart = LocalDate(2020, 7, 1).toDate()
             taskEnd = LocalDate(2020, 8, 1).toDate()

@@ -97,3 +97,58 @@ SELECT zd.deviceCode
      , '27'
 FROM szv_data zd
 WHERE dataId BETWEEN 20000000 AND 30000000;
+
+
+UPDATE bw_meter m
+    SET metername = mu.userName,
+        location = mu.userAddr,
+        sizename = mu.sizename,
+        modelsize = mu.modelsize,
+        meterbrandid = mu.meterBrand,
+        usertype = substr(mu.useType, 0, 45),
+        typeid = mu.meterType,
+        installdate = mu.firstInstall,
+        onlinedate = mu.recentInstall,
+        updatedate = mu.recentRead,
+        servicepopulation = mu.recentFwd
+FROM szv_userinfo mu
+WHERE firmId like '27%'
+  and to_number(meterid, '99999') = mu.muid
+and mu.muid < 1;
+
+
+INSERT INTO bw_eff_decay(
+meterbrandid
+, meterbrandname
+, sizeid
+, sizename
+, modelsize
+, totalfwd
+, decayeff
+, q1
+, q2
+, q3
+, q1r
+, q2r
+, q3r)
+values(
+'NB'
+, 'NB'
+, 100
+, 'DN100'
+, 'WPD'
+, 1000000
+, 10
+, 1
+, 1.6
+, 100
+, 5
+, 10
+, 15);
+
+
+UPDATE bw_meter
+SET decayId = 1
+WHERE decayId IS NULL;
+
+
