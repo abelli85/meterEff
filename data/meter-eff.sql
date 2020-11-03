@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/10/29 15:42:20                          */
+/* Created on:     2020/11/3 21:00:09                           */
 /*==============================================================*/
 
 
@@ -184,17 +184,6 @@ drop index idx_work_holi_date;
 
 drop table vc_workday_holiday;
 
-drop type serial8;
-
-/*==============================================================*/
-/* Domain: serial8                                              */
-/*==============================================================*/
-create type serial8 (
-);
-
-comment on type serial8 is
-'remove it in SQL!!';
-
 /*==============================================================*/
 /* Table: bw_config                                             */
 /*==============================================================*/
@@ -328,7 +317,7 @@ onlineDate
 /* Table: bw_dma_loss                                           */
 /*==============================================================*/
 create table bw_dma_loss (
-   wid                  serial8              not null,
+   wid                  SERIAL8              not null,
    dmaId                VARCHAR(45)          not null,
    statDate             TIMESTAMP WITH TIME ZONE not null,
    durationDay          INT4                 not null default 1,
@@ -620,7 +609,7 @@ taskStart
 /* Table: bw_eff_task                                           */
 /*==============================================================*/
 create table bw_eff_task (
-   taskId               serial8              not null,
+   taskId               SERIAL8              not null,
    taskName             VARCHAR(45)          not null,
    createBy             VARCHAR(45)          null,
    createDate           TIMESTAMP WITH TIME ZONE null,
@@ -1038,7 +1027,7 @@ create table bw_user (
 /* Table: bw_user_login                                         */
 /*==============================================================*/
 create table bw_user_login (
-   wid                  serial8              not null,
+   wid                  SERIAL8              not null,
    sessionId            VARCHAR(200)         not null,
    userId               VARCHAR(45)          not null,
    loginTime            TIMESTAMP WITH TIME ZONE not null,
@@ -1074,7 +1063,7 @@ loginTime
 /* Table: bw_user_oper                                          */
 /*==============================================================*/
 create table bw_user_oper (
-   operId               serial8              not null,
+   operId               SERIAL8              not null,
    userId               VARCHAR(45)          not null,
    operTime             TIMESTAMP WITH TIME ZONE not null,
    returnTime           TIMESTAMP WITH TIME ZONE null,
@@ -1266,7 +1255,7 @@ create table vc_meter_type (
 /* Table: vc_meter_verify_point                                 */
 /*==============================================================*/
 create table vc_meter_verify_point (
-   wid                  serial8              not null,
+   wid                  SERIAL8              not null,
    pointName            varchar(20)          null,
    pointNo              INT4                 null,
    pointFlow            DECIMAL(15,3)        not null,
@@ -1331,7 +1320,7 @@ pointNo
 /* Table: vc_meter_verify_result                                */
 /*==============================================================*/
 create table vc_meter_verify_result (
-   wid                  serial8              not null,
+   wid                  SERIAL8              not null,
    meterId              varchar(45)          not null,
    batchId              varchar(45)          not null,
    tempId               varchar(32)          null,
@@ -1578,7 +1567,7 @@ verifyId
 /* Table: vc_workday_holiday                                    */
 /*==============================================================*/
 create table vc_workday_holiday (
-   wid                  serial8              not null,
+   wid                  SERIAL8              not null,
    startDate            DATE                 not null,
    endDate              DATE                 not null,
    yr                   INT4                 not null,
