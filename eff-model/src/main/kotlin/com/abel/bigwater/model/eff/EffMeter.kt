@@ -203,9 +203,26 @@ data class EffMeter(
     var dataRows: Int = 0
 
     /**
-     * 引用的衰减系数
+     * 老化的计量效率
      */
     var decayEff: String? = null
+
+    /**
+     * 示值误差来源
+     */
+    var srcError: String? = null
+
+    /**
+     * 示值误差来源
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var srcErrorObj: SourceErrorType? = null
+        get() = if (srcError.isNullOrBlank()) null else SourceErrorType.values().firstOrNull { it.name == srcError }
+        set(value) {
+            field = value
+            srcError = field?.name
+        }
 
     /**
      * Q4
@@ -258,7 +275,7 @@ data class EffMeter(
     /**
      * 该品牌、型号、口径水表对应行度下的老化计量效率
      */
-    var effDecay: VcEffDecay? = null
+    var decayObj: VcEffDecay? = null
 
     /**
      * 分析无效后的处理结果

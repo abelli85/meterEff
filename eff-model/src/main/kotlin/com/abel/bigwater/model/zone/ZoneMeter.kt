@@ -1,6 +1,7 @@
 package com.abel.bigwater.model.zone
 
 import com.abel.bigwater.model.BwMeter
+import com.abel.bigwater.model.eff.SourceErrorType
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 
@@ -27,4 +28,21 @@ class ZoneMeter : BwMeter() {
     @JsonIgnore
     @JSONField(serialize = false, deserialize = false)
     var subFirmId: String? = null
+
+    /**
+     * 示值误差来源
+     */
+    var srcError: String? = null
+
+    /**
+     * 示值误差来源
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var srcErrorObj: SourceErrorType? = null
+        get() = if (srcError.isNullOrBlank()) null else SourceErrorType.values().firstOrNull { it.name == srcError }
+        set(value) {
+            field = value
+            srcError = field?.name
+        }
 }

@@ -121,7 +121,7 @@ interface MeterService {
      * 返回单只大表的详情, 包括:
      * @see ZoneMeter.verifyList - 检定结果列表
      * @see ZoneMeter.pointList - 检定点列表
-     * @see ZoneMeter.effDecay - 绑定的老化模板
+     * @see ZoneMeter.decayObj - 绑定的老化模板
      *
      * 如果填充了如下字段, 则返回的水表包含DMA信息:
      * @see MeterParam.dmaId

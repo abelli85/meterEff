@@ -402,7 +402,7 @@ open class BwMeter : BwBase() {
     /**
      * 该品牌、型号、口径水表对应行度下的老化计量效率
      */
-    var effDecay: VcEffDecay? = null
+    var decayObj: VcEffDecay? = null
 
     override fun hashCode(): Int {
         return meterId?.hashCode() ?: 0
