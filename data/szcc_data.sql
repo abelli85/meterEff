@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/11/3 17:11:04                           */
+/* Created on:     2020/11/4 17:51:08                           */
 /*==============================================================*/
 
 
@@ -254,10 +254,14 @@ create table SZV_METER_READ
    SUBBRANCH            VARCHAR2(50),
    ROOTDEPTID           NUMBER(6)            not null,
    METERCODE            VARCHAR2(12)         not null,
+   METERSERIAL          VARCHAR2(50)         not null,
+   USERSTATUSID         NUMERIC(3)           not null,
+   USERWATERMETERSTATUSID NUMERIC(3)           not null,
    USERNAME             NVARCHAR2(100)       not null,
    USERADDR             VARCHAR2(200)        not null,
    METERBRAND           NVARCHAR2(50),
    MODELSIZE             VARCHAR2(20)        not null,
+   SIZEID               NUMBER(10),
    SIZENAME              VARCHAR2(20)        not null,
    USETYPE              NVARCHAR2(500),
    METERTYPE             VARCHAR2(150),
@@ -297,10 +301,14 @@ create table SZV_USERINFO
    SUBBRANCH            VARCHAR2(50),
    ROOTDEPTID           NUMBER(6)            not null,
    METERCODE            VARCHAR2(12)         not null,
+   METERSERIAL          VARCHAR2(50)         not null,
+   USERSTATUSID         NUMERIC(3)           not null,
+   USERWATERMETERSTATUSID NUMERIC(3)           not null,
    USERNAME             NVARCHAR2(100)       not null,
    USERADDR             VARCHAR2(200)        not null,
    METERBRAND           NVARCHAR2(50),
    MODELSIZE             VARCHAR2(20)        not null,
+   SIZEID               NUMBER(10),
    SIZENAME              VARCHAR2(20)        not null,
    USETYPE              NVARCHAR2(500),
    METERTYPE             VARCHAR2(150),

@@ -132,11 +132,15 @@ DEPTID
 , SUBFIRM      
 , SUBBRANCH    
 , ROOTDEPTID   
-, METERCODE    
+, METERCODE
+, METERSERIAL
+, USERSTATUSID
+, USERWATERMETERSTATUSID
 , USERNAME     
 , USERADDR     
 , METERBRAND   
-, MODELSIZE    
+, MODELSIZE
+, SIZEID
 , SIZENAME     
 , USETYPE      
 , METERTYPE    
@@ -151,10 +155,14 @@ DEPTID
 , "水务所"
 , ROOTDEPTID   
 , "水表编号"
+, "表码"
+, USERSTATUSID
+, USERWATERMETERSTATUSID
 , "客户名称"
 , "用水地址"
 , "水表品牌"
 , "水表型号"
+, DIAMETERVALUE
 , "水表口径"
 , SUBSTR("用水类型", 0, 500)
 , "水表类型"
@@ -171,10 +179,14 @@ INSERT INTO SZV_METER_READ
 , SUBBRANCH
 , ROOTDEPTID
 , METERCODE
+, METERSERIAL
+, USERSTATUSID
+, USERWATERMETERSTATUSID
 , USERNAME
 , USERADDR
 , METERBRAND
 , MODELSIZE
+, SIZEID
 , SIZENAME
 , USETYPE
 , METERTYPE
@@ -194,10 +206,14 @@ SELECT
      , "水务所"
      , ROOTDEPTID
      , "水表编号"
+     , "表码"
+     , USERSTATUSID
+     , USERWATERMETERSTATUSID
      , "客户名称"
      , "用水地址"
      , "水表品牌"
      , "水表型号"
+     , DIAMETERVALUE
      , "水表口径"
      , SUBSTR("用水类型", 0, 500)
      , "水表类型"
@@ -212,10 +228,29 @@ SELECT
      , "THISREADINGTIME"
      , "抄表水量"
 FROM UCIS.V_JSB_METERCHECK@UCISLNK
-WHERE ROOTDEPTID = 1
-AND "水表编号" = ""
+WHERE DEPTID = 723 AND ROOTDEPTID = 210
+AND "水表编号" = '141030005301'
 /
 
+desc UCIS.V_JSB_METERCHECK@UCISLNK;
+
+select count(distinct metercode) mcnt from szv_userinfo;
+
+select substr(metertype, 0, 20) mt,
+       count(distinct metercode) scnt
+from szv_userinfo m1
+where metercode in (
+    select metercode from szv_userinfo)
+group by metertype;
+
+select substr(metertype, 0, 20) mt,
+       sizeid,
+       substr(sizename, 0, 10) sn,
+       count(distinct metercode) scnt
+from szv_userinfo m1
+where metercode in (
+select metercode from szv_userinfo)
+group by metertype, sizeid, sizename;
 
 
 
