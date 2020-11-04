@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/11/4 17:51:08                           */
+/* Created on:     2020/11/4 21:17:27                           */
 /*==============================================================*/
 
 
@@ -74,10 +74,13 @@ drop trigger "tib_szv_meter_read"
 drop trigger "tib_szv_userinfo"
 /
 
-drop index INDEX_DATA_ID
+drop index IDX_DATA_METER_ID
 /
 
-drop index INDEX_DATA_SIZE
+drop index IDX_DATA_METER_TS
+/
+
+drop index INDEX_DATA_ID
 /
 
 drop index INDEX_DATA_TS
@@ -87,6 +90,15 @@ drop index INDEX_DATA_DEVICE
 /
 
 drop table SZV_DATA cascade constraints
+/
+
+drop index IDX_DEVICE_CODE
+/
+
+drop index IDX_DEVICE_METER_CODE
+/
+
+drop index IDX_DEVICE_METER_SIZE
 /
 
 drop index INDEX_DEVICE_SIZE
@@ -157,6 +169,7 @@ create table SZV_DATA
 (
    DATAID               NUMBER(38)           not null,
    DEVICECODE           VARCHAR2(200),
+   METERCODE            VARCHAR2(200),
    PIPE                 NUMBER(10),
    POSTDATE             NUMBER(20),
    POSTDATETODATE       DATE,
@@ -186,20 +199,28 @@ create index INDEX_DATA_TS on SZV_DATA (
 /
 
 /*==============================================================*/
-/* Index: INDEX_DATA_SIZE                                       */
+/* Index: INDEX_DATA_ID                                         */
 /*==============================================================*/
-create index INDEX_DATA_SIZE on SZV_DATA (
-   DIAMETERNAME ASC,
+create index INDEX_DATA_ID on SZV_DATA (
    DEVICECODE ASC,
+   DATAID ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_DATA_METER_TS                                     */
+/*==============================================================*/
+create index IDX_DATA_METER_TS on SZV_DATA (
+   METERCODE ASC,
    POSTDATETODATE ASC
 )
 /
 
 /*==============================================================*/
-/* Index: INDEX_DATA_ID                                         */
+/* Index: IDX_DATA_METER_ID                                     */
 /*==============================================================*/
-create index INDEX_DATA_ID on SZV_DATA (
-   DEVICECODE ASC,
+create index IDX_DATA_METER_ID on SZV_DATA (
+   METERCODE ASC,
    DATAID ASC
 )
 /
@@ -211,6 +232,7 @@ create table SZV_DATA_DEVICE
 (
    DEVICEID             NUMBER(38)           not null,
    DEVICECODE           VARCHAR2(200),
+   METERCODE            VARCHAR2(200),
    PIPE                 NUMBER(10),
    POSTDATE             NUMBER(20),
    POSTDATETODATE       DATE,
@@ -224,8 +246,33 @@ create table SZV_DATA_DEVICE
 /* Index: INDEX_DEVICE_SIZE                                     */
 /*==============================================================*/
 create index INDEX_DEVICE_SIZE on SZV_DATA_DEVICE (
-   DEVICECODE ASC,
-   DIAMETERNAME ASC
+   DIAMETERNAME ASC,
+   DEVICECODE ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_METER_SIZE                                 */
+/*==============================================================*/
+create index IDX_DEVICE_METER_SIZE on SZV_DATA_DEVICE (
+   DIAMETERNAME ASC,
+   METERCODE ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_METER_CODE                                 */
+/*==============================================================*/
+create index IDX_DEVICE_METER_CODE on SZV_DATA_DEVICE (
+   METERCODE ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_CODE                                       */
+/*==============================================================*/
+create index IDX_DEVICE_CODE on SZV_DATA_DEVICE (
+   DEVICECODE ASC
 )
 /
 

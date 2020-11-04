@@ -663,8 +663,6 @@ class EffServiceImpl : EffService {
                     return BwResult(2, "计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
                 }
 
-                effTaskBean!!.fillDecay(it)
-
                 val lst = if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
                     effTaskBean!!.effMeter(it, task, 31)
                 else

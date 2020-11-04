@@ -1,12 +1,12 @@
 package com.abel.bigwater.impl
 
 import com.abel.bigwater.model.BwData
-import com.abel.bigwater.model.BwMeter
 import com.abel.bigwater.model.eff.EffMeter
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
+import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import org.joda.time.LocalDateTime
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.slf4j.LoggerFactory
 
@@ -20,7 +20,7 @@ class EffTaskPojoTest {
             meterName = "meter-1"
         }
 
-        val meter = BwMeter().apply {
+        val meter = ZoneMeter().apply {
             meterId = "m1"
             meterName = "meter-1"
 
@@ -91,7 +91,7 @@ class EffTaskPojoTest {
             meterName = "meter-1"
         }
 
-        val meter = BwMeter().apply {
+        val meter = ZoneMeter().apply {
             meterId = "m1"
             meterName = "meter-1"
 
@@ -100,25 +100,25 @@ class EffTaskPojoTest {
                 pointNo = 1
                 pointName = "Q1"
                 pointFlow = 1.0
-                pointDev = 0.05
+                pointDev = 5.0
             }, VcMeterVerifyPoint().apply {
                 pointId = 2
                 pointNo = 2
                 pointName = "Q2"
                 pointFlow = 1.5
-                pointDev = 0.02
+                pointDev = 2.0
             }, VcMeterVerifyPoint().apply {
                 pointId = 3
                 pointNo = 3
                 pointName = "Q3"
                 pointFlow = 100.0
-                pointDev = 0.01
+                pointDev = 1.0
             }, VcMeterVerifyPoint().apply {
                 pointId = 4
                 pointNo = 4
                 pointName = "Q4"
                 pointFlow = 120.0
-                pointDev = 0.02
+                pointDev = 2.0
             })
         }
 
@@ -154,6 +154,8 @@ class EffTaskPojoTest {
             literPulse = 100
         })
 
+        EffTaskBean.backPointToMeter(meter)
+        EffTaskBean.fillModelPointList(meter)
         EffTaskBean.effSingleMeterDay(meter, LocalDateTime(2020, 9, 1, 0, 0).toDateTime(), dlist, eff)
         lgr.info("eff result: {}", JSON.toJSONString(eff, true))
 
@@ -163,13 +165,13 @@ class EffTaskPojoTest {
             endFwd = 1270.0
             meterWater = 35.5
             realWater = 34.834
-            meterEff = 1.019
+            meterEff = 101.9
         }
         assertEquals(eff.startFwd!!, eff1.startFwd!!, 1.0E-3)
         assertEquals(eff.endFwd!!, eff1.endFwd!!, 1.0E-3)
         assertEquals(eff.meterWater!!, eff1.meterWater!!, 1.0E-3)
         assertEquals(eff.realWater!!, eff1.realWater!!, 1.0E-3)
-        assertEquals(eff.meterEff!!, eff1.meterEff!!, 1.0E-3)
+        assertEquals(eff.meterEff!!, eff1.meterEff!!, 0.1)
     }
 
     companion object {

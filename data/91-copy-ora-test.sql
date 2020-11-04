@@ -10,6 +10,14 @@ create unique index uidx_data_device_data on szv_data (devicecode, pipe, postdat
 
  */
 
+desc szcc_jk.v_data@szcclnk;
+
+insert into szv_data_device(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+select devicecode, metercode, pipe, max(postdate), max(postdatetodate), max(meternum), diametername
+from szcc_jk.v_data@szcclnk
+group by devicecode, metercode, pipe, diametername
+/
+
 set serveroutput on;
 grant execute on utl_file to public;
 
@@ -51,8 +59,8 @@ begin
 
                     -- insert all data from szcc-oracle
                     /** + ignore_row_on_dupkey_index (szv_data(devicecode, pipe, postdatetodate)) */
-                    insert into szv_data(devicecode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, pipe, postdate, postdatetodate, meternum, diametername
+                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
                     from szcc_jk.v_data@szcclnk
                     where devicecode = dcode.devicecode;
                 END;
@@ -82,15 +90,15 @@ begin
                                       true);
 
                     -- left period
-                    insert into szv_data(devicecode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, pipe, postdate, postdatetodate, meternum, diametername
+                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
                     from szcc_jk.v_data@szcclnk
                     where devicecode = dcode.devicecode
                       AND postDateToDate BETWEEN vdate1 AND pdate1;
 
                     -- right period
-                    insert into szv_data(devicecode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, pipe, postdate, postdatetodate, meternum, diametername
+                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
                     from szcc_jk.v_data@szcclnk
                     where devicecode = dcode.devicecode
                       AND postDateToDate BETWEEN pdate2 AND vdate2;

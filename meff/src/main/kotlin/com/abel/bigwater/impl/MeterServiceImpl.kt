@@ -411,7 +411,7 @@ open class MeterServiceImpl : MeterService {
      * 返回单只大表的详情, 包括:
      * @see ZoneMeter.verifyList - 检定结果列表
      * @see ZoneMeter.pointList - 检定点列表
-     * @see ZoneMeter.effDecay - 绑定的老化模板
+     * @see ZoneMeter.decayObj - 绑定的老化模板
      *
      * 如果填充了如下字段, 则返回的水表包含DMA信息:
      * @see MeterParam.dmaId
@@ -453,11 +453,13 @@ open class MeterServiceImpl : MeterService {
 
             meter!!.verifyList = meterMapper!!.listMeterVerify(dp)
             meter.pointList = meterMapper!!.listVerifyPoint(dp)
-            if (meter.decayId ?: 0 > 0) {
-                meter.effDecay = effMapper!!.selectEffDecay(EffParam().apply {
-                    decayId = meter.decayId
-                }).firstOrNull()
-            }
+            meter.decayObj = effMapper!!.selectEffDecay(EffParam().apply {
+                decayId = meter.decayId
+                meterBrandId = meter.meterBrandId
+                sizeId = meter.sizeId
+                sizeName = meter.sizeName
+                modelSize = meter.modelSize
+            }).firstOrNull()
 
             return BwResult(meter)
         } catch (ex: Exception) {

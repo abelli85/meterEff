@@ -169,6 +169,7 @@
         , m.modelSize
         , m.dataRows
         , m.decayEff
+        , m.srcError
         , m.q4
         , m.q3
         , m.q3toq1
@@ -309,6 +310,7 @@
         , m.modelSize
         , m.dataRows
         , m.decayEff
+        , m.srcError
         , m.q4
         , m.q3
         , m.q3toq1
@@ -653,6 +655,7 @@
         , modelSize
         , dataRows
         , decayEff
+        , srcError
         , q4
         , q3
         , q3toq1
@@ -695,6 +698,7 @@
             , #{m1.modelSize}
             , #{m1.dataRows}
             , #{m1.decayEff}
+            , #{m1.srcError}
             , #{m1.q4}
             , #{m1.q3}
             , #{m1.q3toq1}
@@ -740,6 +744,7 @@
         , modelSize
         , dataRows
         , decayEff
+        , srcError
         , q4
         , q3
         , q3toq1
@@ -781,6 +786,7 @@
             , #{modelSize}
             , #{dataRows}
             , #{decayEff}
+            , #{srcError}
             , #{q4}
             , #{q3}
             , #{q3toq1}
@@ -827,6 +833,7 @@
                                 , modelSize
                                 , dataRows
                                 , decayEff
+                                , srcError
                                 , q4
                                 , q3
                                 , q3toq1
@@ -869,6 +876,7 @@
         , #{modelSize}
         , #{dataRows}
         , #{decayEff}
+        , #{srcError}
         , #{q4}
         , #{q3}
         , #{q3toq1}
@@ -1512,6 +1520,7 @@
             , modelSize = tmp.modelSize
             , dataRows = tmp.dataRows
             , decayEff = tmp.decayEff
+            , srcError = tmp.srcError
             , q4 = tmp.q4
             , q3 = tmp.q3
             , q3toq1 = tmp.q3toq1
@@ -1557,6 +1566,7 @@
             , #{m1.modelSize}
             , #{m1.dataRows}
             , #{m1.decayEff}
+            , #{m1.srcError}
             , #{m1.q4}
             , #{m1.q3}
             , #{m1.q3toq1}
@@ -1600,6 +1610,7 @@
         , modelSize
         , dataRows
         , decayEff
+        , srcError
         , q4
         , q3
         , q3toq1
@@ -2461,21 +2472,25 @@
              , qs10r
         FROM bw_eff_decay
         <where>
-            <if test="decayId != null">
-                decayId = #{decayId}
-            </if>
-            <if test="meterBrandId != null">
-                AND meterBrandId LIKE #{meterBrandId}
-            </if>
-            <if test="sizeId != null">
-                AND sizeId = #{sizeId}
-            </if>
-            <if test="sizeName != null">
-                AND sizeName LIKE #{sizeName}
-            </if>
-            <if test="modelSize != null">
-                AND modelSize LIKE #{modelSize}
-            </if>
+            <choose>
+                <when test="decayId > 0">
+                    decayId = #{decayId}
+                </when>
+                <otherwise>
+                    <if test="meterBrandId != null">
+                        AND meterBrandId LIKE #{meterBrandId}
+                    </if>
+                    <if test="sizeId != null">
+                        AND sizeId = #{sizeId}
+                    </if>
+                    <if test="sizeName != null">
+                        AND sizeName LIKE #{sizeName}
+                    </if>
+                    <if test="modelSize != null">
+                        AND modelSize LIKE #{modelSize}
+                    </if>
+                </otherwise>
+            </choose>
         </where>
     </select>
 

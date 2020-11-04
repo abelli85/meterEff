@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/3 21:00:09                           */
+/* Created on:     2020/11/4 20:19:27                           */
 /*==============================================================*/
 
 
@@ -467,6 +467,7 @@ create table bw_eff_failure (
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
    decayEff             VARCHAR(20)          null,
+   srcError             VARCHAR(20)          null,
    q4                   DECIMAL(15,3)        null,
    q3                   DECIMAL(15,3)        null,
    q3toq1               DECIMAL(15,3)        null,
@@ -560,6 +561,7 @@ create table bw_eff_meter (
    sizeName             VARCHAR(45)          not null,
    modelSize            VARCHAR(100)         null,
    decayEff             VARCHAR(20)          null,
+   srcError             VARCHAR(20)          null,
    q4                   DECIMAL(15,3)        null,
    q3                   DECIMAL(15,3)        null,
    q3toq1               DECIMAL(15,3)        null,
