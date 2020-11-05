@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/5 23:06:01                           */
+/* Created on:     2020/11/5 23:15:16                           */
 /*==============================================================*/
 
 
@@ -207,7 +207,7 @@ create table bw_config (
 /*==============================================================*/
 create table bw_data (
    dataId               SERIAL not null,
-   extId                VARCHAR(45)          not null,
+   extId                VARCHAR(200)         not null,
    sampleTime           TIMESTAMP WITH TIME ZONE not null,
    endTime              TIMESTAMP WITH TIME ZONE null,
    durationSecond       INT4                 null,
@@ -437,7 +437,7 @@ create table bw_eff_failure (
    effId                SERIAL8              not null,
    taskId               INT8                 not null,
    meterId              VARCHAR(45)          not null,
-   meterName            VARCHAR(45)          not null,
+   meterName            VARCHAR(100)         not null,
    taskName             VARCHAR(45)          not null,
    taskStart            TIMESTAMP WITH TIME ZONE not null,
    taskEnd              TIMESTAMP WITH TIME ZONE not null,
@@ -532,7 +532,7 @@ create table bw_eff_meter (
    effId                SERIAL8              not null,
    taskId               INT8                 not null,
    meterId              VARCHAR(45)          not null,
-   meterName            VARCHAR(45)          not null,
+   meterName            VARCHAR(100)         not null,
    taskName             VARCHAR(45)          not null,
    taskStart            TIMESTAMP WITH TIME ZONE not null,
    taskEnd              TIMESTAMP WITH TIME ZONE not null,
@@ -702,8 +702,8 @@ create table bw_meter (
    sizeId               INT4                 not null,
    sizeName             VARCHAR(45)          null,
    modelSize            VARCHAR(45)          null,
-   typeId               VARCHAR(45)          null,
-   userType             VARCHAR(45)          null,
+   typeId               VARCHAR(50)          null,
+   userType             VARCHAR(100)         null,
    waterPrice           DECIMAL(15,3)        null,
    serviceArea          DECIMAL(15,3)        null,
    servicePopulation    DECIMAL(15,3)        null,
@@ -893,7 +893,7 @@ create table bw_rtu (
    firstCmd             VARCHAR(45)          null,
    firstText            VARCHAR(500)         null,
    firstResp            VARCHAR(200)         null,
-   meterName            VARCHAR(45)          null,
+   meterName            VARCHAR(100)         null,
    meterAddr            VARCHAR(45)          null,
    rtuLoc               POINT                null,
    forwardReading       DECIMAL(15,3)        null,
