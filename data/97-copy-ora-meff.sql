@@ -1,120 +1,256 @@
-/*
-CREATE EXTENSION oracle_fdw;
-CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
-    OPTIONS (dbserver 'jdora');
-GRANT USAGE ON FOREIGN SERVER jdora TO test;
- */
 
-/*
-CREATE USER MAPPING FOR current_user SERVER jdora
-    OPTIONS (user 'test', password 'abelli');
+desc szcc_jk.v_meterinfo@szcclnk;
 
-CREATE FOREIGN TABLE ora_t1(
-    f1 int options (key 'true'),
-    f2 varchar(20))
-    SERVER jdora OPTIONS (schema 'TEST', table 'T1');
+-- 语句1
+insert into szv_data_device(devicecode, metercode, pipe, diametername)
+select distinct devicecode, metercode, pipe, '0'
+from szcc_jk.v_meterinfo@szcclnk;
 
-CREATE FOREIGN TABLE szv_data_device(
-    deviceId bigint options (key 'true') not null,
-    deviceCode character varying(200),
-    pipe integer ,
-    postDate bigint ,
-    postDateToDate timestamp with time zone ,
-    meterNum numeric(18, 3) ,
-    diameterName character varying(60) not null)
-    Server jdora
-    options (schema 'TEST', "table" 'SZV_DATA_DEVICE');
+commit;
+/
 
+-- 账册
+insert into szv_firm(deptId, subFirm, subBranch, rootDeptId)
+select distinct deptId, "分公司", "水务所", rootDeptId
+from ucis.v_jsb_metercheck@ucislnk;
+/
 
-CREATE FOREIGN TABLE szv_data(
-    dataId bigint options (key 'true') not null,
-    deviceCode character varying(200),
-    pipe integer ,
-    postDate bigint ,
-    postDateToDate timestamp with time zone ,
-    meterNum numeric(18, 3) ,
-    diameterName character varying(60) not null)
-    Server jdora
-    options (schema 'TEST', "table" 'SZV_DATA');
-*/
--- rule NOT work under big-data?
-DROP RULE rule_ignore_dupkey_data ON public.bw_data;
+INSERT INTO SZV_USERINFO(
+                          DEPTID
+                        , SUBFIRM
+                        , SUBBRANCH
+                        , ROOTDEPTID
+                        , METERCODE
+                        , METERSERIAL
+                        , USERSTATUSID
+                        , USERWATERMETERSTATUSID
+                        , USERNAME
+                        , USERADDR
+                        , METERBRAND
+                        , MODELSIZE
+                        , SIZEID
+                        , SIZENAME
+                        , USETYPE
+                        , METERTYPE
+                        , FIRSTINSTALL
+                        , RECENTINSTALL
+                        , RECENTREAD
+                        , RECENTFWD
+)
+SELECT DISTINCT
+    DEPTID
+              , "分公司"
+              , "水务所"
+              , ROOTDEPTID
+              , "水表编号"
+              , "表码"
+              , USERSTATUSID
+              , USERWATERMETERSTATUSID
+              , "客户名称"
+              , "用水地址"
+              , "水表品牌"
+              , "水表型号"
+              , DIAMETERVALUE
+              , "水表口径"
+              , SUBSTR("用水类型", 0, 500)
+              , "水表类型"
+              , "初装日期"
+              , "最近安装日期"
+              , "最近抄表日期"
+              , "最近抄表行度"
+FROM UCIS.V_JSB_METERCHECK@UCISLNK;
+/
 
-CREATE OR REPLACE RULE rule_ignore_dupkey_data AS
-    ON INSERT TO public.bw_data
-    WHERE (EXISTS(SELECT 1
-                  FROM public.bw_data
-                  WHERE bw_data.extid::text = new.extid::text
-                    AND bw_data.sampletime = new.sampletime)) DO INSTEAD NOTHING
+INSERT INTO SZV_METER_READ
+( DEPTID
+, SUBFIRM
+, SUBBRANCH
+, ROOTDEPTID
+, METERCODE
+, METERSERIAL
+, USERSTATUSID
+, USERWATERMETERSTATUSID
+, USERNAME
+, USERADDR
+, METERBRAND
+, MODELSIZE
+, SIZEID
+, SIZENAME
+, USETYPE
+, METERTYPE
+, FIRSTINSTALL
+, RECENTINSTALL
+, RECENTREAD
+, RECENTFWD
+, BUSINESSYEARMONTH
+, LASTREAD
+, LASTFWD
+, THISFWD
+, THISREADINGTIME
+, READWATER)
+SELECT
+    DEPTID
+     , "分公司"
+     , "水务所"
+     , ROOTDEPTID
+     , "水表编号"
+     , "表码"
+     , USERSTATUSID
+     , USERWATERMETERSTATUSID
+     , "客户名称"
+     , "用水地址"
+     , "水表品牌"
+     , "水表型号"
+     , DIAMETERVALUE
+     , "水表口径"
+     , SUBSTR("用水类型", 0, 500)
+     , "水表类型"
+     , "初装日期"
+     , "最近安装日期"
+     , "最近抄表日期"
+     , "最近抄表行度"
+     , "BUSINESSYEARMONTH"
+     , "上次抄表日期"
+     , "上次抄表行度"
+     , "本次抄表行度"
+     , "THISREADINGTIME"
+     , "抄表水量"
+FROM UCIS.V_JSB_METERCHECK@UCISLNK
+WHERE DEPTID = 723 AND ROOTDEPTID = 210
+  AND "水表编号" = '141030005301';
+/
+
+-- 数据统计
+select count(1) from szv_data_device where metercode in (select metercode from szv_userinfo );
+-- 18617
+
+select count(1) from szv_data_device ;
+-- 19086
+
+insert into bw_meter(meterid,
+                     -- usercode,
+                     metercode,
+                     metername,
+                     extid,
+                     location,
+                     installdate,
+                     -- onlinedate,
+
+                     sizeid,
+                     sizename,
+                     modelsize,
+                     typeid,
+                     usertype,
+                     firmid,
+                     meterbrandid,
+                     steelno,
+                     -- remotebrandid,
+                     rtuid,
+
+                     powertype,
+                     meterstatus,
+                     lastcalib,
+                     memo,
+                     createby,
+                     updatedate
+)
+
+select usr.muid,
+       usr.meterCode,
+       usr.userName,
+        dd.devicecode,
+       usr.userAddr,
+       usr.recentRead as firstinstall, -- firstinstall cannot be converted to/from oracle.
+
+       0 sizeId,
+       usr.sizeName,
+       usr.modelSize,
+       usr.meterType,
+       substr(usr.useType, 0, 100) userType,
+        '27' firmId,
+       meterBrand meterbrandid,
+       meterserial steelno,
+       dd.deviceId,
+        (case when dd.metercode is null then 'MANUAL' else 'BATTERY' end) powertype,
+       (case when usr.userstatusid = 1 and usr.userwatermeterstatusid = 1 then 'WORK' else 'PAUSE' end) meterstatus,
+       recentInstall lastcalib,
+                rootDeptId memo,
+                'abel' createby,
+                current_timestamp as createdate
+       from szv_userinfo usr
+        left join szv_data_device dd on usr.metercode = dd.metercode
+    join (
+        select metercode,
+               max(muid) xmuid
+        from szv_userinfo
+        group by metercode
+           ) xm on usr.muid = xm.xmuid
+    where usr.userstatusid = 1
+    and usr.userwatermeterstatusid = 1
+-- limit 10
 ;
 
-create or replace function sp_ignore_dupkey_data() returns trigger as
-$ytt$
-begin
-    perform 1 from public.bw_data where bw_data.extId = new.extId AND bw_data.sampleTime = new.sampleTime;
-    if found then
-        return null;
-    end if;
-    return new;
-end;
-$ytt$ language 'plpgsql';
--- CREATE FUNCTION
+select count(1)
+from szv_userinfo usr
+         left join szv_data_device dd on usr.metercode = dd.metercode
+         join (
+    select metercode,
+           max(muid) xmuid
+    from szv_userinfo
+    group by metercode
+) xm on usr.muid = xm.xmuid
+where usr.userstatusid = 1
+  and usr.userwatermeterstatusid = 1
+-- 63730
+;
 
-drop trigger tr_ignore_dupkey_data ON bw_data;
-create trigger tr_ignore_dupkey_data
-    before insert
-    on public.bw_data
-    for each row
-execute procedure sp_ignore_dupkey_data();
--- CREATE TRIGGER
+INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-INSERT INTO bw_meter(meterId, meterCode, meterName, extId, firmId)
-SELECT deviceId, deviceCode, deviceCode, deviceCode, '27'
-FROM szv_data_device;
-
-INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId)
 SELECT zd.deviceCode
      , zd.postDateToDate
      , zd.meterNum
      , 1000
      , '27'
+     , zd.dataid
 FROM szv_data zd
+WHERE dataId BETWEEN 0 AND 5000000
+    /*
          JOIN (
     SELECT deviceCode, postDateToDate, MAX(dataId) datId
     FROM szv_data
     WHERE dataId BETWEEN 0 AND 10000000
     GROUP BY deviceCode, postDateToDate
-) zdx ON zd.dataId = zdx.datId;
+) zdx ON zd.dataId = zdx.datId
+     */
+-- limit 10
+;
 -- first copy:
 -- WHERE dataId BETWEEN 0 AND 10000000;
 
 
-INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId)
+INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
+
 SELECT zd.deviceCode
      , zd.postDateToDate
      , zd.meterNum
      , 1000
      , '27'
+     , zd.dataid
 FROM szv_data zd
-WHERE dataId BETWEEN 20000000 AND 30000000;
+WHERE dataId BETWEEN 5000001 AND 10000000
+;
 
+INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-UPDATE bw_meter m
-    SET metername = mu.userName,
-        location = mu.userAddr,
-        sizename = mu.sizename,
-        modelsize = mu.modelsize,
-        meterbrandid = mu.meterBrand,
-        usertype = substr(mu.useType, 0, 45),
-        typeid = mu.meterType,
-        installdate = mu.firstInstall,
-        onlinedate = mu.recentInstall,
-        updatedate = mu.recentRead,
-        servicepopulation = mu.recentFwd
-FROM szv_userinfo mu
-WHERE firmId like '27%'
-  and to_number(meterid, '99999') = mu.muid
-and mu.muid < 1;
+SELECT zd.deviceCode
+     , zd.postDateToDate
+     , zd.meterNum
+     , 1000
+     , '27'
+     , zd.dataid
+FROM szv_data zd
+WHERE dataId BETWEEN 10000001 AND 15000000
+;
 
 
 INSERT INTO bw_eff_decay(

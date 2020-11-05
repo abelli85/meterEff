@@ -1,18 +1,26 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/4 17:53:11                           */
+/* Created on:     2020/11/5 21:36:00                           */
 /*==============================================================*/
 
 
-drop index INDEX_DATA_ID;
+drop index IDX_DATA_METER_ID;
 
-drop index INDEX_DATA_SIZE;
+drop index IDX_DATA_METER_TS;
+
+drop index INDEX_DATA_ID;
 
 drop index INDEX_DATA_TS;
 
 drop index INDEX_DATA_DEVICE;
 
 drop table SZV_DATA;
+
+drop index IDX_DEVICE_CODE;
+
+drop index IDX_DEVICE_METER_CODE;
+
+drop index IDX_DEVICE_METER_SIZE;
 
 drop index INDEX_DEVICE_SIZE;
 
@@ -54,6 +62,7 @@ create sequence SEQ_MUSER;
 create table SZV_DATA (
    DATAID               NUMERIC(38)          not null,
    DEVICECODE           VARCHAR(200)         null,
+   METERCODE            VARCHAR(200)         null,
    PIPE                 NUMERIC(10)          null,
    POSTDATE             NUMERIC(20)          null,
    POSTDATETODATE       DATE                 null,
@@ -80,19 +89,26 @@ POSTDATE
 );
 
 /*==============================================================*/
-/* Index: INDEX_DATA_SIZE                                       */
-/*==============================================================*/
-create  index INDEX_DATA_SIZE on SZV_DATA (
-DIAMETERNAME,
-DEVICECODE,
-POSTDATETODATE
-);
-
-/*==============================================================*/
 /* Index: INDEX_DATA_ID                                         */
 /*==============================================================*/
 create  index INDEX_DATA_ID on SZV_DATA (
 DEVICECODE,
+DATAID
+);
+
+/*==============================================================*/
+/* Index: IDX_DATA_METER_TS                                     */
+/*==============================================================*/
+create  index IDX_DATA_METER_TS on SZV_DATA (
+METERCODE,
+POSTDATETODATE
+);
+
+/*==============================================================*/
+/* Index: IDX_DATA_METER_ID                                     */
+/*==============================================================*/
+create  index IDX_DATA_METER_ID on SZV_DATA (
+METERCODE,
 DATAID
 );
 
@@ -102,6 +118,7 @@ DATAID
 create table SZV_DATA_DEVICE (
    DEVICEID             NUMERIC(38)          not null,
    DEVICECODE           VARCHAR(200)         null,
+   METERCODE            VARCHAR(200)         null,
    PIPE                 NUMERIC(10)          null,
    POSTDATE             NUMERIC(20)          null,
    POSTDATETODATE       DATE                 null,
@@ -114,8 +131,30 @@ create table SZV_DATA_DEVICE (
 /* Index: INDEX_DEVICE_SIZE                                     */
 /*==============================================================*/
 create  index INDEX_DEVICE_SIZE on SZV_DATA_DEVICE (
-DEVICECODE,
-DIAMETERNAME
+DIAMETERNAME,
+DEVICECODE
+);
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_METER_SIZE                                 */
+/*==============================================================*/
+create  index IDX_DEVICE_METER_SIZE on SZV_DATA_DEVICE (
+DIAMETERNAME,
+METERCODE
+);
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_METER_CODE                                 */
+/*==============================================================*/
+create  index IDX_DEVICE_METER_CODE on SZV_DATA_DEVICE (
+METERCODE
+);
+
+/*==============================================================*/
+/* Index: IDX_DEVICE_CODE                                       */
+/*==============================================================*/
+create  index IDX_DEVICE_CODE on SZV_DATA_DEVICE (
+DEVICECODE
 );
 
 /*==============================================================*/
@@ -140,14 +179,14 @@ create table SZV_METER_READ (
    SUBBRANCH            VARCHAR(50)          null,
    ROOTDEPTID           NUMERIC(6)           not null,
    METERCODE            VARCHAR(12)          not null,
-   METERSERIAL          VARCHAR2(50)         not null,
+   METERSERIAL          VARCHAR(50)          not null,
    USERSTATUSID         NUMERIC(3)           not null,
    USERWATERMETERSTATUSID NUMERIC(3)           not null,
    USERNAME             VARCHAR(100)         not null,
    USERADDR             VARCHAR(200)         not null,
    METERBRAND           VARCHAR(50)          null,
    MODELSIZE            VARCHAR(20)          not null,
-   SIZEID               NUMBER(10)           null,
+   SIZEID               NUMERIC(10)          null,
    SIZENAME             VARCHAR(20)          not null,
    USETYPE              VARCHAR(500)         null,
    METERTYPE            VARCHAR(150)         null,
@@ -184,14 +223,14 @@ create table SZV_USERINFO (
    SUBBRANCH            VARCHAR(50)          null,
    ROOTDEPTID           NUMERIC(6)           not null,
    METERCODE            VARCHAR(12)          not null,
-   METERSERIAL          VARCHAR2(50)         not null,
+   METERSERIAL          VARCHAR(50)          not null,
    USERSTATUSID         NUMERIC(3)           not null,
    USERWATERMETERSTATUSID NUMERIC(3)           not null,
    USERNAME             VARCHAR(100)         not null,
    USERADDR             VARCHAR(200)         not null,
    METERBRAND           VARCHAR(50)          null,
    MODELSIZE            VARCHAR(20)          not null,
-   SIZEID               NUMBER(10)           null,
+   SIZEID               NUMERIC(10)          null,
    SIZENAME             VARCHAR(20)          not null,
    USETYPE              VARCHAR(500)         null,
    METERTYPE            VARCHAR(150)         null,
