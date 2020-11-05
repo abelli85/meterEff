@@ -10,18 +10,26 @@ create unique index uidx_data_device_data on szv_data (devicecode, pipe, postdat
 
  */
 
+desc szcc_jk.v_meterinfo@szcclnk;
+
+-- 语句1
+insert into szv_data_device(devicecode, metercode, pipe, diametername)
+select distinct devicecode, metercode, pipe, '0'
+from szcc_jk.v_meterinfo@szcclnk;
+
+commit;
+/
+
+select count(distinct devicecode) from szv_data_device;
+
 desc szcc_jk.v_data@szcclnk;
 
-insert into szv_data_device(devicecode, metercode, pipe)
-select distinct devicecode, metercode, pipe
-from szcc_jk.v_data@szcclnk
-/
+select count(1), max(postdatetodate) from szcc_jk.v_data@szcclnk
+where devicecode = '01120170700702';
 
-insert into szv_data_device(devicecode, metercode, pipe, postdate)
-select devicecode, metercode, pipe, max(postdate)
-from szcc_jk.v_data@szcclnk
-group by devicecode, metercode, pipe
-/
+select count(1), max(postdatetodate) from szcc_jk.v_data@szcclnk
+where devicecode = 'SS_SK_20200065';
+
 
 set serveroutput on;
 grant execute on utl_file to public;

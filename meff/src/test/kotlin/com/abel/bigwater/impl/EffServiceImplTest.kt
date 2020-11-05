@@ -239,6 +239,19 @@ class EffServiceImplTest {
     }
 
     @Test
+    fun testListEffRange() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        effService!!.listEffRange(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+            firmId = "27%"
+            meterId = "164"
+        })).also {
+            lgr.info("meter eff range: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+        }
+    }
+
+    @Test
     fun testMatchMeter() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
@@ -563,6 +576,21 @@ class EffServiceImplTest {
         val r1 = effService!!.selectEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
                 EffParam()))
         lgr.info("decay list: {}", JSON.toJSONString(r1, true))
+    }
+
+    @Test
+    fun testLearnModel() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        val r1 = effService!!.learnMeterModel(BwHolder(TestHelper.buildLoginRequest(login),
+                EffParam().apply {
+                    meterId = "164"
+                    taskStart = LocalDate(2020, 9, 1).toDate()
+                    taskEnd = LocalDate(2020, 10, 1).toDate()
+                })).also {
+            lgr.info("decay list: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+        }
     }
 
     @Test

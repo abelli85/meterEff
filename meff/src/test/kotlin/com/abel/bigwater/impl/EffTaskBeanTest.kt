@@ -83,6 +83,29 @@ class EffTaskBeanTest {
                 })
     }
 
+    /**
+     * meterId: 101
+     *     extid     |          min           |          max
+    --------------+------------------------+------------------------
+    SS_SK_610066 | 2020-06-04 20:00:00+08 | 2020-10-25 02:00:00+08
+     */
+    @Test
+    fun learnWeek() {
+        val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+            meterId = "164"
+        }).firstOrNull() ?: fail("选择的水表不存在: 101")
+
+        if (!bean!!.fillPointList(meter)) fail("水表101缺少检定点")
+
+        bean!!.learnMeter(meter,
+                EffTask().apply {
+                    taskId = 0
+                    taskName = "test-0"
+                    taskStart = LocalDate(2020, 10, 1).toDate()
+                    taskEnd = LocalDate(2020, 10, 25).toDate()
+                })
+    }
+
     @Test
     fun effMeterRange() {
     }

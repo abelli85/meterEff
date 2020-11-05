@@ -193,6 +193,47 @@ class EffServiceImpl : EffService {
     }
 
     /**
+     * 列出水表的分析结果的日期范围, 填充参数:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart (可选)
+     * @see EffParam.taskEnd (可选)
+     */
+    override fun listEffRange(holder: BwHolder<EffParam>): BwResult<DataRange> {
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to list eff-meter range: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_LIST_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val ms = effMapper!!.listEffRange(dp)
+            return BwResult(ms).apply {
+                error = "水表计量效率的日期范围： ${ms.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
      * 列出水表的无效分析结果, 填充参数:
      * @see EffParam.taskResult
      * @see EffParam.meterId
@@ -685,6 +726,74 @@ class EffServiceImpl : EffService {
 
             return BwResult(effList.toList()).also {
                 it.error = "分析计量效率: ${cnt}只水表"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex)
+            return BwResult(1, "${ERR_INTERNAL} ${ex.message}")
+        }
+    }
+
+    /**
+     * 自学习水表的周用水模式, 分析一只或多只水表, 指定时段的计量效率.
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - can be null
+     * @see EffParam.taskEnd - can be null
+     */
+    override fun learnMeterModel(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty())
+                || holder.single?.jodaTaskEnd?.isAfterNow == true
+                || holder.single?.jodaTaskStart?.isAfterNow == true) {
+            return BwResult(2, ERR_PARAM)
+        }
+        if (holder.single?.jodaTaskStart != null
+                && holder.single?.jodaTaskEnd?.isBefore(holder.single?.jodaTaskStart!!) == true) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val param = holder.single!!
+        val midList = if (param.meterId.isNullOrBlank())
+            param.meterIdList!!
+        else
+            param.meterIdList.orEmpty().plus(param.meterId!!)
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_REPLACE_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+            val task = EffTask().apply {
+                taskName = login.single?.userName
+                createBy = login.single?.userId
+
+                firmId = login.single!!.firmId
+                firmName = login.single!!.firmName
+                taskStart = param.taskStart ?: EffTaskBean.DUMMY_START.toDate()
+                taskEnd = param.taskEnd ?: EffTaskBean.DUMMY_END.toDate()
+                periodTypeObj = EffPeriodType.Day
+
+                effMapper!!.createEffTask(this)
+            }
+
+            val effList = arrayListOf<EffMeter>()
+
+            var cnt = 0
+            meterMapper!!.selectMeterDma(MeterParam().apply {
+                meterIdList = midList
+            }).forEach {
+                // 月度效率
+                val lst = effTaskBean!!.learnMeter(it, task,
+                        if (param.jodaTaskStart == null || param.jodaTaskEnd == null) null else 4)
+
+                effList.addAll(lst)
+
+                ++cnt
+            }
+
+            return BwResult(effList.toList()).also {
+                it.error = "自学习用水模式: ${cnt}只水表"
             }
         } catch (ex: Exception) {
             lgr.error(ex.message, ex)

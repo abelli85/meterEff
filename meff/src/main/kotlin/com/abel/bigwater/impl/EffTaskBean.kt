@@ -384,13 +384,16 @@ open class EffTaskBean {
     }
 
     fun effMeter(meter: ZoneMeter, task: EffTask, days: Int? = null): List<EffMeter> {
+        // find time-range firstly.
         val timeRange = dataMapper!!.realtimeDateRange(DataParam().apply {
             meterId = meter.meterId
         }).firstOrNull()?.also {
             if (it.maxDateTime?.isAfterNow == true) it.maxDateTime = DateTime.now()
-            if (it.minDateTime?.isAfterNow == true) it.minDateTime = DateTime.now()
+            if (it.minDateTime?.isAfterNow == true) return emptyList()
         } ?: return emptyList()
 
+        // if there're no eff-rows, then use time-range [min, min + days];
+        // if there're eff-rows, then [eff.max - 1'day', eff.max + days].
         val effRange = if (days ?: 0 > 0)
             effMapper!!.listEffRange(EffParam().apply {
                 meterId = meter.meterId
@@ -411,6 +414,7 @@ open class EffTaskBean {
                 maxDateTime = DateTime(task.taskEnd!!)
             }
 
+        // truncate to time-range: [min, max].
         effRange.also {
             if (it.minDateTime!!.isBefore(timeRange.minDateTime!!)) {
                 it.minDateTime = timeRange.minDateTime
@@ -712,6 +716,156 @@ open class EffTaskBean {
         return true
     }
 
+    /**
+     * learn week use-model.
+     */
+    fun learnMeter(meter: ZoneMeter, task: EffTask, weeks: Int? = null): List<EffMeter> {
+        val timeRange = dataMapper!!.realtimeDateRange(DataParam().apply {
+            meterId = meter.meterId
+        }).firstOrNull()?.also {
+            if (it.maxDateTime?.isAfterNow == true) it.maxDateTime = DateTime.now()
+            if (it.minDateTime?.isAfterNow == true) return emptyList()
+        } ?: return emptyList()
+
+        // if there're no eff-rows, then use time-range [min, min + days];
+        // if there're eff-rows, then [eff.max - 1'day', eff.max + days].
+        val effRange = if (weeks ?: 0 > 0)
+            effMapper!!.listEffRange(EffParam().apply {
+                meterId = meter.meterId
+            }).firstOrNull()?.also {
+                // change with days
+                it.minDateTime = it.maxDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
+                it.maxDateTime = it.maxDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks!!)
+            } ?: DataRange().also {
+                it.meterId = meter.meterId
+                it.minDateTime = timeRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
+                it.maxDateTime = timeRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks!!)
+            }
+        else
+        // change with task
+            DataRange().apply {
+                meterId = meter.meterId
+                minDateTime = DateTime(task.taskStart!!)
+                maxDateTime = DateTime(task.taskEnd!!)
+            }
+
+        // truncate to time-range: [min, max].
+        effRange.also {
+            if (it.minDateTime!!.isBefore(timeRange.minDateTime!!)) {
+                it.minDateTime = timeRange.minDateTime
+            }
+            if (it.maxDateTime!!.isAfter(timeRange.maxDateTime!!)) {
+                it.maxDateTime = timeRange.maxDateTime
+            }
+        }
+
+        val retList = ArrayList<EffMeter>()
+        var day1 = effRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
+        while (day1.isBefore(effRange.maxDateTime)) {
+            // truncate to week
+            day1 = day1.withDayOfWeek(1)
+
+            val eff = EffMeter().apply {
+                meterId = meter.meterId
+                meterName = meter.meterName
+                taskId = task.taskId
+                taskName = task.taskName
+
+                meterBrandId = meter.meterBrandId ?: "0"
+                sizeId = meter.sizeId ?: 0
+                sizeName = meter.sizeName ?: "0"
+                modelSize = meter.modelSize
+                srcErrorObj = meter.srcErrorObj
+
+                periodTypeObj = EffPeriodType.Week
+                powerTypeObj = meter.powerTypeObj
+                taskStart = day1.toDate()
+                taskEnd = day1.plusWeeks(1).toDate()
+
+                qr1 = meter.q1r
+                qr2 = meter.q2r
+                qr3 = meter.q3r
+                qr4 = meter.q4r
+
+                q3 = meter.q3
+                q4 = meter.q4
+                if (meter.q1 > 1E-3 && meter.q2 > meter.q1) {
+                    q3toq1 = meter.q3 / meter.q1
+                    q2toq1 = meter.q2 / meter.q1
+                }
+                if (meter.q3 > meter.q2) {
+                    q4toq3 = meter.q4 / meter.q3
+                }
+            }
+
+            val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
+                meterId = meter.meterId
+                sampleTime1 = eff.taskStart
+                sampleTime2 = eff.taskEnd
+                rows = 20000
+            })
+            if (dlist.size < 2) {
+                eff.taskResult = EffFailureType.DATA.name
+            } else {
+                eff.also {
+                    it.startFwd = dlist.firstOrNull()?.forwardReading
+                    it.startTime = dlist.firstOrNull()?.sampleTime
+                    it.endFwd = dlist.firstOrNull()?.forwardReading
+                    it.endTime = dlist.firstOrNull()?.sampleTime
+                    it.meterWater = it.endFwd?.minus(it.startFwd ?: 0.0)
+
+                    // to avoid dividen-by-0 when matching match.
+                    if (it.meterWater ?: 0.0 < 1.0E-3) it.meterWater = 1.0E-3
+
+                    it.runTime = Date()
+                }
+
+                for (idx in 1.until(dlist.size)) {
+                    val d1 = dlist[idx - 1]
+                    val d2 = dlist[idx]
+
+                    d1.forwardSum = d2.forwardReading?.minus(d1.forwardReading ?: 0.0) ?: 0.0
+                    // divided by 0?
+                    d1.avgFlow = d1.forwardSum?.div(
+                            Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
+                }
+                eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
+
+                gmeansModel(dlist, eff)
+
+                eff.apply {
+                    runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
+                }
+
+                // save to database.
+                val param = EffParam().apply {
+                    meterId = meter.meterId
+                    periodTypeObj = eff.periodTypeObj
+                    pointTypeObj = EffPointType.LEARN
+                    taskStart = day1.toDate()
+                }
+                lgr.info("remove eff meter: {}/{}",
+                        effMapper!!.deleteEffPoint(param),
+                        effMapper!!.deleteEffMeter(param)
+                )
+
+                val cntEff = effMapper!!.insertEffMeterSingle(eff)
+                val pp = EffParam().apply {
+                    pointEffList = eff.modelPointList
+                    pointEffList?.forEach { it.effId = eff.effId }
+                }
+                val cntPt = effMapper!!.insertEffPoint(pp)
+                lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
+
+                retList.add(eff)
+            }
+
+            day1 = day1.plusWeeks(1)
+        }
+
+        return retList
+    }
+
     companion object {
         private val lgr = LoggerFactory.getLogger(EffTaskBean::class.java)
 
@@ -982,7 +1136,7 @@ open class EffTaskBean {
         }
 
         fun gmeansModel(dlist: List<BwData>, eff: EffMeter) {
-            val mg = GMeans.fit(dlist.dropLast(1).map { doubleArrayOf(it.avgFlow ?: 0.0) }.toTypedArray(), 10)
+            val mg = GMeans.fit(dlist.dropLast(1).map { doubleArrayOf(it.avgFlow ?: 0.0) }.toTypedArray(), 12)
             val mapModel = TreeMap<Int, ArrayList<BwData>>()
             dlist.forEach {
                 val k = mg.predict(doubleArrayOf(it.avgFlow ?: 0.0))
@@ -1002,7 +1156,7 @@ open class EffTaskBean {
                         taskEnd = eff.taskEnd
                         meterId = eff.meterId
                         pointTypeObj = EffPointType.LEARN
-                        periodTypeObj = EffPeriodType.Day
+                        periodTypeObj = eff.periodTypeObj
 
                         pointNo = it.key
                         pointName = it.key.toString()
