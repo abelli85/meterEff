@@ -1,5 +1,6 @@
 package com.abel.bigwater.api
 
+import com.abel.bigwater.model.DataRange
 import com.abel.bigwater.model.eff.*
 import com.abel.bigwater.model.zone.ZoneMeter
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
@@ -24,6 +25,9 @@ interface EffService {
         const val PATH_ADD_METER_EFF = "/addMeterEff"
         const val PATH_DELETE_METER_EFF = "/deleteMeterEff"
         const val PATH_UPDATE_METER_EFF = "/updateMeterEff"
+
+        const val PATH_LIST_EFF_RANGE = "/listEffRange"
+        const val PATH_LEARN_METER_MODEL = "/learnMeterModel"
 
         const val PATH_LIST_FAILURE_EFF = "/listEffFailure"
         const val PATH_DELETE_EFF_FAILURE = "/deleteEffFailure"
@@ -74,6 +78,17 @@ interface EffService {
     @POST
     @Path(PATH_LIST_METER_EFF)
     fun listMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 列出水表的分析结果的日期范围, 填充参数:
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart (可选)
+     * @see EffParam.taskEnd (可选)
+     */
+    @POST
+    @Path(PATH_LIST_EFF_RANGE)
+    fun listEffRange(holder: BwHolder<EffParam>): BwResult<DataRange>
 
     /**
      * 列出水表的无效分析结果, 填充参数:
@@ -191,6 +206,17 @@ interface EffService {
     @POST
     @Path(PATH_BUILD_METER_EFF)
     fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter>
+
+    /**
+     * 自学习水表的周用水模式, 分析一只或多只水表, 指定时段的计量效率.
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart - can be null
+     * @see EffParam.taskEnd - can be null
+     */
+    @POST
+    @Path(PATH_LEARN_METER_MODEL)
+    fun learnMeterModel(holder: BwHolder<EffParam>): BwResult<EffMeter>
 
     /**
      * 列出水表老化规则（每百万方水计量效率衰减）, 如下参数均可选:

@@ -6,6 +6,8 @@ package com.abel.bigwater.model.eff
 enum class EffPeriodType {
     Day,
 
+    Week,
+
     Month,
 
     Year,
