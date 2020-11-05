@@ -1018,7 +1018,13 @@ open class EffTaskBean {
                 }
             }
 
-            eff.modelPointList = eff.modelPointList.orEmpty().plus(mlist.values)
+            val plist = mlist.values.sortedBy { it.pointFlow }
+            plist.forEachIndexed { idx, pt ->
+                pt.pointNo = idx + 1
+                pt.pointName = "M${pt.pointNo}"
+            }
+
+            eff.modelPointList = eff.modelPointList.orEmpty().plus(plist)
         }
 
         private fun convertMeterEffPoint(eff: EffMeter, meter: ZoneMeter): Boolean {
