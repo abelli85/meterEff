@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/4 20:19:27                           */
+/* Created on:     2020/11/5 23:06:01                           */
 /*==============================================================*/
 
 
@@ -682,11 +682,11 @@ create table bw_firm (
 /*==============================================================*/
 create table bw_meter (
    meterId              VARCHAR(45)          not null,
-   userCode             VARCHAR(45)          null,
-   meterCode            VARCHAR(45)          null,
-   meterName            VARCHAR(45)          not null,
+   userCode             VARCHAR(50)          null,
+   meterCode            VARCHAR(50)          null,
+   meterName            VARCHAR(100)         not null,
    meterOrder           INT4                 null,
-   extId                VARCHAR(45)          null,
+   extId                VARCHAR(200)         null,
    location             VARCHAR(200)         null,
    installDate          TIMESTAMP WITH TIME ZONE null,
    onlineDate           TIMESTAMP WITH TIME ZONE null,
