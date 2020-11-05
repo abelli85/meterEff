@@ -285,6 +285,22 @@
                 <artifactId>kotlinx-coroutines-core</artifactId>
                 <version>${kotlinx.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-core</artifactId>
+                <version>2.5.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-kotlin</artifactId>
+                <version>2.5.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-plot</artifactId>
+                <version>2.5.3</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

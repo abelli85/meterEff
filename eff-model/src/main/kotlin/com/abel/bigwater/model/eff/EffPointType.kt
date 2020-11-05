@@ -9,5 +9,10 @@ enum class EffPointType {
     /**
      * 效率(包含用水模式及计量效率)
      */
-    EFF;
+    EFF,
+
+    /**
+     * 模式自学习
+     */
+    LEARN;
 }

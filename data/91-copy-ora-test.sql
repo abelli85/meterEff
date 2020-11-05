@@ -12,10 +12,15 @@ create unique index uidx_data_device_data on szv_data (devicecode, pipe, postdat
 
 desc szcc_jk.v_data@szcclnk;
 
-insert into szv_data_device(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-select devicecode, metercode, pipe, max(postdate), max(postdatetodate), max(meternum), diametername
+insert into szv_data_device(devicecode, metercode, pipe)
+select distinct devicecode, metercode, pipe
 from szcc_jk.v_data@szcclnk
-group by devicecode, metercode, pipe, diametername
+/
+
+insert into szv_data_device(devicecode, metercode, pipe, postdate)
+select devicecode, metercode, pipe, max(postdate)
+from szcc_jk.v_data@szcclnk
+group by devicecode, metercode, pipe
 /
 
 set serveroutput on;

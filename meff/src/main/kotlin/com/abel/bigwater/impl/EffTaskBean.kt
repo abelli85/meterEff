@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import smile.clustering.GMeans
 import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.collections.ArrayList
@@ -252,6 +253,8 @@ open class EffTaskBean {
             sizeName = meter.sizeName
             modelSize = meter.modelSize
         }).firstOrNull()?.also { decay ->
+            meter.decayObj = decay
+
             if (decay.q1 ?: 0.0 > 1E-3) {
                 meter.q1 = decay.q1!!
                 meter.q1r = decay.q1r ?: 0.0
@@ -591,7 +594,7 @@ open class EffTaskBean {
             runTime = Date()
         }
 
-        if (!fillMeterEffPoint(eff, meter)) return false
+        if (!convertMeterEffPoint(eff, meter)) return false
 
         val dstart = dataList.firstOrNull { it.jodaSample?.monthOfYear == day.monthOfYear }
         val dend = dataList.firstOrNull { it.jodaSample?.monthOfYear ?: 0 != day.monthOfYear }
@@ -744,7 +747,7 @@ open class EffTaskBean {
          * Q4/Q3=1.25，Q2/Q1=1.6来确定过载流量Q4和分界流量Q2
          */
         fun fillModelPointList(meter: ZoneMeter) {
-            if (meter.q1 < 1E-3 || meter.q2 <= meter.q1 || meter.q3 <= meter.q2 || meter.q4 <= meter.q3) {
+            if (meter.q1 < 1E-3 || meter.q2 <= meter.q1 || meter.q3 <= meter.q2) {
                 throw IllegalArgumentException("invalid Q1/Q2/Q3/Q4")
             }
 
@@ -874,7 +877,7 @@ open class EffTaskBean {
                 runTime = Date()
             }
 
-            if (!fillMeterEffPoint(eff, meter)) return false
+            if (!convertMeterEffPoint(eff, meter)) return false
 
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
             eff.also {
@@ -971,10 +974,54 @@ open class EffTaskBean {
                 taskResult = ""
             }
 
+            gmeansModel(dlist.filter {
+                DateTime(it.sampleTime!!).withTimeAtStartOfDay().isEqual(day.withTimeAtStartOfDay())
+            }, eff)
+
             return true
         }
 
-        private fun fillMeterEffPoint(eff: EffMeter, meter: ZoneMeter): Boolean {
+        fun gmeansModel(dlist: List<BwData>, eff: EffMeter) {
+            val mg = GMeans.fit(dlist.dropLast(1).map { doubleArrayOf(it.avgFlow ?: 0.0) }.toTypedArray(), 10)
+            val mapModel = TreeMap<Int, ArrayList<BwData>>()
+            dlist.forEach {
+                val k = mg.predict(doubleArrayOf(it.avgFlow ?: 0.0))
+                if (!mapModel.containsKey(k)) {
+                    mapModel[k] = ArrayList()
+                }
+                mapModel[k]!!.add(it)
+            }
+
+            val mlist = TreeMap<Int, EffMeterPoint>()
+            mapModel.forEach {
+                if (!mlist.containsKey(it.key)) {
+                    mlist[it.key] = EffMeterPoint().apply {
+                        taskId = eff.taskId
+                        effId = eff.effId
+                        taskStart = eff.taskStart
+                        taskEnd = eff.taskEnd
+                        meterId = eff.meterId
+                        pointTypeObj = EffPointType.LEARN
+                        periodTypeObj = EffPeriodType.Day
+
+                        pointNo = it.key
+                        pointName = it.key.toString()
+                        pointFlow = it.value.minOf { d -> d.avgFlow ?: 0.0 }
+                        highLimit = it.value.maxOf { d -> d.avgFlow ?: 0.0 }
+
+                        pointWater = 0.0
+                    }
+                }
+
+                mlist[it.key]!!.also { p ->
+                    p.pointWater = it.value.sumByDouble { d -> d.forwardSum ?: 0.0 }
+                }
+            }
+
+            eff.modelPointList = eff.modelPointList.orEmpty().plus(mlist.values)
+        }
+
+        private fun convertMeterEffPoint(eff: EffMeter, meter: ZoneMeter): Boolean {
             eff.pointList = meter.pointList!!.sortedBy { it.pointFlow }
             eff.pointList!!.forEach {
                 if (it.pointFlow == null) {
