@@ -80,7 +80,7 @@ CREATE FOREIGN TABLE szv_userInfo(
 -- update szv_userinfo set recentread = firstinstall;
 -- commit;
 
-
+/*
 -- rule NOT work under big-data?
 DROP RULE rule_ignore_dupkey_data ON public.bw_data;
 
@@ -111,3 +111,4 @@ create trigger tr_ignore_dupkey_data
     for each row
 execute procedure sp_ignore_dupkey_data();
 -- CREATE TRIGGER
+*/

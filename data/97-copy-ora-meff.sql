@@ -188,6 +188,9 @@ select usr.muid,
     where usr.userstatusid = 1
     and usr.userwatermeterstatusid = 1
 -- limit 10
+-- firstinstall cannot be converted to/from oracle!
+-- update szv_userinfo set recentread = firstinstall;
+-- commit;
 ;
 
 select count(1)
@@ -204,9 +207,10 @@ where usr.userstatusid = 1
 -- 63730
 ;
 
-INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
+INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-SELECT zd.deviceCode
+SELECT zd.dataid
+     , zd.deviceCode
      , zd.postDateToDate
      , zd.meterNum
      , 1000
@@ -227,10 +231,10 @@ WHERE dataId BETWEEN 0 AND 5000000
 -- first copy:
 -- WHERE dataId BETWEEN 0 AND 10000000;
 
+INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
-
-SELECT zd.deviceCode
+SELECT zd.dataid
+     , zd.deviceCode
      , zd.postDateToDate
      , zd.meterNum
      , 1000
@@ -240,9 +244,10 @@ FROM szv_data zd
 WHERE dataId BETWEEN 5000001 AND 10000000
 ;
 
-INSERT INTO bw_data(extId, sampleTime, forwarddigits, literpulse, firmId, szid)
+INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-SELECT zd.deviceCode
+SELECT zd.dataid
+     , zd.deviceCode
      , zd.postDateToDate
      , zd.meterNum
      , 1000

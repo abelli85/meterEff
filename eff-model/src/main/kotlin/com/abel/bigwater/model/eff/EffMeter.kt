@@ -127,11 +127,17 @@ data class EffMeter(
     /**
      * 该结果对应的数据时段 - 起始时间
      */
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var startTime: Date? = null
 
     /**
      * 该结果对应的数据时段 - 结束时间
      */
+    @JsonSerialize(using = JsonDateSerializer::class)
+    @JsonDeserialize(using = JsonDateDeserializer::class)
+    @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var endTime: Date? = null
 
     /**
