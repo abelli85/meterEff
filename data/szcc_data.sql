@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/11/7 17:17:48                           */
+/* Created on:     2020/11/7 22:54:42                           */
 /*==============================================================*/
 
 
@@ -119,10 +119,16 @@ drop index IDX_METER_READ
 drop table SZV_METER_READ cascade constraints
 /
 
+drop index IDX_USER_STATUS
+/
+
 drop index IDX_USER_DEPT
 /
 
 drop table SZV_USERINFO cascade constraints
+/
+
+drop index IDX_USER_STATUS2
 /
 
 drop index IDX_USER_DEPT2
@@ -348,9 +354,8 @@ create table SZV_METER_READ
 /*==============================================================*/
 create index IDX_METER_READ on SZV_METER_READ (
    ROOTDEPTID ASC,
-   DEPTID ASC,
    METERCODE ASC,
-   THISREADINGTIME ASC
+   BUSINESSYEARMONTH ASC
 )
 /
 
@@ -395,6 +400,17 @@ create index IDX_USER_DEPT on SZV_USERINFO (
 /
 
 /*==============================================================*/
+/* Index: IDX_USER_STATUS                                       */
+/*==============================================================*/
+create index IDX_USER_STATUS on SZV_USERINFO (
+   USERSTATUSID ASC,
+   USERWATERMETERSTATUSID ASC,
+   ROOTDEPTID ASC,
+   METERCODE ASC
+)
+/
+
+/*==============================================================*/
 /* Table: SZV_USERINFO2                                         */
 /*==============================================================*/
 create table SZV_USERINFO2 
@@ -430,6 +446,17 @@ create table SZV_USERINFO2
 create index IDX_USER_DEPT2 on SZV_USERINFO2 (
    ROOTDEPTID ASC,
    DEPTID ASC,
+   METERCODE ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_USER_STATUS2                                      */
+/*==============================================================*/
+create index IDX_USER_STATUS2 on SZV_USERINFO2 (
+   USERSTATUSID ASC,
+   USERWATERMETERSTATUSID ASC,
+   ROOTDEPTID ASC,
    METERCODE ASC
 )
 /
