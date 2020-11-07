@@ -258,9 +258,9 @@ class MeterServiceImplTest {
 
     @Test
     fun testListMeterZoneText() {
-        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
         val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
-            keywords = "福州|中国|花园"
+            keywords = "中国 \t花园 街道申舒斯福州\r\n"
             firmId = "76%"
         })
 
@@ -272,9 +272,9 @@ class MeterServiceImplTest {
 
     @Test
     fun testListMeterDmaText() {
-        val login = TestHelper.login(loginService, "fuzhou", "test").single ?: fail("fail to login")
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
         val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
-            keywords = "福州"
+            keywords = "维也纳街道"
             firmId = "76%"
             dmaId = "%"
         })

@@ -1018,6 +1018,7 @@
         <where>
             <if test="keywords != null">
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
+                OR to_tsvector('parser_name', m.location) @@ to_tsquery('parser_name', #{keywords})
             </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
@@ -1186,6 +1187,7 @@
         <where>
             <if test="keywords != null">
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
+                OR to_tsvector('parser_name', m.location) @@ to_tsquery('parser_name', #{keywords})
             </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
