@@ -193,6 +193,16 @@ select usr.muid,
 -- commit;
 ;
 
+update bw_meter
+set sizeid = to_number(sizename, '99999')
+;
+
+select powertype, count(1) pcnt
+from bw_meter
+group by powertype;
+-- MANUAL    | 45447
+-- BATTERY   | 18283
+
 select count(1)
 from szv_userinfo usr
          left join szv_data_device dd on usr.metercode = dd.metercode
@@ -207,56 +217,21 @@ where usr.userstatusid = 1
 -- 63730
 ;
 
-INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
+-- 更新远传表
+select count(1)
+from bw_meter as m
+join szv_data_device dd on m.metercode = dd.meterCode;
 
-SELECT zd.dataid
-     , zd.deviceCode
-     , zd.postDateToDate
-     , zd.meterNum
-     , 1000
-     , '27'
-     , zd.dataid
-FROM szv_data zd
-WHERE dataId BETWEEN 0 AND 5000000
-    /*
-         JOIN (
-    SELECT deviceCode, postDateToDate, MAX(dataId) datId
-    FROM szv_data
-    WHERE dataId BETWEEN 0 AND 10000000
-    GROUP BY deviceCode, postDateToDate
-) zdx ON zd.dataId = zdx.datId
-     */
--- limit 10
-;
--- first copy:
--- WHERE dataId BETWEEN 0 AND 10000000;
+select count(1)
+    from bw_meter m
+where m.extid in (select distinct extid from bw_data);
 
-INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
-
-SELECT zd.dataid
-     , zd.deviceCode
-     , zd.postDateToDate
-     , zd.meterNum
-     , 1000
-     , '27'
-     , zd.dataid
-FROM szv_data zd
-WHERE dataId BETWEEN 5000001 AND 10000000
-;
-
-INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
-
-SELECT zd.dataid
-     , zd.deviceCode
-     , zd.postDateToDate
-     , zd.meterNum
-     , 1000
-     , '27'
-     , zd.dataid
-FROM szv_data zd
-WHERE dataId BETWEEN 10000001 AND 15000000
-;
-
+update bw_meter AS m
+set firmid = '2703',
+    extid = dd.deviceCode
+from szv_data_device dd
+where m.meterCode = dd.meterCode and m.extid in (select distinct extid from bw_data);
+-- 95
 
 INSERT INTO bw_eff_decay(
 meterbrandid
@@ -290,6 +265,8 @@ values(
 
 UPDATE bw_meter
 SET decayId = 1
-WHERE decayId IS NULL;
+WHERE decayId IS NULL
+and extid in (select distinct extid from bw_data);
+;
 
 
