@@ -812,8 +812,8 @@ open class EffTaskBean {
                 eff.also {
                     it.startFwd = dlist.firstOrNull()?.forwardReading
                     it.startTime = dlist.firstOrNull()?.sampleTime
-                    it.endFwd = dlist.firstOrNull()?.forwardReading
-                    it.endTime = dlist.firstOrNull()?.sampleTime
+                    it.endFwd = dlist.lastOrNull()?.forwardReading
+                    it.endTime = dlist.lastOrNull()?.sampleTime
                     it.meterWater = it.endFwd?.minus(it.startFwd ?: 0.0)
 
                     // to avoid dividen-by-0 when matching match.
@@ -1068,8 +1068,8 @@ open class EffTaskBean {
             eff.also {
                 it.startFwd = dlist.firstOrNull()?.forwardReading
                 it.startTime = dlist.firstOrNull()?.sampleTime
-                it.endFwd = dlist.firstOrNull()?.forwardReading
-                it.endTime = dlist.firstOrNull()?.sampleTime
+                it.endFwd = dlist.lastOrNull()?.forwardReading
+                it.endTime = dlist.lastOrNull()?.sampleTime
                 it.meterWater = (it.endFwd ?: 0.0) - (it.startFwd ?: 0.0)
                 if (it.meterWater ?: 0.0 < 1.0E-3) {
                     it.meterWater = 1.0E-3
