@@ -729,17 +729,19 @@ open class EffTaskBean {
 
         // if there're no eff-rows, then use time-range [min, min + days];
         // if there're eff-rows, then [eff.max - 1'day', eff.max + days].
-        val effRange = if (weeks ?: 0 > 0)
+        val effRange = if (task.taskStart == null || task.taskEnd == null)
             effMapper!!.listEffRange(EffParam().apply {
                 meterId = meter.meterId
+                periodTypeObj = EffPeriodType.Week
+                pointTypeObj = EffPointType.LEARN
             }).firstOrNull()?.also {
                 // change with days
                 it.minDateTime = it.maxDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
-                it.maxDateTime = it.maxDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks!!)
+                it.maxDateTime = it.maxDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks ?: 4)
             } ?: DataRange().also {
                 it.meterId = meter.meterId
                 it.minDateTime = timeRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
-                it.maxDateTime = timeRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks!!)
+                it.maxDateTime = timeRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1).plusWeeks(weeks ?: 4)
             }
         else
         // change with task
@@ -763,7 +765,7 @@ open class EffTaskBean {
         var day1 = effRange.minDateTime!!.withTimeAtStartOfDay().withDayOfWeek(1)
         while (day1.isBefore(effRange.maxDateTime)) {
             // truncate to week
-            day1 = day1.withDayOfWeek(1)
+//            day1 = day1.withDayOfWeek(1)
 
             val eff = EffMeter().apply {
                 meterId = meter.meterId
@@ -798,13 +800,24 @@ open class EffTaskBean {
                 }
             }
 
-            val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
+            val dlistReal = dataMapper!!.selectMeterRealtime(DataParam().apply {
                 meterId = meter.meterId
                 sampleTime1 = eff.taskStart
                 sampleTime2 = eff.taskEnd
                 rows = 20000
             })
-            if (dlist.isEmpty()) {
+            for (idx in 1.until(dlistReal.size)) {
+                val d1 = dlistReal[idx - 1]
+                val d2 = dlistReal[idx]
+
+                d1.forwardSum = d2.forwardReading?.minus(d1.forwardReading ?: 0.0) ?: 0.0
+                // divided by 0?
+                d1.avgFlow = d1.forwardSum?.div(
+                        Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
+            }
+            val dlist = dlistReal.dropWhile { it.avgFlow ?: 0.0 < 1.0E-3 }
+
+            if (dlistReal.isEmpty()) {
                 eff.taskResult = EffFailureType.DEVICE_OFFLINE.name
             } else if (dlist.size < 20) {
                 eff.taskResult = EffFailureType.DATA_LESS.name
@@ -814,6 +827,7 @@ open class EffTaskBean {
                     it.startTime = dlist.firstOrNull()?.sampleTime
                     it.endFwd = dlist.lastOrNull()?.forwardReading
                     it.endTime = dlist.lastOrNull()?.sampleTime
+                    it.stdDays = Duration(DateTime(it.startTime), DateTime(it.endTime)).standardSeconds.toDouble().div(24 * 3600)
                     it.meterWater = it.endFwd?.minus(it.startFwd ?: 0.0)
 
                     // to avoid dividen-by-0 when matching match.
@@ -827,56 +841,51 @@ open class EffTaskBean {
                 }
 
                 if (eff.taskResult.isNullOrBlank()) {
-                    for (idx in 1.until(dlist.size)) {
-                        val d1 = dlist[idx - 1]
-                        val d2 = dlist[idx]
 
-                        d1.forwardSum = d2.forwardReading?.minus(d1.forwardReading ?: 0.0) ?: 0.0
-                        // divided by 0?
-                        d1.avgFlow = d1.forwardSum?.div(
-                                Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
-                    }
-                    eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
-
-                    if (!gmeansModel(dlist, eff)) {
-                        eff.taskResult = EffFailureType.DATA.name
+                    try {
+                        if (!gmeansModel(dlist, eff)) {
+                            eff.taskResult = EffFailureType.DATA.name
+                        }
+                    } catch (ex: Exception) {
+                        eff.taskResult = EffFailureType.OTHER.name
+                        eff.decayEff = ex.message?.take(18)
                     }
                 }
 
                 eff.apply {
                     runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
                 }
-
-                // save to database.
-                val param = EffParam().apply {
-                    meterId = meter.meterId
-                    periodTypeObj = eff.periodTypeObj
-                    pointTypeObj = EffPointType.LEARN
-                    taskStart = day1.toDate()
-                }
-                lgr.info("remove eff point/meter/failure: {}/{}/{}",
-                        effMapper!!.deleteEffPoint(param),
-                        effMapper!!.deleteEffMeter(param),
-                        effMapper!!.deleteEffFailure(param)
-                )
-
-                if (eff.taskResult.isNullOrBlank()) {
-                    val cntEff = effMapper!!.insertEffMeterSingle(eff)
-
-                    val pp = EffParam().apply {
-                        pointEffList = eff.modelPointList
-                        pointEffList?.forEach { it.effId = eff.effId }
-                    }
-                    val cntPt = effMapper!!.insertEffPoint(pp)
-                    lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
-                } else {
-                    effMapper!!.insertEffFailureSingle(eff)
-                    lgr.error("fail to learn weekly modeal caused by {} / {} @ {}",
-                            eff.taskResult, eff.meterId, LocalDate(eff.taskStart))
-                }
-
-                retList.add(eff)
             }
+
+            // save to database.
+            val param = EffParam().apply {
+                meterId = meter.meterId
+                periodTypeObj = eff.periodTypeObj
+                pointTypeObj = EffPointType.LEARN
+                taskStart = day1.toDate()
+            }
+            lgr.info("remove eff point/meter/failure: {}/{}/{}",
+                    effMapper!!.deleteEffPoint(param),
+                    effMapper!!.deleteEffMeter(param),
+                    effMapper!!.deleteEffFailure(param)
+            )
+
+            if (eff.taskResult.isNullOrBlank()) {
+                val cntEff = effMapper!!.insertEffMeterSingle(eff)
+
+                val pp = EffParam().apply {
+                    pointEffList = eff.modelPointList
+                    pointEffList?.forEach { it.effId = eff.effId }
+                }
+                val cntPt = effMapper!!.insertEffPoint(pp)
+                lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
+            } else {
+                effMapper!!.insertEffFailureSingle(eff)
+                lgr.error("fail to learn weekly modeal caused by {} / {} @ {}",
+                        eff.taskResult, eff.meterId, LocalDate(eff.taskStart))
+            }
+
+            retList.add(eff)
 
             day1 = day1.plusWeeks(1)
         }

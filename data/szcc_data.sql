@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/11/4 21:17:27                           */
+/* Created on:     2020/11/7 17:17:48                           */
 /*==============================================================*/
 
 
@@ -74,6 +74,9 @@ drop trigger "tib_szv_meter_read"
 drop trigger "tib_szv_userinfo"
 /
 
+drop trigger "tib_szv_userinfo2"
+/
+
 drop index IDX_DATA_METER_ID
 /
 
@@ -122,6 +125,12 @@ drop index IDX_USER_DEPT
 drop table SZV_USERINFO cascade constraints
 /
 
+drop index IDX_USER_DEPT2
+/
+
+drop table SZV_USERINFO2 cascade constraints
+/
+
 drop sequence SEQ_DATA
 /
 
@@ -135,6 +144,9 @@ drop sequence SEQ_METER_READ
 /
 
 drop sequence SEQ_MUSER
+/
+
+drop sequence SEQ_MUSER2
 /
 
 create sequence SEQ_DATA
@@ -158,6 +170,11 @@ start with 1
 /
 
 create sequence SEQ_MUSER
+increment by 1
+start with 1
+/
+
+create sequence SEQ_MUSER2
 increment by 1
 start with 1
 /
@@ -377,6 +394,46 @@ create index IDX_USER_DEPT on SZV_USERINFO (
 )
 /
 
+/*==============================================================*/
+/* Table: SZV_USERINFO2                                         */
+/*==============================================================*/
+create table SZV_USERINFO2 
+(
+   MUID                 NUMBER(38)           not null,
+   DEPTID               NUMBER(6)            not null,
+   SUBFIRM              VARCHAR2(50),
+   SUBBRANCH            VARCHAR2(50),
+   ROOTDEPTID           NUMBER(6)            not null,
+   METERCODE            VARCHAR2(12)         not null,
+   METERSERIAL          VARCHAR2(50)         not null,
+   USERSTATUSID         NUMERIC(3)           not null,
+   USERWATERMETERSTATUSID NUMERIC(3)           not null,
+   USERNAME             NVARCHAR2(100)       not null,
+   USERADDR             VARCHAR2(200)        not null,
+   METERBRAND           NVARCHAR2(50),
+   MODELSIZE             VARCHAR2(20)        not null,
+   SIZEID               NUMBER(10),
+   SIZENAME              VARCHAR2(20)        not null,
+   USETYPE              NVARCHAR2(500),
+   METERTYPE             VARCHAR2(150),
+   FIRSTINSTALL         DATE                 not null,
+   RECENTINSTALL        DATE,
+   RECENTREAD           DATE,
+   RECENTFWD            NUMBER(10),
+   constraint PK_SZV_USERINFO2 primary key (MUID)
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_USER_DEPT2                                        */
+/*==============================================================*/
+create index IDX_USER_DEPT2 on SZV_USERINFO2 (
+   ROOTDEPTID ASC,
+   DEPTID ASC,
+   METERCODE ASC
+)
+/
+
 
 create trigger "tib_szv_data" before insert
 on SZV_DATA for each row
@@ -474,6 +531,27 @@ declare
 begin
     --  Column "MUID" uses sequence SEQ_MUSER
     select SEQ_MUSER.NEXTVAL INTO :new.MUID from dual;
+
+--  Errors handling
+exception
+    when integrity_error then
+       raise_application_error(errno, errmsg);
+end;
+/
+
+
+create trigger "tib_szv_userinfo2" before insert
+on SZV_USERINFO2 for each row
+declare
+    integrity_error  exception;
+    errno            integer;
+    errmsg           char(200);
+    dummy            integer;
+    found            boolean;
+
+begin
+    --  Column "MUID" uses sequence SEQ_MUSER2
+    select SEQ_MUSER2.NEXTVAL INTO :new.MUID from dual;
 
 --  Errors handling
 exception

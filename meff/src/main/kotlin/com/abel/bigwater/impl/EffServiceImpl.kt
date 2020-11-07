@@ -772,7 +772,7 @@ class EffServiceImpl : EffService {
                 firmName = login.single!!.firmName
                 taskStart = param.taskStart ?: EffTaskBean.DUMMY_START.toDate()
                 taskEnd = param.taskEnd ?: EffTaskBean.DUMMY_END.toDate()
-                periodTypeObj = EffPeriodType.Day
+                periodTypeObj = EffPeriodType.Week
 
                 effMapper!!.createEffTask(this)
             }

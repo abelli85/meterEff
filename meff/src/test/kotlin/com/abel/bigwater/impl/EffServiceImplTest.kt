@@ -584,7 +584,7 @@ class EffServiceImplTest {
 
         val r1 = effService!!.learnMeterModel(BwHolder(TestHelper.buildLoginRequest(login),
                 EffParam().apply {
-                    meterId = "164"
+                    meterId = "399961"
                     taskStart = LocalDate(2020, 9, 1).toDate()
                     taskEnd = LocalDate(2020, 10, 1).toDate()
                 })).also {
