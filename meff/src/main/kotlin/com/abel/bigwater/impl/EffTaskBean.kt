@@ -611,7 +611,7 @@ open class EffTaskBean {
 
         if (dstart == null || dend == null) {
             lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
-            eff.taskResult = EffFailureType.DATA.name
+            eff.taskResult = EffFailureType.DATA_LESS.name
             return false
         }
         if (dstart.sampleTime == null || dend.sampleTime == null) {
@@ -804,8 +804,10 @@ open class EffTaskBean {
                 sampleTime2 = eff.taskEnd
                 rows = 20000
             })
-            if (dlist.size < 2) {
-                eff.taskResult = EffFailureType.DATA.name
+            if (dlist.isEmpty()) {
+                eff.taskResult = EffFailureType.DEVICE_OFFLINE.name
+            } else if (dlist.size < 20) {
+                eff.taskResult = EffFailureType.DATA_LESS.name
             } else {
                 eff.also {
                     it.startFwd = dlist.firstOrNull()?.forwardReading
@@ -815,23 +817,31 @@ open class EffTaskBean {
                     it.meterWater = it.endFwd?.minus(it.startFwd ?: 0.0)
 
                     // to avoid dividen-by-0 when matching match.
-                    if (it.meterWater ?: 0.0 < 1.0E-3) it.meterWater = 1.0E-3
+                    if (it.meterWater ?: 0.0 < 1.0E-3) {
+                        it.taskResult = EffFailureType.DATA.name;
+
+                        it.meterWater = 1.0E-3
+                    }
 
                     it.runTime = Date()
                 }
 
-                for (idx in 1.until(dlist.size)) {
-                    val d1 = dlist[idx - 1]
-                    val d2 = dlist[idx]
+                if (eff.taskResult.isNullOrBlank()) {
+                    for (idx in 1.until(dlist.size)) {
+                        val d1 = dlist[idx - 1]
+                        val d2 = dlist[idx]
 
-                    d1.forwardSum = d2.forwardReading?.minus(d1.forwardReading ?: 0.0) ?: 0.0
-                    // divided by 0?
-                    d1.avgFlow = d1.forwardSum?.div(
-                            Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
+                        d1.forwardSum = d2.forwardReading?.minus(d1.forwardReading ?: 0.0) ?: 0.0
+                        // divided by 0?
+                        d1.avgFlow = d1.forwardSum?.div(
+                                Duration(DateTime(d1.sampleTime), DateTime(d2.sampleTime)).standardSeconds.div(3600.0))
+                    }
+                    eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
+
+                    if (!gmeansModel(dlist, eff)) {
+                        eff.taskResult = EffFailureType.DATA.name
+                    }
                 }
-                eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
-
-                gmeansModel(dlist, eff)
 
                 eff.apply {
                     runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
@@ -844,18 +854,26 @@ open class EffTaskBean {
                     pointTypeObj = EffPointType.LEARN
                     taskStart = day1.toDate()
                 }
-                lgr.info("remove eff meter: {}/{}",
+                lgr.info("remove eff point/meter/failure: {}/{}/{}",
                         effMapper!!.deleteEffPoint(param),
-                        effMapper!!.deleteEffMeter(param)
+                        effMapper!!.deleteEffMeter(param),
+                        effMapper!!.deleteEffFailure(param)
                 )
 
-                val cntEff = effMapper!!.insertEffMeterSingle(eff)
-                val pp = EffParam().apply {
-                    pointEffList = eff.modelPointList
-                    pointEffList?.forEach { it.effId = eff.effId }
+                if (eff.taskResult.isNullOrBlank()) {
+                    val cntEff = effMapper!!.insertEffMeterSingle(eff)
+
+                    val pp = EffParam().apply {
+                        pointEffList = eff.modelPointList
+                        pointEffList?.forEach { it.effId = eff.effId }
+                    }
+                    val cntPt = effMapper!!.insertEffPoint(pp)
+                    lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
+                } else {
+                    effMapper!!.insertEffFailureSingle(eff)
+                    lgr.error("fail to learn weekly modeal caused by {} / {} @ {}",
+                            eff.taskResult, eff.meterId, LocalDate(eff.taskStart))
                 }
-                val cntPt = effMapper!!.insertEffPoint(pp)
-                lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
 
                 retList.add(eff)
             }
@@ -1024,6 +1042,14 @@ open class EffTaskBean {
                 return false
             }
 
+            if (dataList.size < 1) {
+                eff.taskResult = EffFailureType.DEVICE_OFFLINE.name
+                return false
+            } else if (dataList.size < 2) {
+                eff.taskResult = EffFailureType.DATA_LESS.name
+                return false
+            }
+
             // decayed eff
             eff.decayObj = meter.decayObj
 
@@ -1034,17 +1060,22 @@ open class EffTaskBean {
             if (!convertMeterEffPoint(eff, meter)) return false
 
             val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
+            if (dlist.size < 2) {
+                lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                eff.taskResult = EffFailureType.DATA_LESS.name
+                return false
+            }
             eff.also {
                 it.startFwd = dlist.firstOrNull()?.forwardReading
                 it.startTime = dlist.firstOrNull()?.sampleTime
                 it.endFwd = dlist.firstOrNull()?.forwardReading
                 it.endTime = dlist.firstOrNull()?.sampleTime
-            }
-
-            if (dlist.size < 2) {
-                lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
-                eff.taskResult = EffFailureType.DATA.name
-                return false
+                it.meterWater = (it.endFwd ?: 0.0) - (it.startFwd ?: 0.0)
+                if (it.meterWater ?: 0.0 < 1.0E-3) {
+                    it.meterWater = 1.0E-3
+                    it.taskResult = EffFailureType.DATA.name
+                    return false
+                }
             }
 
             dlist.forEach {
@@ -1097,11 +1128,9 @@ open class EffTaskBean {
 
             eff.apply {
                 runDuration = Duration(DateTime(runTime!!), DateTime.now()).millis.toInt()
-                meterWater = pointEffList!!.sumByDouble { it.pointWater!! }
                 realWater = pointEffList!!.sumByDouble { it.realWater!! }
 
                 // to avoid dividen-by-0 when matching match.
-                if (meterWater ?: 0.0 < 1.0E-3) meterWater = 1.0E-3
                 if (realWater ?: 0.0 < 1.0E-3) realWater = 1.0E-3
 
                 meterEff = if (realWater!! > 1.0E-3) {
@@ -1128,14 +1157,27 @@ open class EffTaskBean {
                 taskResult = ""
             }
 
+            // ignore daily gmeans.
+/*
             gmeansModel(dlist.filter {
                 DateTime(it.sampleTime!!).withTimeAtStartOfDay().isEqual(day.withTimeAtStartOfDay())
             }, eff)
+*/
 
             return true
         }
 
-        fun gmeansModel(dlist: List<BwData>, eff: EffMeter) {
+        fun gmeansModel(dlist: List<BwData>, eff: EffMeter): Boolean {
+            // do not study anymore.
+            if (dlist.size < 20) {
+                return false;
+            }
+            eff.meterWater = dlist.lastOrNull()?.forwardReading?.minus(
+                    dlist.firstOrNull()?.forwardReading ?: 0.0) ?: 0.0
+            if (eff.meterWater!! < 1.0) {
+                return false
+            }
+
             val mg = GMeans.fit(dlist.dropLast(1).map { doubleArrayOf(it.avgFlow ?: 0.0) }.toTypedArray(), 12)
             val mapModel = TreeMap<Int, ArrayList<BwData>>()
             dlist.forEach {
@@ -1179,6 +1221,8 @@ open class EffTaskBean {
             }
 
             eff.modelPointList = eff.modelPointList.orEmpty().plus(plist)
+
+            return true
         }
 
         private fun convertMeterEffPoint(eff: EffMeter, meter: ZoneMeter): Boolean {
