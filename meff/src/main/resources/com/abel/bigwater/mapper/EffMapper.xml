@@ -923,6 +923,7 @@
     , modelSize
     , dataRows
     , decayEff
+    , srcError
     , q4
     , q3
     , q3toq1
@@ -963,6 +964,7 @@
          , m.modelSize
          , m2.dataRows
          , m.decayEff
+         , m.srcError
          , m.q4
          , m.q3
          , m.q3toq1
@@ -1222,6 +1224,7 @@
         , modelSize
         , dataRows
         , decayEff
+        , srcError
         , q4
         , q3
         , q3toq1
@@ -1262,6 +1265,7 @@
         , m.modelSize
         , m2.dataRows
         , m.decayEff
+        , m.srcError
         , m.q4
         , m.q3
         , m.q3toq1

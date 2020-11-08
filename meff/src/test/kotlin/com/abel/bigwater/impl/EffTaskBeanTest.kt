@@ -70,17 +70,22 @@ class EffTaskBeanTest {
     @Test
     fun effMeterManual() {
         val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
-            meterId = "164"
+            meterId = "399961"
         }).firstOrNull() ?: fail("选择的水表不存在: 101")
 
         if (!bean!!.fillPointList(meter)) fail("水表101缺少检定点")
 
         bean!!.effMeterRange(meter, LocalDate(2020, 10, 1).toDateTimeAtStartOfDay(),
-                LocalDate(2020, 10, 25).toDateTimeAtStartOfDay(),
+                LocalDate(2020, 10, 31).toDateTimeAtStartOfDay(),
                 EffTask().apply {
                     taskId = 0
                     taskName = "test-0"
                 })
+
+        bean!!.buildMonthEff(DataRange().apply {
+            minDateTime = LocalDate(2020, 10, 1).toDateTimeAtStartOfDay()
+            maxDateTime = LocalDate(2020, 10, 31).toDateTimeAtStartOfDay()
+        })
     }
 
     /**

@@ -434,6 +434,8 @@ open class EffTaskBean {
             val eff = EffMeter().apply {
                 meterId = meter.meterId
                 meterName = meter.meterName
+                powerType = meter.powerType
+
                 taskId = task.taskId
                 taskName = task.taskName
 
@@ -441,7 +443,7 @@ open class EffTaskBean {
                 sizeId = meter.sizeId ?: 0
                 sizeName = meter.sizeName ?: "0"
                 modelSize = meter.modelSize
-                srcErrorObj = meter.srcErrorObj
+                srcError = meter.srcError
 
                 qr1 = meter.q1r
                 qr2 = meter.q2r
