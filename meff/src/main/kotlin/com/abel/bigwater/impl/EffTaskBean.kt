@@ -1070,7 +1070,9 @@ open class EffTaskBean {
 
             if (!convertMeterEffPoint(eff, meter)) return false
 
-            val dlist = dataList.dropWhile { it.jodaSample?.withTimeAtStartOfDay() != day }
+            val idxStart = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay() == day }
+            val idxEnd = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay()?.isAfter(day) == true }
+            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd ?: dataList.size - 1) + 1) else emptyList()
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
                 eff.taskResult = EffFailureType.DATA_LESS.name
@@ -1087,14 +1089,7 @@ open class EffTaskBean {
                     it.taskResult = EffFailureType.DATA.name
                     return false
                 }
-            }
-
-            dlist.forEach {
-                if (it.sampleTime == null) {
-                    lgr.error("采样时间不能为空: ${meter.meterId}")
-                    eff.taskResult = EffFailureType.ABSENT_TIME.name
-                    return false
-                }
+                it.stdDays = Duration(DateTime(it.startTime), DateTime(it.endTime)).standardSeconds.toDouble().div(24 * 3600)
             }
 
             for (idx in 1.until(dlist.size)) {
@@ -1112,18 +1107,7 @@ open class EffTaskBean {
                 eff.modelPointList!!.firstOrNull { d1.avgFlow!!.absoluteValue <= it.pointFlow!! }?.also { mp ->
                     mp.pointWater = mp.pointWater!!.plus(d1.forwardSum!!)
                 }
-
-                // break if not same day
-                if (DateTime(d2.sampleTime!!).dayOfMonth != DateTime(d1.sampleTime!!).dayOfMonth) {
-                    eff.also {
-                        it.endFwd = d2.forwardReading
-                        it.endTime = d2.sampleTime
-                        it.dataRows = idx
-                    }
-                    break
-                }
             }
-            eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
 
             eff.pointEffList!!.forEach {
                 it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev!!).div(100.0)
