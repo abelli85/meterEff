@@ -328,9 +328,14 @@ as
         thisMth := to_number(to_char(current_date, 'MM'));
         for ucode in (select distinct rootDeptId from szv_userinfo order by rootDeptId)
             loop
-                if ym1 > 201000 and ym2 <= thisYr * 100 + thisMth then
+                if ym1 > 201000 and ym2 >= 201000 then
+                    if ym2 > (thisYr * 100 + thisMth) then
+                        ucisBym2 := thisYr * 100 + thisMth;
+                        else
+                        ucisBym2 := ym2;
+                    end if;
+
                     testBym2 := ym1;
-                    ucisBym2 := ym2;
 
                     testBym1 := 0;
                     ucisBym1 := 0;
@@ -363,16 +368,16 @@ as
 
                 while testBym2 <= ucisBym2
                     loop
-                        thisYr := trunc(testBym2 / 100, 0);
+                        thisYr := trunc(testBym2 / 100);
                         thisMth := mod(testBym2, 100);
-                        if thisMth + 1 > 12 then
-                            prd1 := (thisYr + 1) * 100 + thisMth + 1;
+                        if thisMth > 11 then
+                            prd1 := (thisYr + 1) * 100 + thisMth - 11;
                             else
                             prd1 := thisYr * 100 + thisMth + 1;
                         end if;
 
-                        if thisMth + 2 > 12 then
-                            prd2 := (thisYr + 1) * 100 + thisMth + 2;
+                        if thisMth > 10 then
+                            prd2 := (thisYr + 1) * 100 + thisMth - 10;
                             else
                             prd2 := thisYr * 100 + thisMth + 2;
                         end if;
@@ -460,7 +465,7 @@ as
 
 /*
 
-execute copy_ucis(201900, 202100);
+execute copy_ucis(201900, 202101);
 /
 
 */
