@@ -179,11 +179,14 @@ grant read, write on directory tmp to public;
 create or replace procedure copy_ucis(ym1 integer, ym2 integer)
 as
     lgr    utl_file.file_type;
-        testBym1 integer;
-        testBym2 integer;
-        ucisBym1 integer;
-        ucisBym2 integer;
-        thisYrm integer;
+        testBym1 number(6);
+        testBym2 number(6);
+        ucisBym1 number(6);
+        ucisBym2 number(6);
+        thisYr number(4);
+        thisMth number(2);
+        prd1 number(6);
+        prd2 number(6);
     begin
         lgr := utl_file.fopen('TMP', 'copy_ucis.log', 'A', 1000);
         if utl_file.is_open(lgr) then
@@ -196,6 +199,7 @@ as
         drop sequence SEQ_MUSER2;
         create sequence SEQ_MUSER2 increment by 1 start with 1;
          */
+        utl_file.put_line(lgr, 'prepare to truncate local szv_userinfo2.', true);
         delete from szv_userinfo2;
         commit;
 
@@ -245,7 +249,7 @@ as
         FROM UCIS.V_JSB_METERCHECK@UCISLNK;
         commit;
         dbms_output.put_line('intermediate userinfo ' || sql%rowcount );
-        utl_file.put_line(lgr, current_timestamp || ' intermediate userinfo ' || sql%rowcount );
+        utl_file.put_line(lgr, current_timestamp || ' intermediate userinfo ' || sql%rowcount , true);
 
         INSERT INTO SZV_USERINFO(
                                   DEPTID
@@ -297,7 +301,7 @@ as
         );
         commit;
         dbms_output.put_line('ucis 新装水表: ' || sql%rowcount );
-        utl_file.put_line(lgr, 'ucis 新装水表: ' || sql%rowcount );
+        utl_file.put_line(lgr, 'ucis 新装水表: ' || sql%rowcount , true);
 
         update szv_userinfo u
         set (userStatusId, userWaterMeterStatusId)
@@ -318,12 +322,13 @@ as
                        and u.meterCode = v2.meterCode);
         commit;
         dbms_output.put_line('ucis 变动水表: ' || sql%rowcount );
-        utl_file.put_line(lgr, 'ucis 变动水表: ' || sql%rowcount );
+        utl_file.put_line(lgr, 'ucis 变动水表: ' || sql%rowcount , true);
 
+        thisYr := to_number(to_char(current_date, 'YYYY'));
+        thisMth := to_number(to_char(current_date, 'MM'));
         for ucode in (select distinct rootDeptId from szv_userinfo order by rootDeptId)
             loop
-                thisYrm := to_number(to_char(current_date, 'YYYYMM'));
-                if ym1 > 201000 and ym2 <= thisYrm then
+                if ym1 > 201000 and ym2 <= thisYr * 100 + thisMth then
                     testBym2 := ym1;
                     ucisBym2 := ym2;
 
@@ -340,20 +345,38 @@ as
                     from ucis.v_jsb_metercheck@ucislnk
                     where rootDeptId = ucode.rootDeptId;
 
-                    if ucisBym2 > thisYrm then
-                            ucisBym2 := thisYrm;
+                    if ucisBym2 > thisYr * 100 + thisMth then
+                            ucisBym2 := thisYr * 100 + thisMth;
                     end if;
-                    if testBym2 > thisYrm then
-                            testBym2 := thisYrm - 2;
+                    if testBym2 > thisYr * 100 + thisMth then
+                        if thisMth - 2 > 0 then
+                            testBym2 := thisYr * 100 + thisMth - 2;
+                            else
+                            testBym2 := (thisYr - 1) * 100 + thisMth + 10;
+                        end if;
                     end if;
                     commit;
                 end if;
 
                 dbms_output.put_line('同步抄表范围 ' || ucode.rootDeptId || ': test[' || testBym1 || ', ' || testBym2 || '], ucis[' || ucisBym1 || ', ' || ucisBym2 || ']');
-                utl_file.put_line(lgr, '同步抄表范围 ' || ucode.rootDeptId || ': test[' || testBym1 || ', ' || testBym2 || '], ucis[' || ucisBym1 || ', ' || ucisBym2 || ']');
+                utl_file.put_line(lgr, '同步抄表范围 ' || ucode.rootDeptId || ': test[' || testBym1 || ', ' || testBym2 || '], ucis[' || ucisBym1 || ', ' || ucisBym2 || ']', true);
 
                 while testBym2 <= ucisBym2
                     loop
+                        thisYr := trunc(testBym2, 100);
+                        thisMth := mod(testBym2, 100);
+                        if thisMth + 1 > 12 then
+                            prd1 := (thisYr + 1) * 100 + thisMth + 1;
+                            else
+                            prd1 := thisYr * 100 + thisMth + 1;
+                        end if;
+
+                        if thisMth + 2 > 12 then
+                            prd2 := (thisYr + 1) * 100 + thisMth + 2;
+                            else
+                            prd2 := thisYr * 100 + thisMth + 2;
+                        end if;
+
                         insert into szv_meter_read(
                             DEPTID
                             , SUBFIRM
@@ -411,15 +434,17 @@ as
                             "USERWATERMETERSTATUSID"
                         from ucis.v_jsb_metercheck@ucislnk
                         where rootDeptId = ucode.rootDeptId
-                          and businessYearMonth between testBym2 + 1 and testBym2 + 2;
+                          and businessYearMonth between prd1 and prd2;
 
-                        testBym2 := testBym2 + 2;
+                        testBym2 := prd2;
                         commit;
 
-                        dbms_output.put_line(current_timestamp || ' 同步抄表数据 from ' || (testBym2 + 1) || ' to ' || (testBym2 + 2) || ' rows: ' || sql%rowcount );
-                        utl_file.put_line(lgr, current_timestamp || ' 同步抄表数据 from ' || (testBym2 + 1) || ' to ' || (testBym2 + 2) || ' rows: ' || sql%rowcount );
+                        dbms_output.put_line(current_timestamp || ' 同步抄表数据 from ' || prd1 || ' to ' || prd2 || ' rows: ' || sql%rowcount );
+                        utl_file.put_line(lgr, current_timestamp || ' 同步抄表数据 from ' || prd1 || ' to ' || prd2 || ' rows: ' || sql%rowcount , true);
 
                     end loop;
+
+                utl_file.fflush(lgr);
             end loop;
 
         utl_file.fclose(lgr);
@@ -435,7 +460,7 @@ as
 
 /*
 
-execute copy_ucis(202101, 201901);
+execute copy_ucis(201900, 202100);
 /
 
 */
