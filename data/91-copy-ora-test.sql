@@ -363,7 +363,7 @@ as
 
                 while testBym2 <= ucisBym2
                     loop
-                        thisYr := trunc(testBym2, 100);
+                        thisYr := trunc(testBym2 / 100, 0);
                         thisMth := mod(testBym2, 100);
                         if thisMth + 1 > 12 then
                             prd1 := (thisYr + 1) * 100 + thisMth + 1;
