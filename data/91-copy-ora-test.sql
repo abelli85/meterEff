@@ -247,9 +247,9 @@ as
                       , "最近抄表日期"
                       , "最近抄表行度"
         FROM UCIS.V_JSB_METERCHECK@UCISLNK;
-        commit;
         dbms_output.put_line('intermediate userinfo ' || sql%rowcount );
         utl_file.put_line(lgr, current_timestamp || ' intermediate userinfo ' || sql%rowcount , true);
+        commit;
 
         INSERT INTO SZV_USERINFO(
                                   DEPTID
@@ -299,9 +299,9 @@ as
             select distinct meterCode
             from szv_userinfo
         );
-        commit;
         dbms_output.put_line('ucis 新装水表: ' || sql%rowcount );
         utl_file.put_line(lgr, 'ucis 新装水表: ' || sql%rowcount , true);
+        commit;
 
         update szv_userinfo u
         set (userStatusId, userWaterMeterStatusId)
@@ -320,9 +320,9 @@ as
                      from szv_userinfo2 v2
                      where u.rootDeptId = v2.rootDeptId
                        and u.meterCode = v2.meterCode);
-        commit;
         dbms_output.put_line('ucis 变动水表: ' || sql%rowcount );
         utl_file.put_line(lgr, 'ucis 变动水表: ' || sql%rowcount , true);
+        commit;
 
         thisYr := to_number(to_char(current_date, 'YYYY'));
         thisMth := to_number(to_char(current_date, 'MM'));
@@ -442,11 +442,11 @@ as
                           and businessYearMonth between prd1 and prd2;
 
                         testBym2 := prd2;
-                        commit;
 
                         dbms_output.put_line(current_timestamp || ' 同步抄表数据 from ' || prd1 || ' to ' || prd2 || ' rows: ' || sql%rowcount );
                         utl_file.put_line(lgr, current_timestamp || ' 同步抄表数据 from ' || prd1 || ' to ' || prd2 || ' rows: ' || sql%rowcount , true);
 
+                        commit;
                     end loop;
 
                 utl_file.fflush(lgr);
