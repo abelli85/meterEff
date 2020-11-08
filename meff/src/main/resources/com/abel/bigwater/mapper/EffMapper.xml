@@ -141,7 +141,6 @@
         , t.taskName
         , m.meterId
         , m.meterName
-        , m.taskName
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -284,7 +283,6 @@
         , t.taskName
         , m.meterId
         , m.meterName
-        , m.taskName
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -420,6 +418,295 @@
                 </when>
             </choose>
         </where>
+    </select>
+
+    <select id="rptEffMeter" parameterType="com.abel.bigwater.api.EffParam"
+            resultType="com.abel.bigwater.model.eff.EffMeter">
+        SELECT m.effId
+        , m.taskId
+        , t.taskName
+        , m.meterId
+        , m.meterName
+        , m.taskStart
+        , m.taskEnd
+        , m.periodType
+        , m.runTime
+        , m.runDuration
+        , m.taskResult
+        , null AS checkResult
+        , m.meterWater
+        , m.q0v
+        , m.q1v
+        , m.q2v
+        , m.q3v
+        , m.q4v
+        , m.qtv
+        , m.meterEff
+        , m.realWater
+        , m.startTime
+        , m.endTime
+        , m.stdDays
+        , m.startFwd
+        , m.endFwd
+        , m.powerType
+        , m.meterBrandId
+        , m.sizeId
+        , m.sizeName
+        , m.modelSize
+        , m.dataRows
+        , m.decayEff
+        , m.srcError
+        , m.q4
+        , m.q3
+        , m.q3toq1
+        , m.q4toq3
+        , m.q2toq1
+        , m.qr1
+        , m.qr2
+        , m.qr3
+        , m.qr4
+
+        , bm.location
+        , bm.firmId
+        , bf.firmName
+        FROM bw_eff_meter m
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_firm bf ON bf.firmId = bm.firmId
+
+        <where>
+            <if test="firmId != null">
+                bm.firmId LIKE #{firmId}
+            </if>
+            <if test="effId != null">
+                AND m.effId = #{effId}
+            </if>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
+            </if>
+            <choose>
+                <when test="periodType != null">
+                    AND m.periodType LIKE #{periodType}
+                </when>
+                <otherwise>
+                    AND m.periodType = 'Day'
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+
+        UNION
+
+        SELECT m.effId
+        , m.taskId
+        , t.taskName
+        , m.meterId
+        , m.meterName
+        , m.taskStart
+        , m.taskEnd
+        , m.periodType
+        , m.runTime
+        , m.runDuration
+        , m.taskResult
+        , m.checkResult
+        , m.meterWater
+        , m.q0v
+        , m.q1v
+        , m.q2v
+        , m.q3v
+        , m.q4v
+        , m.qtv
+        , m.meterEff
+        , m.realWater
+        , m.startTime
+        , m.endTime
+        , m.stdDays
+        , m.startFwd
+        , m.endFwd
+        , m.powerType
+        , m.meterBrandId
+        , m.sizeId
+        , m.sizeName
+        , m.modelSize
+        , m.dataRows
+        , m.decayEff
+        , m.srcError
+        , m.q4
+        , m.q3
+        , m.q3toq1
+        , m.q4toq3
+        , m.q2toq1
+        , m.qr1
+        , m.qr2
+        , m.qr3
+        , m.qr4
+
+        , bm.location
+        , bm.firmId
+        , bf.firmName
+        FROM bw_eff_failure m
+        LEFT JOIN bw_eff_task t on m.taskId = t.taskId
+        LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN bw_firm bf ON bm.firmId = bf.firmId
+
+        <where>
+            <if test="firmId != null">
+                bm.firmId LIKE #{firmId}
+            </if>
+            <if test="taskResult != null">
+                AND m.taskResult LIKE #{taskResult}
+            </if>
+
+            <if test="effId != null">
+                AND m.effId = #{effId}
+            </if>
+            <if test="taskId != null">
+                AND m.taskId = #{taskId}
+            </if>
+            <choose>
+                <when test="periodType != null">
+                    AND m.periodType LIKE #{periodType}
+                </when>
+                <otherwise>
+                    AND m.periodType = 'Day'
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" separator="," open="(" close=")">
+                        #{mid}
+                    </foreach>
+                </when>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+            </choose>
+
+            <if test="powerType != null">
+                AND m.powerType LIKE #{powerType}
+            </if>
+            <if test="meterBrandId != null">
+                AND m.meterBrandId LIKE #{meterBrandId}
+            </if>
+            <if test="sizeId != null">
+                AND m.sizeId LIKE #{sizeId}
+            </if>
+
+            <if test="modelSize != null">
+                AND m.modelSize LIKE #{modelSize}
+            </if>
+
+            <choose>
+                <when test="taskStart != null and taskEnd != null">
+                    AND m.taskStart BETWEEN #{taskStart} AND #{taskEnd}
+                </when>
+                <when test="taskStart != null">
+                    AND m.taskStart = #{taskStart}
+                </when>
+                <when test="taskEnd != null">
+                    AND m.taskEnd = #{taskEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="createDateStart != null and createDateEnd != null">
+                    AND t.createDate BETWEEN #{createDateStart} AND #{createDateEnd}
+                </when>
+                <when test="createDate != null">
+                    AND t.createDate = #{createDate}
+                </when>
+                <when test="createDateStart != null">
+                    AND t.createDate &gt;= #{createDateStart}
+                </when>
+                <when test="createDateEnd != null">
+                    AND t.createDate &lt;= #{createDateEnd}
+                </when>
+            </choose>
+
+            <choose>
+                <when test="runTime1 != null and runTime2 != null">
+                    AND t.runTime BETWEEN #{runTime1} AND #{runTime2}
+                </when>
+                <when test="runTime != null">
+                    AND t.runTime = #{runTime}
+                </when>
+                <when test="runTime1 != null">
+                    AND t.runTime &gt;= #{runTime1}
+                </when>
+                <when test="runTime2 != null">
+                    AND t.runTime &lt;= #{runTime2}
+                </when>
+            </choose>
+        </where>
+        LIMIT #{rows} OFFSET #{index}
     </select>
 
     <select id="matchMeter" parameterType="com.abel.bigwater.api.EffParam"

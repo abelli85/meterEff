@@ -276,6 +276,48 @@ class EffServiceImpl : EffService {
     }
 
     /**
+     * 列出水表的正确分析结果 及 无效分析结果, 填充参数:
+     * @see EffParam.taskResult
+     * @see EffParam.meterId
+     * @see EffParam.meterIdList
+     * @see EffParam.taskStart
+     * @see EffParam.taskEnd
+     */
+    override fun reportMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        if (holder.lr?.sessionId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to report eff-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = EffService.BASE_PATH + EffService.PATH_LIST_METER_EFF
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.also {
+                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
+                    it.firmId = login.single!!.firmId
+                }
+                if (!it.firmId!!.endsWith("%")) {
+                    it.firmId = it.firmId + "%"
+                }
+            }
+
+            val ms = effMapper!!.rptEffMeter(dp)
+            return BwResult(ms).apply {
+                error = "水表计量效率报表： ${ms.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
      * 添加水表的分析结果
      * @see EffParam.meterList
      */

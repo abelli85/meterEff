@@ -239,6 +239,19 @@ class EffServiceImplTest {
     }
 
     @Test
+    fun testReportMeterEff() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        try {
+            effService!!.reportMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam())).also {
+                lgr.info("report meter-eff: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+        }
+    }
+
+    @Test
     fun testListEffRange() {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
