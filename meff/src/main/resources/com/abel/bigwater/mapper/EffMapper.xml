@@ -2771,14 +2771,19 @@
                 </when>
                 <otherwise>
                     <if test="meterBrandId != null">
-                        AND meterBrandId LIKE #{meterBrandId}
+                        AND (meterBrandId LIKE #{meterBrandId} OR meterBrandName LIKE #{meterBrandId})
                     </if>
-                    <if test="sizeId != null">
-                        AND sizeId = #{sizeId}
+                    <if test="meterBrandName != null">
+                        AND (meterBrandId LIKE #{meterBrandName} OR meterBrandName LIKE #{meterBrandName})
                     </if>
-                    <if test="sizeName != null">
-                        AND sizeName LIKE #{sizeName}
-                    </if>
+                    <choose>
+                        <when test="sizeId > 0">
+                            AND sizeId = #{sizeId}
+                        </when>
+                        <when test="sizeName != null">
+                            AND sizeName LIKE #{sizeName}
+                        </when>
+                    </choose>
                     <if test="modelSize != null">
                         AND modelSize LIKE #{modelSize}
                     </if>
@@ -2970,12 +2975,14 @@
                         (
                          #{d1.decayId}
                          , #{d1.meterBrandId}
+                         , #{d1.meterBrandName}
                          , #{d1.sizeId}
                          , #{d1.modelSize}
                         )
                     </foreach> )
                 AS tmp(decayId
                     , meterBrandId
+                    , meterBrandName
                     , sizeId
                     , modelSize)
         <where>
@@ -2987,7 +2994,7 @@
                     </foreach>
                 </when>
                 <otherwise>
-                    AND ed.meterBrandId = tmp.meterBrandId
+                    AND (ed.meterBrandId = tmp.meterBrandId OR ed.meterBrandName = tmp.meterBrandId)
                     AND ed.sizeId = tmp.sizeId
                     AND ed.modelSize = tmp.modelSize
                 </otherwise>
@@ -3006,7 +3013,7 @@
                     AND decayId = #{decayId}
                 </when>
                 <otherwise>
-                    AND meterBrandId LIKE #{meterBrandId}
+                    AND (meterBrandId LIKE #{meterBrandId} OR meterBrandName LIKE #{meterBrandId})
                     AND sizeId = #{sizeId}
                     AND modelSize LIKE #{modelSize}
                 </otherwise>

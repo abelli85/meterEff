@@ -90,6 +90,7 @@ INSERT INTO vc_code(codeId, codeName, memo, preInit, createBy, createDate) VALUE
 ('ABNORMAL_REASON', '异常原因', '', true, 'robot', timestamptz '2020-8-19'),
 ('BATCH', '批次状态', '只显示不允许添加', true, 'robot', timestamptz '2020-8-19');
 
+DELETE FROM vc_code_value where codeId = 'SIZE';
 INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit, disabled, createBy, createDate) VALUES
 ('SIZE', '15', 'DN15',  15, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
 ('SIZE', '20', 'DN20',  20, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
@@ -97,24 +98,30 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('SIZE', '40', 'DN40',  40, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
 ('SIZE', '50', 'DN50',  50, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
 ('SIZE', '80', 'DN80',  80, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '90', 'DN100',  90, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '91', 'DN150', 91, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '92', 'DN200', 92, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '93', 'DN300', 93, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '94', 'DN400', 94, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '95', 'DN250', 95, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '90', 'DN100', 90, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '91', 'DN150', 91, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '92', 'DN200', 92, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '93', 'DN300', 93, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '94', 'DN400', 94, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '95', 'DN250', 95, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN15',  'DN15',  115, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN20',  'DN20',  120, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN25',  'DN25',  125, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN40',  'DN40',  140, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN50',  'DN50',  150, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN80',  'DN80',  180, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', 'DN100', 'DN100',  190, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', 'DN100', 'DN100', 190, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN150', 'DN150', 191, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN200', 'DN200', 192, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN300', 'DN300', 193, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN400', 'DN400', 194, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', 'DN250', 'DN250', 195, 'INT', true, true, 'robot', timestamptz '2020-8-19');
+('SIZE', 'DN250', 'DN250', 195, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '100', 'DN100', 190, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '150', 'DN150', 191, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '200', 'DN200', 192, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '300', 'DN300', 193, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '400', 'DN400', 194, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
+('SIZE', '250', 'DN250', 195, 'INT', true, false, 'robot', timestamptz '2020-8-19');
 
 /**
   安装前首检、大表后续检定、争议检定、使用中抽检、水表招标，实验室比对，期间核查，重复性试验，稳定性考核，计量研究

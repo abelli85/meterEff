@@ -286,6 +286,21 @@ class MeterServiceImplTest {
     }
 
     @Test
+    fun testFetchMeter() {
+        val meter = ZoneMeter().apply {
+            meterId = "399961"
+        }
+
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam(meterId = meter.meterId))
+
+        meterService!!.fetchMeter(holder).also { r1 ->
+            lgr.info("zone-meter detail: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
+        }
+    }
+
+    @Test
     fun testFetchMeterZone() {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"

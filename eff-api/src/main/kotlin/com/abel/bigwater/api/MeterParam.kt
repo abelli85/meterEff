@@ -51,7 +51,19 @@ data class MeterParam(var meterId: String? = null,
 
                       var rtuId: String? = null,
 
+
+                      /**
+                       * 水表品牌标示
+                       * the meterBrandId to set
+                       */
                       var meterBrandId: String? = null,
+
+                      /**
+                       * 水表品牌名称
+                       * the meterBrandId to set
+                       */
+                      var meterBrandName: String? = null,
+
                       var remoteBrandId: String? = null,
 
                       /**

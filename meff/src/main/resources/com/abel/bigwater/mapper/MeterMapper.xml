@@ -1110,6 +1110,9 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
+            <if test="meterBrandName != null">
+                AND m.meterBrandId LIKE #{meterBrandName}
+            </if>
             <if test="remoteBrandId != null">
                 AND m.remoteBrandId LIKE #{remoteBrandId}
             </if>
