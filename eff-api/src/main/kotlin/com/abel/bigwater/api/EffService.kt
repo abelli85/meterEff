@@ -253,6 +253,11 @@ interface EffService {
     /**
      * 删除水表老化规则（每百万方水计量效率衰减）, 必填:
      * @see EffParam.decayList
+     * 优先使用 {@see VcEffDecay.decayId} 删除老化模板. 如果未填写老化模板, 则使用使用字段匹配执行删除:
+     * @see VcEffDecay.meterBrandId
+     * @see VcEffDecay.sizeId
+     * @see VcEffDecay.modelSize
+     * @see VcEffDecay.sizeName
      */
     @POST
     @Path(PATH_DELETE_EFF_DECAY)
