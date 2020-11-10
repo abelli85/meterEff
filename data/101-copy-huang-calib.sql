@@ -116,6 +116,108 @@ GO
 
 
 
+-- ------------------------------------
+SELECT [ID]
+      ,[序号]
+      ,[表号前缀]
+      ,[表号]
+      ,[Q3始值]
+      ,[Q3末值]
+      ,[Q3Vi]
+      ,[Q3示值]
+      ,[Q3误差]
+      ,[Q2始值]
+      ,[Q2末值]
+      ,[Q2Vi]
+      ,[Q2示值]
+      ,[Q2误差]
+      ,[Q1始值]
+      ,[Q1末值]
+      ,[Q1Vi]
+      ,[Q1示值]
+      ,[Q1误差]
+      ,[始动流量]
+      ,[外观]
+      ,[密封性]
+      ,[检定结果]
+      ,[备注]
+      ,[检定员]
+      ,[检定日期]
+      ,[设备编号]
+      ,[水表口径]
+      ,[ID重检]
+      ,[时间]
+      ,[铅封号]
+      ,[表底]
+      ,[环境温度]
+      ,[相对湿度]
+      ,[介质水温]
+      ,[水压]
+      ,[电子签名]
+      ,[N]
+      ,[Q1T1]
+      ,[Q2T1]
+      ,[Q3T1]
+      ,[Q3T2]
+      ,[Q2T2]
+      ,[Q1T2]
+      ,[Q3标准质量]
+      ,[Q2标准质量]
+      ,[Q1标准质量]
+      ,[Q3密度]
+      ,[Q2密度]
+      ,[Q1密度]
+      ,[常用流量Q3]
+      ,[分界流量Q2]
+      ,[最小流量Q1]
+      ,[Vm1]
+      ,[Vm2]
+      ,[Ve1]
+      ,[Ve2]
+      ,[机电误差]
+      ,[机电结果]
+      ,[机电误差限]
+	INTO huang_table_verify_detail
+  FROM [huang].[水表检定系统].[dbo].[水表检定记录表明细]
+GO
+
+
+create index idx_huang_table_meter_time on huang_table_verify_detail(
+[表号],
+[检定日期]);
+GO
+
+DROP INDEX  idx_huang_table_serial on huang_table_verify_detail;
+CREATE INDEX idx_huang_table_serial on huang_table_verify_detail(
+[N]);
+GO
+
+-- ------------------------------------
+
+SELECT [batchId]
+      ,[serialId]
+      ,[meterId]
+      ,[verifyDate]
+      ,[q3]
+      ,[q3r]
+      ,[q2]
+      ,[q2r]
+      ,[q1]
+      ,[q1r]
+      INTO huang_view_verify_detail
+  FROM [水表检定系统].[dbo].[view_verify_detail]
+GO
+
+CREATE INDEX idx_huang_view_meter_time ON huang_view_verify_detail(meterId, verifyDate);
+GO
+
+SELECT * FROM huang_view_verify_detail
+where meterid like '0112519020000%';
+GO
+
+-- ------------------------------------
+
+
 
 -- fetch range
 select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
