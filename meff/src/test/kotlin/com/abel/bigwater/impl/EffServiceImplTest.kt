@@ -628,11 +628,13 @@ class EffServiceImplTest {
         })
 
         try {
-            val r1 = effService!!.insertEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+            effService!!.insertEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
                     EffParam().also {
                         it.decayList = dlist
-                    }))
-            lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
+                    })).also {
+                lgr.info("decay list: {}", JSON.toJSONString(dlist, true))
+                assertEquals(0, it.code)
+            }
         } finally {
             var cnt = effMapper!!.deleteEffDecay(EffParam().also {
                 it.decayList = dlist
@@ -692,6 +694,23 @@ class EffServiceImplTest {
             })
             lgr.info("delete test decay: $cnt")
             assertEquals(0, cnt)
+        }
+    }
+
+    @Test
+    fun testDeleteDecayById() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+
+        effService!!.deleteEffDecay(BwHolder(TestHelper.buildLoginRequest(login),
+                EffParam().also {
+                    it.decayList = listOf(VcEffDecay().apply {
+                        decayId = -1
+                    }, VcEffDecay().apply {
+                        decayId = -2
+                    })
+                })).also {
+            lgr.info("delete decay list: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
         }
     }
 

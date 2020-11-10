@@ -2981,7 +2981,10 @@
         <where>
             <choose>
                 <when test="decayId != null">
-                    AND ed.decayId = #{decayId}
+                    AND ed.decayId IN
+                    <foreach collection="decayList" item="d1" separator="," open="(" close=")">
+                        #{d1.decayId}
+                    </foreach>
                 </when>
                 <otherwise>
                     AND ed.meterBrandId = tmp.meterBrandId
