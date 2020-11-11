@@ -23,6 +23,12 @@ data class DataParam(
         /** 远传标示 */
         var extId: String? = null,
 
+        /**
+         * 水表编号
+         * the meterCode to set
+         */
+        var meterCode: String? = null,
+
         /** 分区标示 */
         var dmaId: String? = null,
 
