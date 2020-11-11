@@ -224,8 +224,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -368,8 +368,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
 
             <if test="modelSize != null">
@@ -511,8 +511,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -656,8 +656,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
 
             <if test="modelSize != null">
@@ -783,8 +783,8 @@
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
@@ -836,8 +836,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -1290,8 +1290,8 @@
                 <if test="meterBrandId != null">
                     AND meterBrandId LIKE #{meterBrandId}
                 </if>
-                <if test="sizeId != null">
-                    AND sizeId LIKE #{sizeId}
+                <if test="sizeId > 0">
+                    AND sizeId = #{sizeId}
                 </if>
                 <if test="modelSize != null">
                     AND modelSize LIKE #{modelSize}
@@ -1361,8 +1361,8 @@
                     <if test="meterBrandId != null">
                         AND meterBrandId LIKE #{meterBrandId}
                     </if>
-                    <if test="sizeId != null">
-                        AND sizeId LIKE #{sizeId}
+                    <if test="sizeId > 0">
+                        AND sizeId = #{sizeId}
                     </if>
                     <if test="modelSize != null">
                         AND modelSize LIKE #{modelSize}
@@ -1407,8 +1407,8 @@
                 <if test="meterBrandId != null">
                     AND m.meterBrandId LIKE #{meterBrandId}
                 </if>
-                <if test="sizeId != null">
-                    AND m.sizeId LIKE #{sizeId}
+                <if test="sizeId > 0">
+                    AND m.sizeId = #{sizeId}
                 </if>
                 <if test="modelSize != null">
                     AND m.modelSize LIKE #{modelSize}
@@ -1458,8 +1458,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -1591,8 +1591,8 @@
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
@@ -1662,8 +1662,8 @@
             <if test="meterBrandId != null">
                 AND meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND modelSize LIKE #{modelSize}
@@ -1708,8 +1708,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -1759,8 +1759,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
 
             <if test="modelSize != null">
@@ -1959,8 +1959,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -2043,8 +2043,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -2100,8 +2100,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -2189,8 +2189,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -2272,8 +2272,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
@@ -2631,8 +2631,8 @@
             <if test="meterBrandId != null">
                 AND m.meterBrandId LIKE #{meterBrandId}
             </if>
-            <if test="sizeId != null">
-                AND m.sizeId LIKE #{sizeId}
+            <if test="sizeId > 0">
+                AND m.sizeId = #{sizeId}
             </if>
             <if test="modelSize != null">
                 AND m.modelSize LIKE #{modelSize}
