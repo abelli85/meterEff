@@ -1,4 +1,4 @@
-USE [calib]
+USE [huangdb]
 GO
 
 /****** Object:  Table [dbo].[huang_table_verify_detail]    Script Date: 11/10/2020 19:56:59 ******/
@@ -6,7 +6,7 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[huang
 DROP TABLE [dbo].[huang_table_verify_detail]
 GO
 
-USE [calib]
+USE [huangdb]
 GO
 
 /****** Object:  Table [dbo].[huang_table_verify_detail]    Script Date: 11/10/2020 19:56:59 ******/
@@ -81,7 +81,7 @@ CREATE TABLE [dbo].[huang_table_verify_detail](
 
 GO
 
-USE [calib]
+USE [huangdb]
 GO
 
 /****** Object:  Table [dbo].[huang_view_verify_detail]    Script Date: 11/10/2020 19:57:19 ******/
@@ -89,7 +89,7 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[huang
 DROP TABLE [dbo].[huang_view_verify_detail]
 GO
 
-USE [calib]
+USE [huangdb]
 GO
 
 /****** Object:  Table [dbo].[huang_view_verify_detail]    Script Date: 11/10/2020 19:57:19 ******/
@@ -181,7 +181,7 @@ SELECT [ID]
   FROM [huang].[水表检定系统].[dbo].[水表检定记录表明细]
 GO
 
-
+DROP index idx_huang_table_meter_time on huang_table_verify_detail;
 create index idx_huang_table_meter_time on huang_table_verify_detail(
 [表号],
 [检定日期]);
@@ -195,19 +195,20 @@ GO
 -- ------------------------------------
 
 SELECT [batchId]
-      ,[serialId]
-      ,[meterId]
-      ,[verifyDate]
-      ,[q3]
-      ,[q3r]
-      ,[q2]
-      ,[q2r]
-      ,[q1]
-      ,[q1r]
-      INTO huang_view_verify_detail
-  FROM [水表检定系统].[dbo].[view_verify_detail]
+    ,[serialId]
+    ,[meterId]
+    ,[verifyDate]
+    ,[q3]
+    ,[q3r]
+    ,[q2]
+    ,[q2r]
+    ,[q1]
+    ,[q1r]
+INTO huang_view_verify_detail
+FROM [huang].[水表检定系统].[dbo].[view_verify_detail]
 GO
 
+DROP INDEX idx_huang_view_meter_time ON huang_view_verify_detail;
 CREATE INDEX idx_huang_view_meter_time ON huang_view_verify_detail(meterId, verifyDate);
 GO
 
@@ -224,7 +225,7 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
-INSERT INTO [calib].[dbo].[hg_meter_verify_point]
+INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
            ,[pointFlow]
@@ -293,7 +294,7 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
-INSERT INTO [calib].[dbo].[hg_meter_verify_point]
+INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
            ,[pointFlow]
@@ -364,7 +365,7 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
-INSERT INTO [calib].[dbo].[hg_meter_verify_point]
+INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
            ,[pointFlow]
@@ -428,7 +429,7 @@ FROM huang_table_verify_detail
 WHERE [N] BETWEEN 1 AND 1105270
 GO
 
-INSERT INTO [calib].[dbo].[hg_meter_verify_result]
+INSERT INTO [huangdb].[dbo].[hg_meter_verify_result]
            ([meterId]
            ,[batchId]
            ,[tempId]

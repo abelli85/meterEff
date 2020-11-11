@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      Microsoft SQL Server 2008                    */
-/* Created on:     2020/11/10 12:55:41                          */
+/* Created on:     2020/11/11 11:12:49                          */
 /*==============================================================*/
 
 
@@ -36,6 +36,24 @@ if exists (select 1
            where  id = object_id('hg_meter_verify_point')
             and   type = 'U')
    drop table hg_meter_verify_point
+go
+
+if exists (select 1
+            from  sysindexes
+           where  id    = object_id('hg_meter_verify_result')
+            and   name  = 'idx_verify_instrument'
+            and   indid > 0
+            and   indid < 255)
+   drop index hg_meter_verify_result.idx_verify_instrument
+go
+
+if exists (select 1
+            from  sysindexes
+           where  id    = object_id('hg_meter_verify_result')
+            and   name  = 'idx_verify_datarc'
+            and   indid > 0
+            and   indid < 255)
+   drop index hg_meter_verify_result.idx_verify_datarc
 go
 
 if exists (select 1
@@ -253,8 +271,25 @@ go
 /*==============================================================*/
 create index idx_verify_item on hg_meter_verify_result (
 instrumentNo ASC,
+itemId ASC
+)
+go
+
+/*==============================================================*/
+/* Index: idx_verify_datarc                                     */
+/*==============================================================*/
+create index idx_verify_datarc on hg_meter_verify_result (
 dataSrc ASC,
 itemId ASC
+)
+go
+
+/*==============================================================*/
+/* Index: idx_verify_instrument                                 */
+/*==============================================================*/
+create index idx_verify_instrument on hg_meter_verify_result (
+instrumentNo ASC,
+verifyId ASC
 )
 go
 

@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/5 21:36:00                           */
+/* Created on:     2020/11/11 10:51:17                          */
 /*==============================================================*/
 
 
@@ -36,6 +36,22 @@ drop index IDX_USER_DEPT;
 
 drop table SZV_USERINFO;
 
+drop index idx_verify_point_batch;
+
+drop index idx_verify_point_item;
+
+drop index idx_verify_point_mid;
+
+drop table hg_meter_verify_point;
+
+drop index idx_verify_item;
+
+drop index idx_verify_stuff;
+
+drop index idx_verify_meter_date;
+
+drop table hg_meter_verify_result;
+
 drop sequence SEQ_DATA;
 
 drop sequence SEQ_DEPT;
@@ -45,6 +61,13 @@ drop sequence SEQ_DEVICE;
 drop sequence SEQ_METER_READ;
 
 drop sequence SEQ_MUSER;
+
+drop user vc;
+
+/*==============================================================*/
+/* User: vc                                                     */
+/*==============================================================*/
+create user vc;
 
 create sequence SEQ_DATA;
 
@@ -248,5 +271,160 @@ create  index IDX_USER_DEPT on SZV_USERINFO (
 ROOTDEPTID,
 DEPTID,
 METERCODE
+);
+
+/*==============================================================*/
+/* Table: hg_meter_verify_point                                 */
+/*==============================================================*/
+create table hg_meter_verify_point (
+   pointId              bigint               not null,
+   pointIdx             int                  null,
+   tempId               varchar(32)          not null,
+   pointFlow            double precision     not null,
+   pointDev             double precision     null,
+   highLimit            double precision     null,
+   lowLimit             double precision     null,
+   exceed               int                  null,
+   meterId              varchar(45)          not null,
+   verifyDate           TIMESTAMP WITH TIME ZONE not null,
+   stuffName            varchar(45)          null,
+   boardResult          varchar(100)         null,
+   pointName            varchar(20)          null,
+   startReading         double precision     null,
+   endReading           double precision     null,
+   totalVolume          double precision     null,
+   verifyDura           double precision     null,
+   avgFlow              double precision     null,
+   waterTemp            double precision     null,
+   startMass            double precision     null,
+   endMass              double precision     null,
+   standardMass         double precision     null,
+   density              double precision     null,
+   standardVolume       double precision     null,
+   standardDura         double precision     null,
+   standardFlow         double precision     null,
+   instrumentNo         varchar(100)         null,
+   batchId              varchar(100)         null,
+   boardMemo            varchar(100)         null,
+   itemId               bigint               null,
+   constraint PK_HG_METER_VERIFY_POINT primary key (pointId)
+);
+
+comment on column hg_meter_verify_point.exceed is
+'1-超限; 0-不超限';
+
+-- set table ownership
+alter table hg_meter_verify_point owner to vc
+;
+/*==============================================================*/
+/* Index: idx_verify_point_mid                                  */
+/*==============================================================*/
+create  index idx_verify_point_mid on hg_meter_verify_point (
+meterId,
+verifyDate,
+pointFlow
+);
+
+/*==============================================================*/
+/* Index: idx_verify_point_item                                 */
+/*==============================================================*/
+create  index idx_verify_point_item on hg_meter_verify_point (
+instrumentNo,
+itemId
+);
+
+/*==============================================================*/
+/* Index: idx_verify_point_batch                                */
+/*==============================================================*/
+create  index idx_verify_point_batch on hg_meter_verify_point (
+pointIdx,
+meterId,
+batchId
+);
+
+/*==============================================================*/
+/* Table: hg_meter_verify_result                                */
+/*==============================================================*/
+create table hg_meter_verify_result (
+   verifyId             bigint               not null,
+   meterId              varchar(45)          not null,
+   batchId              varchar(45)          not null,
+   tempId               varchar(32)          null,
+   verifyDate           TIMESTAMP WITH TIME ZONE not null,
+   stuffName            varchar(45)          null,
+   verifyResult         varchar(10)          null,
+   boardResult          varchar(200)         null,
+   forceVerifyNo        varchar(100)         null,
+   moduleNo             varchar(100)         null,
+   clientName           varchar(100)         null,
+   factoryName          varchar(100)         null,
+   meterName            varchar(100)         null,
+   meterType            varchar(100)         null,
+   sizeId               varchar(20)          null,
+   modelSize            varchar(100)         null,
+   portType             varchar(100)         null,
+   verifyRule           varchar(100)         null,
+   standardInstrument   varchar(100)         null,
+   standardParam        varchar(100)         null,
+   indoorTemp           double precision     null,
+   moisture             double precision     null,
+   validDate            TIMESTAMP WITH TIME ZONE null,
+   convertResult        varchar(100)         null,
+   pressResult          varchar(100)         null,
+   instrumentNo         varchar(100)         null,
+   accurateGrade        varchar(100)         null,
+   pipeTemp             double precision     null,
+   pipePressure         double precision     null,
+   pulse                double precision     null,
+   density              double precision     null,
+   displayDiff          double precision     null,
+   convertDiff          double precision     null,
+   q4                   double precision     null,
+   q3                   double precision     null,
+   q3toq1               double precision     null,
+   q4toq3               double precision     null,
+   q2toq1               double precision     null,
+   qr1                  decimal(6,2)         null,
+   qr2                  decimal(6,2)         null,
+   qr3                  decimal(6,2)         null,
+   qr4                  decimal(6,2)         null,
+   maxFlow              double precision     null,
+   minFlow              double precision     null,
+   commonFlow           double precision     null,
+   convertLimit         double precision     null,
+   verifyAgain          varchar(100)         null,
+   outerCheck           varchar(100)         null,
+   dataSrc              varchar(100)         null,
+   itemId               bigint               null,
+   constraint PK_HG_METER_VERIFY_RESULT primary key (verifyId)
+);
+
+-- set table ownership
+alter table hg_meter_verify_result owner to vc
+;
+/*==============================================================*/
+/* Index: idx_verify_meter_date                                 */
+/*==============================================================*/
+create  index idx_verify_meter_date on hg_meter_verify_result (
+batchId,
+meterId,
+verifyDate
+);
+
+/*==============================================================*/
+/* Index: idx_verify_stuff                                      */
+/*==============================================================*/
+create  index idx_verify_stuff on hg_meter_verify_result (
+stuffName,
+verifyDate
+);
+
+/*==============================================================*/
+/* Index: idx_verify_item                                       */
+/*==============================================================*/
+create  index idx_verify_item on hg_meter_verify_result (
+instrumentNo,
+dataSrc,
+itemId
 );
 
