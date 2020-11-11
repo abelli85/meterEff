@@ -15,64 +15,88 @@ import java.util.*
  * 机构ID移到基类中:
  * @see BaseParam.firmId
  */
-data class MeterParam(var meterId: String? = null,
+data class MeterParam(
+        /**
+         * 本系统标示
+         * the id to set
+         */
+        var meterId: String? = null,
 
-                      /**
-                       * 包含的水表ID列表
-                       */
-                      var meterIdList: List<String>? = null,
+        /**
+         * 包含的水表ID列表
+         */
+        var meterIdList: List<String>? = null,
 
-                      var meterName: String? = null,
-                      var meterCode: String? = null,
-                      var userCode: String? = null,
+        /**
+         * 水表名称
+         * the name to set
+         */
+        var meterName: String? = null,
 
-                      var extId: String? = null,
-                      /**
-                       * 包含的数据ID列表
-                       */
-                      var extIdList: List<String>? = null,
+        /**
+         * 水表编号
+         * the meterCode to set
+         */
+        var meterCode: String? = null,
 
-                      /**
-                       * DMA
-                       */
-                      var dmaId: String? = null,
-                      var dmaName: String? = null,
-                      var dmaIdList: List<String>? = null,
+        /**
+         * 用户编号
+         * the userCode to set
+         */
+        var userCode: String? = null,
 
-                      /**
-                       * 片区
-                       */
-                      var zoneId: String? = null,
-                      var zoneName: String? = null,
-                      var zoneIdList: List<String>? = null,
+        /**
+         * 数据标识码
+         * the extId to set
+         */
+        var extId: String? = null,
 
-                      var typeId: String? = null,
-                      var location: String? = null,
+        /**
+         * 包含的数据ID列表
+         */
+        var extIdList: List<String>? = null,
 
-                      var rtuId: String? = null,
+        /**
+         * DMA
+         */
+        var dmaId: String? = null,
+        var dmaName: String? = null,
+        var dmaIdList: List<String>? = null,
+
+        /**
+         * 片区
+         */
+        var zoneId: String? = null,
+        var zoneName: String? = null,
+        var zoneIdList: List<String>? = null,
+
+        var typeId: String? = null,
+        var location: String? = null,
+
+        var rtuId: String? = null,
 
 
-                      /**
-                       * 水表品牌标示
-                       * the meterBrandId to set
-                       */
-                      var meterBrandId: String? = null,
+        /**
+         * 水表品牌标示
+         * the meterBrandId to set
+         */
+        var meterBrandId: String? = null,
 
-                      /**
-                       * 水表品牌名称
-                       * the meterBrandId to set
-                       */
-                      var meterBrandName: String? = null,
+        /**
+         * 水表品牌名称
+         * the meterBrandId to set
+         */
+        var meterBrandName: String? = null,
 
-                      var remoteBrandId: String? = null,
+        var remoteBrandId: String? = null,
 
-                      /**
-                       * 使用 & | 符号拼接自己需要的向量: 福州|福州, 福州|中国|花园, 福州&公司, etc.
-                       * @deprecated
-                       * 请试用实体词前后加*，全文检索效率较高，如 *鹏兴* 、 *莲塘* 、 等
-                       * 不支持量词、通用词的全文检索，如 *花园* 、 *一期* 、*五期* 等。
-                       */
-                      var keywords: String? = null) : BaseParam() {
+        /**
+         * 使用 & | 符号拼接自己需要的向量: 福州|福州, 福州|中国|花园, 福州&公司, etc.
+         * @deprecated
+         * 请试用实体词前后加*，全文检索效率较高，如 *鹏兴* 、 *莲塘* 、 等
+         * 不支持量词、通用词的全文检索，如 *花园* 、 *一期* 、*五期* 等。
+         */
+        var keywords: String? = null) : BaseParam() {
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
