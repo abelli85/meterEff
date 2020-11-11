@@ -51,8 +51,9 @@ open class MeterServiceImpl : MeterService {
             holder.list.orEmpty().plus(holder.single!!)
         list.forEach {
             if (it.meterId.isNullOrBlank() || it.meterName.isNullOrBlank()
-                    || it.sizeId == null || it.sizeName.isNullOrBlank()) {
-                return BwResult(2, "水表ID/名称/口径不能为空: ${it.meterId}")
+                    || it.sizeId == null || it.sizeName.isNullOrBlank()
+                    || it.steelNo.isNullOrBlank()) {
+                return BwResult(2, "水表ID/名称/口径/表码 不能为空: ${it.meterId}")
             }
         }
 
@@ -232,6 +233,9 @@ open class MeterServiceImpl : MeterService {
                     meterId = it.meterId
                     firmId = it.firmId
                 }).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
+                if (meter.steelNo.isNullOrBlank()) {
+                    return BwResult(2, "水表表码为空: ${meter.meterName} / ${meter.meterId}")
+                }
 
                 if (!it.verifyList.isNullOrEmpty()) {
                     cnt1 = meterMapper!!.insertMeterVerify(it)

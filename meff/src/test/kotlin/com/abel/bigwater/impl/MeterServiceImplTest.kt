@@ -288,7 +288,7 @@ class MeterServiceImplTest {
     @Test
     fun testFetchMeter() {
         val meter = ZoneMeter().apply {
-            meterId = "399961"
+            meterId = "332051"
         }
 
         val login = TestHelper.login(loginService).single ?: fail("fail to login")

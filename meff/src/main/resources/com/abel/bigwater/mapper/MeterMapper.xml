@@ -689,7 +689,7 @@
         ,p.pointDev
         ,p.lowLimit
         ,p.highLimit
-        ,p.meterId
+        ,m.meterId
 
         ,p.startReading
         ,p.endReading
@@ -712,6 +712,7 @@
         ,p.itemId
         FROM vc_meter_verify_point p
         LEFT JOIN vc_meter_verify_result v ON (p.meterId = v.meterId AND p.verifyDate = v.verifyDate)
+        JOIN bw_meter m ON p.meterId = m.steelNo
         <where>
             <if test="batchId != null">
                 (v.batchId IS NULL OR v.batchId LIKE #{batchId})
@@ -719,10 +720,10 @@
 
             <choose>
                 <when test="meterId != null">
-                    AND p.meterId LIKE #{meterId}
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND p.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
@@ -758,7 +759,7 @@
         ,p.pointDev
         ,p.lowLimit
         ,p.highLimit
-        ,p.meterId
+        ,m.meterId
 
         ,p.startReading
         ,p.endReading
@@ -780,31 +781,33 @@
         ,p.itemId
         FROM vc_meter_verify_point p
         JOIN (
-            SELECT meterId
+            SELECT p1.meterId
                    , MAX(verifyDate) verifyDate
-            FROM vc_meter_verify_point
+            FROM vc_meter_verify_point p1
+            JOIN bw_meter m1 ON p1.meterid = m1.steelno
             <where>
                 <choose>
                     <when test="meterId != null">
-                        AND meterId LIKE #{meterId}
+                        AND m1.meterId LIKE #{meterId}
                     </when>
                     <when test="meterIdList != null and meterIdList.size > 0">
-                        AND meterId IN
+                        AND m1.meterId IN
                         <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                             #{mid}
                         </foreach>
                     </when>
                 </choose>
             </where>
-            GROUP BY meterId
-        ) vmax ON (p.meterId = vmax.meterId AND p.verifyDate = vmax.verifyDate)
+            GROUP BY m1.meterId
+        ) pmax ON (p.meterId = pmax.meterId AND p.verifyDate = pmax.verifyDate)
+        JOIN bw_meter m ON p.meterid = m.steelno
         <where>
             <choose>
                 <when test="meterId != null">
-                    AND p.meterId LIKE #{meterId}
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND p.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
@@ -867,7 +870,7 @@
             , #{pt.pointDev}
             , #{pt.lowLimit}
             , #{pt.highLimit}
-            , #{pt.meterId}
+            , #{steelNo}
             , #{pt.startReading}
             , #{pt.endReading}
             , #{pt.totalVolume}
