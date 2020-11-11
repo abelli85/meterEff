@@ -90,6 +90,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -171,6 +172,10 @@
             <if test="firmId != null">
                 AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
             </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
         </where>
         ORDER BY m.meterId, r.extId, r.sampleTime
         LIMIT #{rows} OFFSET #{index}
@@ -211,6 +216,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -257,6 +263,9 @@
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND meterCode LIKE #{meterCode}
+            </if>
         </where>
         ) m ON r.extId = m.extId
         <where>
@@ -280,6 +289,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -326,6 +336,10 @@
                     </foreach>
                 </when>
             </choose>
+
+            <if test="meterCode != null">
+                AND meterCode LIKE #{meterCode}
+            </if>
         </where>
         ) m ON r.extId = m.extId
         <where>
@@ -349,6 +363,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -434,6 +449,10 @@
             <if test="firmId != null">
                 AND m.firmId LIKE #{firmId}
             </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
         LIMIT #{rows} OFFSET #{index}
@@ -443,6 +462,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -498,6 +518,10 @@
                     </foreach>
                 </when>
             </choose>
+
+            <if test="meterCode != null">
+                AND m1.meterCode LIKE #{meterCode}
+            </if>
 
             <choose>
                 <when test="sampleTime1 != null and sampleTime2 != null">
@@ -531,6 +555,10 @@
             <if test="firmId != null">
                 AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
             </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
         LIMIT #{rows} OFFSET #{index}
@@ -540,6 +568,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -595,6 +624,10 @@
                     </foreach>
                 </when>
             </choose>
+
+            <if test="meterCode != null">
+                AND m1.meterCode LIKE #{meterCode}
+            </if>
 
             <choose>
                 <when test="sampleTime1 != null and sampleTime2 != null">
@@ -629,6 +662,10 @@
             <if test="firmId != null">
                 AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
             </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
         LIMIT #{rows} OFFSET #{index}
@@ -638,6 +675,7 @@
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId
         , r.extId
+        , m.meterCode
         , m.meterName
         , m.location
         , r.sampleTime
@@ -694,6 +732,10 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND m1.meterCode LIKE #{meterCode}
+            </if>
+
             <choose>
                 <when test="sampleTime1 != null and sampleTime2 != null">
                     AND r1.sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
@@ -726,6 +768,10 @@
 
             <if test="firmId != null">
                 AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
+            </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
             </if>
         </where>
         ORDER BY r.sampleTime DESC, m.meterId, r.extId
@@ -806,6 +852,10 @@
                     </foreach>
                 </when>
             </choose>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
 
             <choose>
                 <when test="dmaIdList != null and dmaIdList.size > 0">
@@ -902,6 +952,10 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
+
             <choose>
                 <when test="zoneIdList != null and zoneIdList.size > 0">
                     AND dm.zoneId IN
@@ -956,6 +1010,10 @@
 
             <if test="firmId != null">
                 m.firmId LIKE #{firmId}
+            </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
             </if>
         </where>
     </select>
@@ -1171,6 +1229,7 @@
     <select id="listMeterDayCount" parameterType="com.abel.bigwater.api.DataParam"
             resultType="com.abel.bigwater.model.MeterDayDataCount">
         SELECT bm.meterId
+        , bm.meterCode
         , bm.meterName
         , bm.firmId
         , bd.extId
@@ -1221,6 +1280,10 @@
 
             <if test="firmId != null">
                 AND (bm.firmId IS NULL OR bm.firmId LIKE #{firmId})
+            </if>
+
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
             </if>
         </where>
         GROUP BY bm.meterId
@@ -1285,6 +1348,10 @@
                     </foreach>
                 </when>
             </choose>
+
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
 
             <if test="firmId != null">
                 AND (bm.firmId IS NULL OR bm.firmId LIKE #{firmId})
