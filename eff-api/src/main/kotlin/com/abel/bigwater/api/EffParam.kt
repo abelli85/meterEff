@@ -39,6 +39,12 @@ class EffParam : BaseParam() {
     var meterId: String? = null
 
     /**
+     * 水表编号
+     * the meterCode to set
+     */
+    var meterCode: String? = null
+
+    /**
      * 任务开始时段
      */
     @JsonSerialize(using = JsonDateSerializer::class)
