@@ -1043,6 +1043,9 @@
             <if test="userCode != null">
                 AND m.userCode LIKE #{userCode}
             </if>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="meterName != null">
                 AND m.meterName LIKE #{meterName}
             </if>
@@ -1208,6 +1211,9 @@
             </choose>
             <if test="userCode != null">
                 AND m.userCode LIKE #{userCode}
+            </if>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
             </if>
             <if test="meterName != null">
                 AND m.meterName LIKE #{meterName}

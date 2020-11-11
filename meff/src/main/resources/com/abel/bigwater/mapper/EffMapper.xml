@@ -140,6 +140,7 @@
         , m.taskId
         , t.taskName
         , m.meterId
+        , bm.meterCode
         , m.meterName
         , m.taskStart
         , m.taskEnd
@@ -218,6 +219,9 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
             <if test="powerType != null">
                 AND m.powerType LIKE #{powerType}
             </if>
@@ -282,6 +286,7 @@
         , m.taskId
         , t.taskName
         , m.meterId
+        , bm.meterCode
         , m.meterName
         , m.taskStart
         , m.taskEnd
@@ -362,6 +367,9 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
             <if test="powerType != null">
                 AND m.powerType LIKE #{powerType}
             </if>
@@ -426,6 +434,7 @@
         , m.taskId
         , t.taskName
         , m.meterId
+        , bm.meterCode
         , m.meterName
         , m.taskStart
         , m.taskEnd
@@ -505,6 +514,9 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
             <if test="powerType != null">
                 AND m.powerType LIKE #{powerType}
             </if>
@@ -567,6 +579,7 @@
         , m.taskId
         , t.taskName
         , m.meterId
+        , bm.meterCode
         , m.meterName
         , m.taskStart
         , m.taskEnd
@@ -650,6 +663,9 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
             <if test="powerType != null">
                 AND m.powerType LIKE #{powerType}
             </if>
@@ -714,6 +730,7 @@
         SELECT m.effId
         , m.taskId
         , m.meterId
+        , bm.meterCode
         , m.meterName
         , m.taskName
         , #{taskStart} taskStart
@@ -830,6 +847,9 @@
                 </when>
             </choose>
 
+            <if test="meterCode != null">
+                AND bm.meterCode LIKE #{meterCode}
+            </if>
             <if test="powerType != null">
                 AND m.powerType LIKE #{powerType}
             </if>
