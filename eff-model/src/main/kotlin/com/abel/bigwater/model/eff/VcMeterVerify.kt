@@ -22,6 +22,17 @@ open class VcMeterVerify : BwBase() {
     var meterId: String? = null
 
     /**
+     * 水表编号
+     * the meterCode to set
+     */
+    var meterCode: String? = null
+
+    /**
+     * 水表钢印号 / 表码
+     */
+    var steelNo: String? = null
+
+    /**
      * 委托编号
      */
     var batchId: String? = null

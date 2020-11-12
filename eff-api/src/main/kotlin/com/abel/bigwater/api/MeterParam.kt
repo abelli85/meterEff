@@ -40,6 +40,11 @@ data class MeterParam(
         var meterCode: String? = null,
 
         /**
+         * 水表钢印号 / 表码
+         */
+        var steelNo: String? = null,
+
+        /**
          * 用户编号
          * the userCode to set
          */
