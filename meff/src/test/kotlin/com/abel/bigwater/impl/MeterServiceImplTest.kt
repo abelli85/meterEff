@@ -114,6 +114,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "23456789"
             sizeId = 100
             sizeName = "DN100"
         }
@@ -145,6 +146,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "4567890123"
             sizeId = 100
             sizeName = "DN100"
         }
@@ -192,6 +194,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "5678901234"
             sizeId = 100
             sizeName = "DN100"
             meterLoc = GeometryFactory().createPoint(Coordinate(22.1, 123.67)).toText()
@@ -305,6 +308,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "6789012345"
             sizeId = 100
             sizeName = "DN100"
             decayId = 44
@@ -330,6 +334,7 @@ class MeterServiceImplTest {
         val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "3456789"
             sizeId = 100
             sizeName = "DN100"
         }
@@ -457,6 +462,7 @@ class MeterServiceImplTest {
         private val meter = ZoneMeter().apply {
             meterId = "test-meterId"
             meterName = "测试水表01"
+            steelNo = "0123456789"
             sizeId = 100
             sizeName = "DN100"
             meterLoc = WKTWriter().write(GeometryFactory().createPoint(Coordinate(122.1, 44.6)))

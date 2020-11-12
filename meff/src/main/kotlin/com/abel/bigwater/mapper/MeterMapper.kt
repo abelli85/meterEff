@@ -59,6 +59,10 @@ interface MeterMapper {
 
     fun listMeterVerify(mp: MeterParam): List<VcMeterVerify>
 
+    /**
+     * 必须为同一只水表的检定结果. 必填:
+     * @see ZoneMeter.steelNo
+     */
     fun insertMeterVerify(mp: ZoneMeter): Int
 
     fun deleteMeterVerify(mp: MeterParam): Int
@@ -67,6 +71,10 @@ interface MeterMapper {
 
     fun listVerifyPointLast(mp: MeterParam): List<VcMeterVerifyPoint>
 
+    /**
+     * 必须为同一只水表的检定点. 必填:
+     * @see ZoneMeter.steelNo
+     */
     fun insertVerifyPoint(mp: ZoneMeter): Int
 
     fun deleteVerifyPoint(mp: MeterParam): Int

@@ -435,73 +435,84 @@
 
     <select id="listMeterVerify" parameterType="com.abel.bigwater.api.MeterParam"
             resultType="com.abel.bigwater.model.eff.VcMeterVerify">
-        SELECT wid AS verifyId
-        , meterId
-        , batchId
-        , tempId
-        , verifyDate
-        , stuffName
-        , verifyResult
-        , boardResult
-        , forceVerifyNo
-        , moduleNo
-        , clientName
-        , factoryName
-        , meterName
-        , meterType
-        , sizeId
-        , modelSize
-        , portType
-        , verifyRule
-        , standardInstrument
-        , standardParam
-        , indoorTemp
-        , moisture
-        , validDate
-        , convertResult
-        , pressResult
-        , instrumentno
-        , accurateGrade
-        , pipeTemp
-        , pipePressure
-        , pulse
-        , density
-        , displayDiff
-        , convertDiff
-        , q4
-        , q3
-        , q3toq1
-        , q4toq3
-        , q2toq1
-        , qr1
-        , qr2
-        , qr3
-        , qr4
-        , maxFlow
-        , minFlow
-        , commonFlow
-        , convertLimit
-        , verifyAgain
-        , outerCheck
-        , dataSrc
-        , itemId
+        SELECT v.wid AS verifyId
+        , m.meterId
+        , m.meterCode
+        , v.meterId AS steelNo
+
+        , v.batchId
+        , v.tempId
+        , v.verifyDate
+        , v.stuffName
+        , v.verifyResult
+        , v.boardResult
+        , v.forceVerifyNo
+        , v.moduleNo
+        , v.clientName
+        , v.factoryName
+        , v.meterName
+        , v.meterType
+        , v.sizeId
+        , v.modelSize
+        , v.portType
+        , v.verifyRule
+        , v.standardInstrument
+        , v.standardParam
+        , v.indoorTemp
+        , v.moisture
+        , v.validDate
+        , v.convertResult
+        , v.pressResult
+        , v.instrumentno
+        , v.accurateGrade
+        , v.pipeTemp
+        , v.pipePressure
+        , v.pulse
+        , v.density
+        , v.displayDiff
+        , v.convertDiff
+        , v.q4
+        , v.q3
+        , v.q3toq1
+        , v.q4toq3
+        , v.q2toq1
+        , v.qr1
+        , v.qr2
+        , v.qr3
+        , v.qr4
+        , v.maxFlow
+        , v.minFlow
+        , v.commonFlow
+        , v.convertLimit
+        , v.verifyAgain
+        , v.outerCheck
+        , v.dataSrc
+        , v.itemId
         FROM vc_meter_verify_result v
+            JOIN bw_meter m ON v.meterId = m.steelNo
         <where>
             <if test="batchId != null">
                 (v.batchId IS NULL OR v.batchId LIKE #{batchId})
             </if>
 
+            <if test="steelNo != null">
+                AND v.meterid LIKE #{steelNo}
+            </if>
+
             <choose>
                 <when test="meterId != null">
-                    AND v.meterId LIKE #{meterId}
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND v.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="instrumentNo != null">
                 AND v.instrumentNo LIKE #{instrumentNo}
             </if>
@@ -575,7 +586,7 @@
         , itemId)
         VALUES
         <foreach collection="verifyList" separator="," item="v1">
-            (#{v1.meterId}
+            (#{steelNo}
             , #{v1.batchId}
             , #{v1.tempId}
             , #{v1.verifyDate}
@@ -631,7 +642,10 @@
     <delete id="deleteMeterVerify" parameterType="com.abel.bigwater.api.MeterParam">
         DELETE
         FROM vc_meter_verify_result v
+        USING bw_meter m
         <where>
+            v.meterId = m.steelNo
+
             <choose>
                 <when test="verifyIdList != null">
                     AND v.wid IN
@@ -648,17 +662,24 @@
                 AND (v.batchId IS NULL OR v.batchId LIKE #{batchId})
             </if>
 
+            <if test="steelNo != null">
+                AND v.meterid LIKE #{steelNo}
+            </if>
+
             <choose>
                 <when test="meterId != null">
-                    AND v.meterId LIKE #{meterId}
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND v.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="instrumentNo != null">
                 AND v.instrumentNo LIKE #{instrumentNo}
             </if>
@@ -689,7 +710,10 @@
         ,p.pointDev
         ,p.lowLimit
         ,p.highLimit
+
         ,m.meterId
+        ,m.meterCode
+        ,p.meterId AS steelNo
 
         ,p.startReading
         ,p.endReading
@@ -718,6 +742,10 @@
                 (v.batchId IS NULL OR v.batchId LIKE #{batchId})
             </if>
 
+            <if test="steelNo != null">
+                AND p.meterid LIKE #{steelNo}
+            </if>
+
             <choose>
                 <when test="meterId != null">
                     AND m.meterId LIKE #{meterId}
@@ -729,6 +757,9 @@
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="instrumentNo != null">
                 AND p.instrumentNo LIKE #{instrumentNo}
             </if>
@@ -760,6 +791,7 @@
         ,p.lowLimit
         ,p.highLimit
         ,m.meterId
+        ,m.meterCode
 
         ,p.startReading
         ,p.endReading
@@ -786,6 +818,10 @@
             FROM vc_meter_verify_point p1
             JOIN bw_meter m1 ON p1.meterid = m1.steelno
             <where>
+                <if test="steelNo != null">
+                    AND p1.meterid LIKE #{steelNo}
+                </if>
+
                 <choose>
                     <when test="meterId != null">
                         AND m1.meterId LIKE #{meterId}
@@ -797,11 +833,18 @@
                         </foreach>
                     </when>
                 </choose>
+                <if test="meterCode != null">
+                    AND m1.meterCode LIKE #{meterCode}
+                </if>
             </where>
             GROUP BY p1.meterId
         ) pmax ON (p.meterId = pmax.meterId AND p.verifyDate = pmax.verifyDate)
         JOIN bw_meter m ON p.meterid = m.steelno
         <where>
+            <if test="steelNo != null">
+                AND p.meterid LIKE #{steelNo}
+            </if>
+
             <choose>
                 <when test="meterId != null">
                     AND m.meterId LIKE #{meterId}
@@ -813,6 +856,9 @@
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="instrumentNo != null">
                 AND p.instrumentNo LIKE #{instrumentNo}
             </if>
@@ -897,7 +943,10 @@
     <delete id="deleteVerifyPoint" parameterType="com.abel.bigwater.api.MeterParam">
         DELETE
         FROM vc_meter_verify_point p
+        USING bw_meter m
         <where>
+            m.steelNo = p.meterId
+
             <choose>
                 <when test="pointIdList != null">
                     AND p.wid IN
@@ -910,17 +959,23 @@
                 </when>
             </choose>
 
+            <if test="steelNo != null">
+                AND p.meterid LIKE #{steelNo}
+            </if>
             <choose>
                 <when test="meterId != null">
-                    AND p.meterId LIKE #{meterId}
+                    AND m.meterId LIKE #{meterId}
                 </when>
                 <when test="meterIdList != null and meterIdList.size > 0">
-                    AND p.meterId IN
+                    AND m.meterId IN
                     <foreach collection="meterIdList" index="idx" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
                 </when>
             </choose>
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
             <if test="instrumentNo != null">
                 AND p.instrumentNo LIKE #{instrumentNo}
             </if>

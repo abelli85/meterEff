@@ -9,6 +9,7 @@ import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -117,6 +118,7 @@ class EffTaskBeanTest {
     }
 
     @Test
+    @Ignore
     fun testEffAll() {
         bean!!.effAll()
     }
