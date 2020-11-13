@@ -451,7 +451,7 @@ as
 
                 utl_file.fflush(lgr);
             end loop;
-
+        utl_file.put_line(lgr, current_timestamp || ' 同步ucis数据完毕.', true);
         utl_file.fclose(lgr);
     EXCEPTION
         WHEN OTHERS THEN

@@ -12,6 +12,7 @@ UPDATE bw_firm SET firmName = '深圳水投' WHERE firmId = '21';
 end;
 */
 DELETE FROM bw_firm WHERE firmId LIKE '210_';
+INSERT INTO bw_firm(firmId, firmName, firmCity) VALUES('21', '深圳水投', '深圳');
 INSERT INTO bw_firm(firmId, firmName, firmCity) VALUES('2103', '焦作水司', '焦作');
 INSERT INTO bw_firm(firmId, firmName, firmCity) VALUES('2105', '池州水司', '池州');
 INSERT INTO bw_firm(firmId, firmName, firmCity) VALUES('2106', '坪地水司', '坪地');

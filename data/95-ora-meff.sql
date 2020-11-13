@@ -59,13 +59,14 @@ CREATE FOREIGN TABLE szv_userInfo(
     subBranch character varying(50),
     rootDeptId numeric(6) not null,
     meterCode character varying(12) not null ,
-    meterserial          character varying(50)  not null,
-    userstatusid         NUMERIC(3) not null,
+    meterserial character varying(50) not null,
+    userstatusid NUMERIC(3) not null,
     userwatermeterstatusid NUMERIC(3) not null,
     userName character varying(100) not null ,
     userAddr character varying(200) not null ,
     meterBrand character varying(50),
     modelSize character varying(20) not null ,
+    sizeId numeric(10),
     sizeName character varying(20) not null ,
     useType character varying(500),
     meterType character varying(150),
@@ -76,9 +77,81 @@ CREATE FOREIGN TABLE szv_userInfo(
     Server jdora
     options (schema 'TEST', "table" 'SZV_USERINFO');
 
+
+drop foreign table szv_meter_read;
+create foreign table szv_meter_read (
+    readid bigint not null ,
+    deptid numeric(6) NOT NULL,
+        subfirm VARCHAR(50),
+        subbranch VARCHAR(50),
+        rootdeptid numeric(6) NOT NULL,
+        metercode VARCHAR(12) NOT NULL,
+        meterserial VARCHAR(50) NOT NULL,
+        userstatusid numeric(3) NOT NULL,
+        userwatermeterstatusid numeric(3) NOT NULL,
+        username VARCHAR(100) NOT NULL,
+        useraddr VARCHAR(200) NOT NULL,
+        meterbrand VARCHAR(50),
+        modelsize VARCHAR(20) NOT NULL,
+        sizeid numeric(10),
+        sizename VARCHAR(20) NOT NULL,
+        usetype VARCHAR(500),
+        metertype VARCHAR(150),
+        firstinstall timestamptz NOT NULL,
+        recentinstall timestamptz,
+        recentread timestamptz,
+        recentfwd numeric(10),
+        businessyearmonth numeric(6),
+        lastread timestamptz,
+        lastfwd numeric(10),
+        thisfwd numeric(10),
+        thisreadingtime timestamptz,
+        readwater numeric
+    )
+    server jdora
+    options (schema 'TEST', "table" 'SZV_METER_READ');
+
 -- firstinstall cannot be converted to/from oracle!
 -- update szv_userinfo set recentread = firstinstall;
 -- commit;
+/*
+desc szv_deptment;
+Name					   Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ DEPTID 				   NOT NULL NUMBER(6)
+ ROWVERSION				   NOT NULL NUMBER(10)
+ PARENTDEPTID					    NUMBER(6)
+ DEPTCODE					    VARCHAR2(60)
+ DEPTNAME					    VARCHAR2(150)
+ DESCRIBE					    VARCHAR2(600)
+ ORDERNUMBER					    NUMBER(3)
+ LEVELCODE				   NOT NULL NUMBER(3)
+ DEPTTYPE				   NOT NULL NUMBER(3)
+ ISACTIVE				   NOT NULL NUMBER(3)
+ GISLOCATIONID					    NUMBER(10)
+ SHORTNAME					    VARCHAR2(150)
+ DELETESTATUS					    NUMBER(1)
+ EDEPTID					    NUMBER(6)
+*/
+
+drop foreign table szv_deptment;
+create foreign table szv_deptment (
+    deptid numeric(6) not null,
+    rowversion numeric(10) not null ,
+    parentdeptid numeric(6),
+    deptcode varchar(60),
+    deptname varchar(150),
+    describe varchar(600),
+    ordernumber numeric(3),
+    levelcode numeric(3) not null ,
+    depttype numeric(3) not null ,
+    isactive numeric(3) not null ,
+    gislocationid numeric(10),
+    shortname varchar(150),
+    deletestatus numeric(1),
+    edeptid numeric(6)
+    ) server jdora
+    options (schema 'TEST', "table" 'SZV_DEPTMENT');
 
 /*
 -- rule NOT work under big-data?
