@@ -711,6 +711,7 @@ open class UserServiceImpl : UserService {
                 // skip 0
                 when {
                     index > 0 -> {
+                        firm.meterCount = firmList.sumBy { if (it.firmId!!.startsWith(firm.firmId!!)) (it.meterCount ?: 0) else 0  }
                         val last = firmList[index - 1]
                         if (!firm.firmId!!.startsWith(last.firmId!!) // sub-firm of last or sub-firm of top-most.
                                 && !firm.firmId!!.startsWith(gfirm.firmId!!)) {
@@ -724,6 +725,7 @@ open class UserServiceImpl : UserService {
                     }
                     else -> {
                         log.info("开始匹配: ${firm.firmId}/${firm.firmName}")
+                        firm.meterCount = firmList.sumBy { it.meterCount ?: 0 }
                     }
                 }
 
