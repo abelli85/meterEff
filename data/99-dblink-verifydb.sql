@@ -159,6 +159,7 @@ WHERE meterId LIKE '01115190209874';
 SELECT * FROM hg_meter_verify_point
 WHERE meterId LIKE '01115190209874';
 
+-- truncate table vc_meter_verify_result;
 -- insert into vc_meter_verify
 insert into vc_meter_verify_result(
       meterId
@@ -269,6 +270,7 @@ join (select meterid xmeterId, max(verifyDate) xverifyDate
 where h.verifyId > coalesce((select max(itemid) from vc_meter_verify_result where dataSrc = 'huang'), 0)
 ;
 
+-- truncate table vc_meter_verify_point;
 insert into vc_meter_verify_point(
     pointNo,
     pointFlow,
@@ -301,7 +303,7 @@ insert into vc_meter_verify_point(
 )
 select
     pointIdx,
-    pointFlow,
+    coalesce(pointFlow, 0) / 1000.0 as pointFlow,
     pointDev,
     highLimit,
     lowLimit,

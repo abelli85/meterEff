@@ -1,219 +1,13 @@
-USE [huangdb]
-GO
-
-/****** Object:  Table [dbo].[huang_table_verify_detail]    Script Date: 11/10/2020 19:56:59 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[huang_table_verify_detail]') AND type in (N'U'))
-DROP TABLE [dbo].[huang_table_verify_detail]
-GO
-
-USE [huangdb]
-GO
-
-/****** Object:  Table [dbo].[huang_table_verify_detail]    Script Date: 11/10/2020 19:56:59 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[huang_table_verify_detail](
-	[ID] [nvarchar](15) NOT NULL,
-	[序号] [int] NULL,
-	[表号前缀] [nvarchar](20) NULL,
-	[表号] [nvarchar](20) NULL,
-	[Q3始值] [float] NULL,
-	[Q3末值] [float] NULL,
-	[Q3Vi] [float] NULL,
-	[Q3示值] [float] NULL,
-	[Q3误差] [float] NULL,
-	[Q2始值] [float] NULL,
-	[Q2末值] [float] NULL,
-	[Q2Vi] [float] NULL,
-	[Q2示值] [float] NULL,
-	[Q2误差] [float] NULL,
-	[Q1始值] [float] NULL,
-	[Q1末值] [float] NULL,
-	[Q1Vi] [float] NULL,
-	[Q1示值] [float] NULL,
-	[Q1误差] [float] NULL,
-	[始动流量] [real] NULL,
-	[外观] [nvarchar](8) NULL,
-	[密封性] [nvarchar](8) NULL,
-	[检定结果] [nvarchar](10) NULL,
-	[备注] [nvarchar](50) NULL,
-	[检定员] [nvarchar](4) NULL,
-	[检定日期] [datetime] NULL,
-	[设备编号] [nvarchar](10) NULL,
-	[水表口径] [nvarchar](5) NULL,
-	[ID重检] [nvarchar](18) NULL,
-	[时间] [nvarchar](10) NULL,
-	[铅封号] [nvarchar](20) NULL,
-	[表底] [real] NULL,
-	[环境温度] [real] NULL,
-	[相对湿度] [real] NULL,
-	[介质水温] [real] NULL,
-	[水压] [real] NULL,
-	[电子签名] [bit] NOT NULL,
-	[N] [int] NOT NULL,
-	[Q1T1] [real] NULL,
-	[Q2T1] [real] NULL,
-	[Q3T1] [real] NULL,
-	[Q3T2] [real] NULL,
-	[Q2T2] [real] NULL,
-	[Q1T2] [real] NULL,
-	[Q3标准质量] [real] NULL,
-	[Q2标准质量] [real] NULL,
-	[Q1标准质量] [real] NULL,
-	[Q3密度] [real] NULL,
-	[Q2密度] [real] NULL,
-	[Q1密度] [real] NULL,
-	[常用流量Q3] [float] NULL,
-	[分界流量Q2] [float] NULL,
-	[最小流量Q1] [float] NULL,
-	[Vm1] [float] NULL,
-	[Vm2] [float] NULL,
-	[Ve1] [float] NULL,
-	[Ve2] [float] NULL,
-	[机电误差] [nvarchar](20) NULL,
-	[机电结果] [nchar](10) NULL,
-	[机电误差限] [float] NULL
-) ON [PRIMARY]
-
-GO
-
-USE [huangdb]
-GO
-
-/****** Object:  Table [dbo].[huang_view_verify_detail]    Script Date: 11/10/2020 19:57:19 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[huang_view_verify_detail]') AND type in (N'U'))
-DROP TABLE [dbo].[huang_view_verify_detail]
-GO
-
-USE [huangdb]
-GO
-
-/****** Object:  Table [dbo].[huang_view_verify_detail]    Script Date: 11/10/2020 19:57:19 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[huang_view_verify_detail](
-	[batchId] [nvarchar](15) NOT NULL,
-	[serialId] [int] NULL,
-	[meterId] [nvarchar](20) NULL,
-	[verifyDate] [datetime] NULL,
-	[q3] [float] NULL,
-	[q3r] [float] NULL,
-	[q2] [float] NULL,
-	[q2r] [float] NULL,
-	[q1] [float] NULL,
-	[q1r] [float] NULL
-) ON [PRIMARY]
-
-GO
-
-
-
--- ------------------------------------
-SELECT [ID]
-      ,[序号]
-      ,[表号前缀]
-      ,[表号]
-      ,[Q3始值]
-      ,[Q3末值]
-      ,[Q3Vi]
-      ,[Q3示值]
-      ,[Q3误差]
-      ,[Q2始值]
-      ,[Q2末值]
-      ,[Q2Vi]
-      ,[Q2示值]
-      ,[Q2误差]
-      ,[Q1始值]
-      ,[Q1末值]
-      ,[Q1Vi]
-      ,[Q1示值]
-      ,[Q1误差]
-      ,[始动流量]
-      ,[外观]
-      ,[密封性]
-      ,[检定结果]
-      ,[备注]
-      ,[检定员]
-      ,[检定日期]
-      ,[设备编号]
-      ,[水表口径]
-      ,[ID重检]
-      ,[时间]
-      ,[铅封号]
-      ,[表底]
-      ,[环境温度]
-      ,[相对湿度]
-      ,[介质水温]
-      ,[水压]
-      ,[电子签名]
-      ,[N]
-      ,[Q1T1]
-      ,[Q2T1]
-      ,[Q3T1]
-      ,[Q3T2]
-      ,[Q2T2]
-      ,[Q1T2]
-      ,[Q3标准质量]
-      ,[Q2标准质量]
-      ,[Q1标准质量]
-      ,[Q3密度]
-      ,[Q2密度]
-      ,[Q1密度]
-      ,[常用流量Q3]
-      ,[分界流量Q2]
-      ,[最小流量Q1]
-      ,[Vm1]
-      ,[Vm2]
-      ,[Ve1]
-      ,[Ve2]
-      ,[机电误差]
-      ,[机电结果]
-      ,[机电误差限]
-	INTO huang_table_verify_detail
-  FROM [huang].[水表检定系统].[dbo].[水表检定记录表明细]
-GO
-
-DROP index idx_huang_table_meter_time on huang_table_verify_detail;
-create index idx_huang_table_meter_time on huang_table_verify_detail(
-[表号],
-[检定日期]);
-GO
-
-DROP INDEX  idx_huang_table_serial on huang_table_verify_detail;
-CREATE INDEX idx_huang_table_serial on huang_table_verify_detail(
-[N]);
-GO
-
--- ------------------------------------
-
-SELECT [batchId]
-    ,[serialId]
-    ,[meterId]
-    ,[verifyDate]
-    ,[q3]
-    ,[q3r]
-    ,[q2]
-    ,[q2r]
-    ,[q1]
-    ,[q1r]
-INTO huang_view_verify_detail
-FROM [huang].[水表检定系统].[dbo].[view_verify_detail]
-GO
-
-DROP INDEX idx_huang_view_meter_time ON huang_view_verify_detail;
-CREATE INDEX idx_huang_view_meter_time ON huang_view_verify_detail(meterId, verifyDate);
-GO
-
-SELECT * FROM huang_view_verify_detail
-where meterid like '0112519020000%';
+﻿
+update huang_table_verify_detail
+set [最小流量Q1] = vr.[最小流量Q1],
+[常用流量Q3] = vr.[常用流量Q3],
+[分界流量Q2] = vr.[分界流量Q2]
+from huang_table_verify_result vr,
+huang_table_verify_detail vd
+where vr.[出厂编号] = vd.[表号]
+and vr.[常用流量Q3] is not null
+and vd.[常用流量Q3] is null
 GO
 
 -- ------------------------------------
@@ -225,6 +19,11 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
+truncate table hg_meter_verify_point;
+truncate table hg_meter_verify_result;
+GO
+
+-- Q3
 INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
@@ -286,7 +85,7 @@ INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ,ISNULL([检定结果], '') + '|' + ISNULL([水表口径], '') + '|' + ISNULL([外观],'') + '|' + ISNULL([密封性], '') + '|' + ISNULL([机电结果], '') boardMemo
            ,[N] itemId
 FROM huang_table_verify_detail
-WHERE [N] BETWEEN 1 AND 1105270
+WHERE [N] BETWEEN 1 AND 1107714
 GO
 
 -- fetch range
@@ -294,6 +93,7 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
+-- Q2
 INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
@@ -355,7 +155,7 @@ INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ,ISNULL([检定结果], '') + '|' + ISNULL([水表口径], '') + '|' + ISNULL([外观],'') + '|' + ISNULL([密封性], '') + '|' + ISNULL([机电结果], '') boardMemo
            ,[N] itemId
 FROM huang_table_verify_detail
-WHERE [N] BETWEEN 1 AND 1105270
+WHERE [N] BETWEEN 1 AND 1107714
 GO
 
 
@@ -365,6 +165,7 @@ select MAX([序号]), MIN([序号]), MAX(N), MIN(N)
 FROM huang_table_verify_detail;
 GO
 
+-- Q1
 INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ([pointIdx]
            ,[tempId]
@@ -426,9 +227,10 @@ INSERT INTO [huangdb].[dbo].[hg_meter_verify_point]
            ,ISNULL([检定结果], '') + '|' + ISNULL([水表口径], '') + '|' + ISNULL([外观],'') + '|' + ISNULL([密封性], '') + '|' + ISNULL([机电结果], '') boardMemo
            ,[N] itemId
 FROM huang_table_verify_detail
-WHERE [N] BETWEEN 1 AND 1105270
+WHERE [N] BETWEEN 1 AND 1107714
 GO
 
+-- summary of verify.
 INSERT INTO [huangdb].[dbo].[hg_meter_verify_result]
            ([meterId]
            ,[batchId]
@@ -530,12 +332,19 @@ INSERT INTO [huangdb].[dbo].[hg_meter_verify_result]
            ,'huang' dataSrc
            ,[N] itemId
 FROM huang_table_verify_detail
+WHERE [N] BETWEEN 1 AND 1107714
 GO
 
 
 
 
 
+
+SELECT COUNT(1) FROM hg_meter_verify_result;
+
+SELECT * FROM hg_meter_verify_result
+WHERE meterId LIKE '01115190209874'
+GO
 
 
 SELECT COUNT(1) FROM hg_meter_verify_point;

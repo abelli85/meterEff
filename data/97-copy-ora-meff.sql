@@ -9,12 +9,6 @@ from szcc_jk.v_meterinfo@szcclnk;
 commit;
 /
 
--- 账册
-insert into szv_firm(deptId, subFirm, subBranch, rootDeptId)
-select distinct deptId, "分公司", "水务所", rootDeptId
-from ucis.v_jsb_metercheck@ucislnk;
-/
-
 INSERT INTO SZV_USERINFO(
                           DEPTID
                         , SUBFIRM
@@ -160,7 +154,7 @@ select usr.muid,
        usr.userName,
         dd.devicecode,
        usr.userAddr,
-       usr.recentRead as firstinstall, -- firstinstall cannot be converted to/from oracle.
+       usr.firstinstall,
 
        0 sizeId,
        usr.sizeName,
@@ -232,6 +226,60 @@ set firmid = '2703',
 from szv_data_device dd
 where m.meterCode = dd.meterCode and m.extid in (select distinct extid from bw_data);
 -- 95
+
+
+DESC ucis.t_ms_department@ucislnk;
+create table szv_deptment as select * from ucis.t_ms_department@ucislnk;
+create index idx_dept_id on szv_deptment(deptid);
+create index idx_dept_code on szv_deptment(deptcode);
+/*
+Name					   Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ DEPTID 				   NOT NULL NUMBER(6)
+ ROWVERSION				   NOT NULL NUMBER(10)
+ PARENTDEPTID					    NUMBER(6)
+ DEPTCODE					    VARCHAR2(20)
+ DEPTNAME					    VARCHAR2(50)
+ DESCRIBE					    VARCHAR2(200)
+ ORDERNUMBER					    NUMBER(3)
+ LEVELCODE				   NOT NULL NUMBER(3)
+ DEPTTYPE				   NOT NULL NUMBER(3)
+ ISACTIVE				   NOT NULL NUMBER(3)
+ GISLOCATIONID					    NUMBER(10)
+ SHORTNAME					    VARCHAR2(50)
+ DELETESTATUS					    NUMBER(1)
+ EDEPTID					    NUMBER(6)
+*/
+
+insert into bw_firm(firmid, firmname, grade)
+select deptcode || '-' || deptid, deptname, deptid from szv_deptment;
+
+-- 保留分公司、所
+delete from bw_firm
+    where firmid like '1%'
+      and firmid not like '1701%'
+      and "right"(firmname, 1) not in ('所', '司');
+
+-- 本部区域分公司的下属单位
+update bw_firm
+    set firmId = '27' || substr(firmid, 2, strpos(firmid, '-') - 2)
+where firmid like '101%'
+  and firmid < '10106'
+  and firmid != '10102';
+
+-- 本部区域分公司
+update bw_firm
+    set firmid = '2701'
+where firmid like '101-%' and grade = 2;
+
+-- 水表归属
+update bw_meter AS m
+set firmid = f.firmid
+from szv_userinfo AS u,
+    bw_firm AS f
+where f.firmid like '27%'
+  and f.grade = u.deptid
+  and m.metercode = u.metercode;
 
 INSERT INTO bw_eff_decay(
 meterbrandid

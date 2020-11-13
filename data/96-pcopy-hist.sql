@@ -158,3 +158,10 @@ $$ language 'plpgsql';
 /*
 select pcopyHist(1, 100);
 */
+
+create or replace function copyMeterRead(dev1 int8, dev2 int8)
+as $$
+    begin
+        declare
+    end;
+    $$ language 'plpgsql';
