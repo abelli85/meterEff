@@ -8,8 +8,9 @@ create index bw_data2_extid_sampletime_idx on bw_data2 (extid, sampletime);
 
 select count(distinct extid) from bw_data2;
 
-create or replace function pcopyOraTest(dev1 int8, dev2 int8)
-returns int8
+-- 从 szv_data (in oracle) 拷贝到 bw_data2 (in pgsql).
+create or replace procedure pcopyOraTest(dev1 int8, dev2 int8)
+    language 'plpgsql'
 as $$
     declare
         szidOra int8;
@@ -30,41 +31,44 @@ as $$
 
         while szidPg < szidOra
         loop
-            INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
+            begin
+                INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
-            SELECT zd.dataid
-                 , zd.deviceCode
-                 , zd.postDateToDate
-                 , zd.meterNum
-                 , 1000
-                 , '27'
-                 , zd.dataid
-            FROM szv_data zd
-            WHERE dataId BETWEEN szidPg + 1 AND szidPg + 1000000;
-            get diagnostics vcnt = row_count ;
-            raise notice 'copy from oracle-test %s rows', vcnt;
+                SELECT zd.dataid
+                     , zd.deviceCode
+                     , zd.postDateToDate
+                     , zd.meterNum
+                     , 1000
+                     , '27'
+                     , zd.dataid
+                FROM szv_data zd
+                WHERE dataId BETWEEN szidPg + 1 AND szidPg + 1000000;
+                get diagnostics vcnt = row_count ;
+                raise notice 'copy from oracle-test %s rows', vcnt;
 
-            szidPg = szidPg + 1000000;
+                szidPg = szidPg + 1000000;
+
+                commit;
+            end;
         end loop;
 
-        raise notice '从oracle_fdw 迁移历史数据成功: %', szidPg;
-        raise log '从oracle_fdw 迁移历史数据成功: %', szidPg;
-        return szidPg;
+        raise notice '% - 从oracle_fdw 迁移历史数据成功: %', current_timestamp, szidPg;
+        raise log '% - 从oracle_fdw 迁移历史数据成功: %', current_timestamp, szidPg;
 
         exception when others then
-        raise notice '从oracle_fdw 迁移历史数据错误: %', SQLERRM;
-        raise log '从oracle_fdw 迁移历史数据错误: %', SQLERRM;
-        return 0;
+        raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
+        raise log '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
+        rollback ;
     end;
-$$ language 'plpgsql';
+$$;
 
 /*
-select pcopyOraTest(1, 100);
+call pcopyOraTest(1, 100);
 */
 
 -- copy data from bw_data2 (synchronized with oracle-test) to bw_data
-create or replace function pcopyHist(dev1 int8, dev2 int8)
-returns int8
+create or replace procedure pcopyHist(dev1 int8, dev2 int8)
+    language 'plpgsql'
 as $$
     declare
         curOut cursor for select extid, count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
@@ -86,7 +90,7 @@ as $$
         mt1Local timestamp with time zone;
         mt2Local timestamp with time zone;
     begin
-        vidx = 0;
+        vidx := 0;
         open curOut;
         open curLocal;
 
@@ -97,7 +101,7 @@ as $$
 
                 fetch curLocal into extidLocal, dcntLocal, mt1Local, mt2Local;
 
-                vidx = vidx + 1;
+                vidx := vidx + 1;
                 raise notice '%: copy history for %', vidx, extidOut;
 
                 if not FOUND then
@@ -142,23 +146,85 @@ as $$
                     get diagnostics vcnt = ROW_COUNT ;
                     raise notice 'copy history right % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
                 end if;
+
+                commit ;
             end ;
         end loop;
 
-        raise log '清洗历史数据成功: %', vidx;
-        return vidx;
+        raise log '% - 清洗历史数据成功: %', current_timestamp, vidx;
 
         exception
         when others then
-            raise log '清洗历史数据错误: %', SQLERRM;
-        return 0;
+            raise notice '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+            raise log '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+            rollback ;
     end;
-$$ language 'plpgsql';
+$$;
 
 /*
-select pcopyHist(1, 100);
+call pcopyHist(1, 100);
 */
 
+create or replace function pcopySingleMeterRead(mcode varchar(100))
+returns int4
+language 'plpgsql'
+as $$
+    declare
+        localMax timestamptz;
+        localYm numeric(6);
+        rcnt int4;
+    begin
+        -- 截至到1990年
+        select max(sampletime) into localMax from bw_data where extid = mcode;
+        if localMax is null then
+            localMax := '1990-1-1'::timestamptz;
+            localYm := 199001;
+        else
+            localYm := to_number(to_char(localMax, 'YYYYMM'), '999999');
+        end if;
+        raise notice 'meter code % @ %', mcode, localYm;
+
+        insert into bw_data (extid
+                            , sampletime
+                            , endtime
+                            , durationsecond
+                            , forwardsum
+                            , forwarddigits
+                            , literpulse
+                            , firmid
+                            , szid)
+        select meterCode AS extid
+             , thisReadingTime AS sampletime
+             , lastRead AS endtime
+             , extract(epoch from age(thisReadingTime, lastRead)) AS durationsecond
+             , readWater AS forwardsum
+             , thisFwd AS forwarddigits
+             , 1000.0 AS literpulse
+             , '27' AS firmid
+             , v.readid AS szid
+        from szv_meter_read v
+                 join (select max(readid) as readid
+                       from szv_meter_read
+                       where metercode = mcode
+                         AND businessYearMonth > localYm
+                         AND thisReadingTime > localMax
+                       group by businessYearMonth
+        ) v2 on v.readid = v2.readid
+        where v.metercode = mcode
+          AND v.businessYearMonth > localYm;
+        get diagnostics rcnt = ROW_COUNT ;
+        raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
+        return rcnt;
+    exception when others then
+        raise notice '% - fail to commit caused by %', current_timestamp, SQLERRM;
+        rollback;
+        return -1;
+    end
+$$;
+
+select pcopySingleMeterRead('110111100903');
+
+-- call pcopySingleMeterRead loop
 create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
 language plpgsql
 as $$
@@ -169,12 +235,10 @@ as $$
         fname varchar(100);
         mcnt int4;
         mcode varchar(100);
-        localMax timestamptz;
-        localYm numeric(6);
         rcnt int4;
         totalCnt int8;
     begin
-        totalCnt = 0;
+        totalCnt := 0;
         open curFirm for select firmId, firmName from bw_firm
         where firmId like fidFilter
         order by firmid;
@@ -200,48 +264,10 @@ as $$
                     fetch curMeter into mcode;
                     exit when not FOUND;
 
-                    -- 截至到1990年
-                    select max(sampletime) into localMax from bw_data where extid = mcode;
-                    if localMax is null then
-                        localMax = '1990-1-1'::timestamptz;
-                        localYm = 199001;
-                        else
-                        localYm = to_number(to_char(localMax, 'YYYYMM'), '999999');
-                    end if;
-                    raise notice 'meter code % @ %', mcode, localYm;
-
-                    insert into bw_data (extid
-                                        , sampletime
-                                        , endtime
-                                        , durationsecond
-                                        , forwardsum
-                                        , forwarddigits
-                                        , literpulse
-                                        , firmid
-                                        , szid)
-                    select meterCode AS extid
-                         , thisReadingTime AS sampletime
-                         , lastRead AS endtime
-                         , extract(epoch from age(thisReadingTime, lastRead)) AS durationsecond
-                         , readWater AS forwardsum
-                         , thisFwd AS forwarddigits
-                         , 1000.0 AS literpulse
-                         , '27' AS firmid
-                         , v.readid AS szid
-                    from szv_meter_read v
-                             join (select max(readid) as readid
-                                   from szv_meter_read
-                                   where metercode = mcode
-                                     AND businessYearMonth > localYm
-                                     AND thisReadingTime > localMax
-                                   group by businessYearMonth
-                    ) v2 on v.readid = v2.readid
-                    where v.metercode = mcode
-                      AND v.businessYearMonth > localYm;
-                    get diagnostics rcnt = ROW_COUNT ;
-                    raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
-
-                    totalCnt = totalCnt + rcnt;
+                    select pcopySingleMeterRead(mcode) into rcnt;
+                    totalCnt := totalCnt + rcnt;
+                exception when others then
+                    raise notice '% - fail to commit caused by %', current_timestamp, SQLERRM;
                 end;
             end loop; -- single meter
 
@@ -257,7 +283,7 @@ as $$
         when others then
             raise notice '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
             raise log '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
-    end;
+    end
 $$;
 
 call pcopyMeterRead('270101001', '110111200103');
