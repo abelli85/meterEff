@@ -169,9 +169,8 @@ $$;
 call pcopyHist(1, 100);
 */
 
-create or replace function pcopySingleMeterRead(mcode varchar(100))
-    returns int4
-    language 'plpgsql'
+create or replace procedure pcopySingleMeterRead(mcode varchar(100))
+    language plpgsql
 as
 $$
 declare
@@ -217,18 +216,17 @@ begin
     ) v2 on v.readid = v2.readid
     where v.metercode = mcode
       AND v.businessYearMonth > localYm;
+
     get diagnostics rcnt = ROW_COUNT;
     raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
-    return rcnt;
 exception
     when others then
         raise notice '% - fail to commit caused by %', current_timestamp, SQLERRM;
-        rollback;
-        return -1;
-end
+        rollback ;
+end;
 $$;
 
-select pcopySingleMeterRead('110111100903');
+call pcopySingleMeterRead('110111100903');
 
 -- call pcopySingleMeterRead loop
 create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
@@ -236,8 +234,8 @@ create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter v
 as
 $$
 declare
-    curFirm  refcursor;
-    curMeter refcursor;
+    firm  record;
+    meter record;
     fid      varchar(100);
     fname    varchar(100);
     mcnt     int4;
@@ -246,13 +244,13 @@ declare
     totalCnt int8;
 begin
     totalCnt := 0;
-    open curFirm for select firmId, firmName
+    for firm in select firmId, firmName
                      from bw_firm
                      where firmId like fidFilter
-                     order by firmid;
+                     order by firmid
     loop
-        fetch curFirm into fid, fname;
-        exit when not FOUND;
+        fid := firm.firmId;
+        fname := firm.firmName;
 
         select count(1)
         into mcnt
@@ -263,39 +261,36 @@ begin
         raise notice '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
         raise log '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
 
-        open curMeter for select metercode
+        for meter in select metercode
                           from bw_meter
                           where firmid = fid
                             and metercode like mcodeFilter
                             and powertype = 'MANUAL'
-                          order by metercode;
+                          order by metercode
         loop
             -- one transaction can be commit in procedure; but not function.
             begin
-                fetch curMeter into mcode;
-                exit when not FOUND;
+                mcode := meter.metercode;
 
-                select pcopySingleMeterRead(mcode) into rcnt;
+                call pcopySingleMeterRead(mcode);
+                commit;
                 totalCnt := totalCnt + rcnt;
-            exception
-                when others then
-                    raise notice '% - fail to commit caused by %', current_timestamp, SQLERRM;
             end;
         end loop; -- single meter
 
         raise notice '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
         raise log '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
-        close curMeter;
     end loop; -- single firm.
 
     raise notice '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
     raise log '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
-    close curFirm;
-exception
+
+/*    exception
     when others then
         raise notice '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
         raise log '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
-end
+*/
+end;
 $$;
 
 call pcopyMeterRead('270101001', '110111200103');
