@@ -159,8 +159,8 @@ $$ language 'plpgsql';
 select pcopyHist(1, 100);
 */
 
-create or replace function pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
-returns int8
+create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
+language plpgsql
 as $$
     declare
         curFirm refcursor;
@@ -195,7 +195,7 @@ as $$
               and powertype = 'MANUAL'
             order by metercode;
             loop
-                -- one transaction.
+                -- one transaction can be commit in procedure; but not function.
                 begin
                     fetch curMeter into mcode;
                     exit when not FOUND;
@@ -253,19 +253,17 @@ as $$
         raise notice '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
         raise log '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
         close curFirm;
-        return totalCnt;
     exception
         when others then
             raise notice '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
             raise log '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
-            return -1;
     end;
-    $$ language 'plpgsql';
+$$;
 
-select pcopyMeterRead('270101001', '110111200103');
+call pcopyMeterRead('270101001', '110111200103');
 
 /*
-select pcopyMeterRead('270101001', '%');
+call pcopyMeterRead('270101001', '%');
 
-select pcopyMeterRead('27__%', '%');
+call pcopyMeterRead('27__%', '%');
 */
