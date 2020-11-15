@@ -11,7 +11,7 @@ from bw_data2;
 
 -- 从 szv_data (in oracle) 拷贝到 bw_data2 (in pgsql).
 create or replace procedure pcopyOraTest(dev1 int8, dev2 int8)
-    language 'plpgsql'
+    language plpgsql
 as
 $$
 declare
@@ -60,7 +60,7 @@ exception
         raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
         raise log '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
         rollback;
-end
+end;
 $$;
 
 /*
@@ -69,46 +69,46 @@ call pcopyOraTest(1, 100);
 
 -- copy data from bw_data2 (synchronized with oracle-test) to bw_data
 create or replace procedure pcopyHist(dev1 int8, dev2 int8)
-    language 'plpgsql'
+    language plpgsql
 as
 $$
 declare
-    curOut    refcursor;
-    curLocal  refcursor;
+    curOut    record;
     extidOut  varchar;
     dcntOut   int8;
     mt1Out    timestamp with time zone;
     mt2Out    timestamp with time zone;
-    vcnt      int8;
-    vidx      int8;
+
     dcntLocal int8;
     mt1Local  timestamp with time zone;
     mt2Local  timestamp with time zone;
+
+    vidx      int8;
+    vcnt      int8;
 begin
     vidx := 0;
-    open curOut for
+    for curOut in
         select extid, count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
         from bw_data2
         group by extid
         order by extid
-        limit dev2;
-
+        limit dev2
     loop
         begin
-            fetch curOut into extidOut, dcntOut, mt1Out, mt2Out;
-            exit when not FOUND;
+            extidOut := curOut.extid;
+            dcntOut := curOut.dcnt;
+            mt1Out := curOut.mt1;
+            mt2Out := curOut.mt2;
 
-            open curLocal for
-                select count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
-                from bw_data
-                where extid = extidOut
-                group by extid;
-            fetch curLocal into dcntLocal, mt1Local, mt2Local;
+            select count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
+            into dcntLocal, mt1Local, mt2Local
+            from bw_data
+            where extid = extidOut;
 
             vidx := vidx + 1;
             raise notice '%: copy history for %', vidx, extidOut;
 
-            if not FOUND then
+            if dcntLocal is null then
                 -- insert all data
                 insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
                 select extid, sampletime, forwarddigits, 1000, '27', szid
@@ -150,19 +150,19 @@ begin
                 get diagnostics vcnt = ROW_COUNT;
                 raise notice 'copy history right % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
             end if;
-
-            close curLocal;
+        exception
+            when others then
+                raise notice '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+                raise log '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+                rollback;
         end;
+
+        -- A transaction cannot be ended inside a block with exception handlers.
+        commit;
     end loop;
 
     raise log '% - 清洗历史数据成功: %', current_timestamp, vidx;
-
-exception
-    when others then
-        raise notice '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
-        raise log '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
-        rollback;
-end
+end;
 $$;
 
 /*
@@ -273,6 +273,8 @@ begin
                 mcode := meter.metercode;
 
                 call pcopySingleMeterRead(mcode);
+
+                -- A transaction cannot be ended inside a block with exception handlers.
                 commit;
                 totalCnt := totalCnt + rcnt;
             end;
