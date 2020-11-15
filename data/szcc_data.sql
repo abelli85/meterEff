@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      ORACLE Version 11g                           */
-/* Created on:     2020/11/7 22:54:42                           */
+/* Created on:     2020/11/15 16:14:36                          */
 /*==============================================================*/
 
 
@@ -111,6 +111,15 @@ drop table SZV_DATA_DEVICE cascade constraints
 /
 
 drop table SZV_FIRM cascade constraints
+/
+
+drop index IDX_METER_READ_ID
+/
+
+drop index IDX_METER_READ_LAST
+/
+
+drop index IDX_METER_READ_READ
 /
 
 drop index IDX_METER_READ
@@ -354,8 +363,38 @@ create table SZV_METER_READ
 /*==============================================================*/
 create index IDX_METER_READ on SZV_METER_READ (
    ROOTDEPTID ASC,
+   BUSINESSYEARMONTH ASC,
+   METERCODE ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_METER_READ_READ                                   */
+/*==============================================================*/
+create index IDX_METER_READ_READ on SZV_METER_READ (
    METERCODE ASC,
-   BUSINESSYEARMONTH ASC
+   BUSINESSYEARMONTH ASC,
+   THISREADINGTIME ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_METER_READ_LAST                                   */
+/*==============================================================*/
+create index IDX_METER_READ_LAST on SZV_METER_READ (
+   METERCODE ASC,
+   BUSINESSYEARMONTH ASC,
+   LASTREAD ASC
+)
+/
+
+/*==============================================================*/
+/* Index: IDX_METER_READ_ID                                     */
+/*==============================================================*/
+create index IDX_METER_READ_ID on SZV_METER_READ (
+   METERCODE ASC,
+   BUSINESSYEARMONTH ASC,
+   READID ASC
 )
 /
 

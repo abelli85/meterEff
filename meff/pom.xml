@@ -50,8 +50,8 @@
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <spring-boot.version>1.5.13.RELEASE</spring-boot.version>
-        <mssql-jdbc.version>8.2.2.jre8</mssql-jdbc.version>
-        <druid.version>1.1.23</druid.version>
+        <mssql-jdbc.version>8.4.1.jre8</mssql-jdbc.version>
+        <druid.version>1.2.3</druid.version>
         <postgresql.version>42.2.15</postgresql.version>
     </properties>
 

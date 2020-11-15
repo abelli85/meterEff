@@ -159,9 +159,104 @@ $$ language 'plpgsql';
 select pcopyHist(1, 100);
 */
 
-create or replace function copyMeterRead(dev1 int8, dev2 int8)
+create or replace function pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
+returns int8
 as $$
+    declare
+        curFirm refcursor;
+        curMeter refcursor;
+        fid varchar(100);
+        fname varchar(100);
+        mcode varchar(100);
+        localMax timestamptz;
+        localYm numeric(6);
+        rcnt int4;
+        totalCnt int8;
     begin
-        declare
+        totalCnt = 0;
+        open curFirm for select firmId, firmName from bw_firm
+        where firmId like fidFilter
+        order by firmid;
+        loop
+            fetch curFirm into fid, fname;
+            exit when not FOUND;
+            raise notice '% - 循环拷贝抄表数据: %, %', current_timestamp, fid, fname;
+            raise log '% - 循环拷贝抄表数据: %, %', current_timestamp, fid, fname;
+
+            open curMeter for select metercode from bw_meter
+            where firmid = fid
+              and metercode like mcodeFilter
+              and powertype = 'MANUAL'
+            order by metercode;
+            loop
+                fetch curMeter into mcode;
+                exit when not FOUND;
+
+                -- 截至到1990年
+                select max(sampletime) into localMax from bw_data where extid = mcode;
+                if localMax is null then
+                    localMax = '1990-1-1'::timestamptz;
+                    localYm = 199001;
+                    else
+                    localYm = to_number(to_char(localMax, 'YYYYMM'), '999999');
+                end if;
+                raise notice 'meter code % @ %', mcode, localYm;
+
+                insert into bw_data (extid
+                                    , sampletime
+                                    , endtime
+                                    , durationsecond
+                                    , forwardsum
+                                    , forwarddigits
+                                    , literpulse
+                                    , firmid
+                                    , szid)
+                select meterCode AS extid
+                     , thisReadingTime AS sampletime
+                     , lastRead AS endtime
+                     , extract(epoch from age(thisReadingTime, lastRead)) AS durationsecond
+                     , readWater AS forwardsum
+                     , thisFwd AS forwarddigits
+                     , 1000.0 AS literpulse
+                     , '27' AS firmid
+                     , v.readid AS szid
+                from szv_meter_read v
+                         join (select max(readid) as readid
+                               from szv_meter_read
+                               where metercode = mcode
+                                 AND businessYearMonth > localYm
+                                 AND thisReadingTime > localMax
+                               group by businessYearMonth
+                ) v2 on v.readid = v2.readid
+                where v.metercode = mcode
+                  AND v.businessYearMonth > localYm;
+                get diagnostics rcnt = ROW_COUNT ;
+                raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
+
+                totalCnt = totalCnt + rcnt;
+            end loop; -- single meter
+
+            raise notice '% - copy meter-read for firm: % / %', current_timestamp, fid, fname;
+            raise log '% - copy meter-read for firm: % / %', current_timestamp, fid, fname;
+            close curMeter;
+        end loop; -- single firm.
+
+        raise notice '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
+        raise log '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
+        close curFirm;
+        return totalCnt;
+    exception
+        when others then
+            raise notice '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
+            raise log '% - 拷贝历史抄表错误: %', current_timestamp, SQLERRM;
+            return -1;
     end;
     $$ language 'plpgsql';
+
+select pcopyMeterRead('270101001', '110111200103');
+
+/*
+select pcopyMeterRead('270101001', '%');
+
+select pcopyMeterRead('27__%', '%');
+*/
