@@ -49,17 +49,20 @@ begin
                 raise notice 'copy from oracle-test %s rows', vcnt;
 
                 szidPg := szidPg + 1000000;
+            exception
+                when others then
+                    raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
+                    raise log '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
+                    rollback;
             end;
+
+            -- A transaction cannot be ended inside a block with exception handlers.
+            commit;
         end loop;
 
     raise notice '% - 从oracle_fdw 迁移历史数据成功: %', current_timestamp, szidPg;
     raise log '% - 从oracle_fdw 迁移历史数据成功: %', current_timestamp, szidPg;
 
-exception
-    when others then
-        raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
-        raise log '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
-        rollback;
 end;
 $$;
 
@@ -78,11 +81,9 @@ declare
     dcntOut   int8;
     mt1Out    timestamp with time zone;
     mt2Out    timestamp with time zone;
-
     dcntLocal int8;
     mt1Local  timestamp with time zone;
     mt2Local  timestamp with time zone;
-
     vidx      int8;
     vcnt      int8;
 begin
@@ -93,73 +94,73 @@ begin
         group by extid
         order by extid
         limit dev2
-    loop
-        begin
-            extidOut := curOut.extid;
-            dcntOut := curOut.dcnt;
-            mt1Out := curOut.mt1;
-            mt2Out := curOut.mt2;
+        loop
+            begin
+                extidOut := curOut.extid;
+                dcntOut := curOut.dcnt;
+                mt1Out := curOut.mt1;
+                mt2Out := curOut.mt2;
 
-            select count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
-            into dcntLocal, mt1Local, mt2Local
-            from bw_data
-            where extid = extidOut;
+                select count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
+                into dcntLocal, mt1Local, mt2Local
+                from bw_data
+                where extid = extidOut;
 
-            vidx := vidx + 1;
-            raise notice '%: copy history for %', vidx, extidOut;
+                vidx := vidx + 1;
+                raise notice '%: copy history for %', vidx, extidOut;
 
-            if dcntLocal is null then
-                -- insert all data
-                insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
-                select extid, sampletime, forwarddigits, 1000, '27', szid
-                from bw_data2 d2
-                         join (
-                    select max(dataid) dataid
-                    from bw_data2
-                    where extid = extidOut
-                    group by extid, sampletime
-                ) b2 on d2.dataid = b2.dataid;
-                get diagnostics vcnt = ROW_COUNT;
-                raise notice 'first time copy history % rows of %', vcnt, extidOut;
-            else
-                -- left
-                insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
-                select extid, sampletime, forwarddigits, 1000, '27', szid
-                from bw_data2 d2
-                         join (
-                    select max(dataid) dataid
-                    from bw_data2
-                    where extid = extidOut
-                      and sampletime < mt1Local
-                    group by extid, sampletime
-                ) b2 on d2.dataid = b2.dataid;
-                get diagnostics vcnt = ROW_COUNT;
-                raise notice 'copy history left % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
+                if dcntLocal is null then
+                    -- insert all data
+                    insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
+                    select extid, sampletime, forwarddigits, 1000, '27', szid
+                    from bw_data2 d2
+                             join (
+                        select max(dataid) dataid
+                        from bw_data2
+                        where extid = extidOut
+                        group by extid, sampletime
+                    ) b2 on d2.dataid = b2.dataid;
+                    get diagnostics vcnt = ROW_COUNT;
+                    raise notice 'first time copy history % rows of %', vcnt, extidOut;
+                else
+                    -- left
+                    insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
+                    select extid, sampletime, forwarddigits, 1000, '27', szid
+                    from bw_data2 d2
+                             join (
+                        select max(dataid) dataid
+                        from bw_data2
+                        where extid = extidOut
+                          and sampletime < mt1Local
+                        group by extid, sampletime
+                    ) b2 on d2.dataid = b2.dataid;
+                    get diagnostics vcnt = ROW_COUNT;
+                    raise notice 'copy history left % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
 
-                -- right
-                insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
-                select extid, sampletime, forwarddigits, 1000, '27', szid
-                from bw_data2 d2
-                         join (
-                    select max(dataid) dataid
-                    from bw_data2
-                    where extid = extidOut
-                      and sampletime > mt2Local
-                    group by extid, sampletime
-                ) b2 on d2.dataid = b2.dataid;
-                get diagnostics vcnt = ROW_COUNT;
-                raise notice 'copy history right % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
-            end if;
-        exception
-            when others then
-                raise notice '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
-                raise log '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
-                rollback;
-        end;
+                    -- right
+                    insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
+                    select extid, sampletime, forwarddigits, 1000, '27', szid
+                    from bw_data2 d2
+                             join (
+                        select max(dataid) dataid
+                        from bw_data2
+                        where extid = extidOut
+                          and sampletime > mt2Local
+                        group by extid, sampletime
+                    ) b2 on d2.dataid = b2.dataid;
+                    get diagnostics vcnt = ROW_COUNT;
+                    raise notice 'copy history right % rows for [%, %](local), [%, %](out)', vcnt, mt1Local, mt2Local, mt1Out, mt2Out;
+                end if;
+            exception
+                when others then
+                    raise notice '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+                    raise log '% - 清洗历史数据错误: %', current_timestamp, SQLERRM;
+                    rollback;
+            end;
 
-        -- A transaction cannot be ended inside a block with exception handlers.
-        commit;
-    end loop;
+            -- A transaction cannot be ended inside a block with exception handlers.
+            commit;
+        end loop;
 
     raise log '% - 清洗历史数据成功: %', current_timestamp, vidx;
 end;
@@ -222,7 +223,7 @@ begin
 exception
     when others then
         raise notice '% - fail to commit caused by %', current_timestamp, SQLERRM;
-        rollback ;
+        rollback;
 end;
 $$;
 
@@ -234,8 +235,8 @@ create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter v
 as
 $$
 declare
-    firm  record;
-    meter record;
+    firm     record;
+    meter    record;
     fid      varchar(100);
     fname    varchar(100);
     mcnt     int4;
@@ -245,44 +246,44 @@ declare
 begin
     totalCnt := 0;
     for firm in select firmId, firmName
-                     from bw_firm
-                     where firmId like fidFilter
-                     order by firmid
-    loop
-        fid := firm.firmId;
-        fname := firm.firmName;
-
-        select count(1)
-        into mcnt
-        from bw_meter
-        where firmid = fid
-          and metercode like mcodeFilter
-          and powertype = 'MANUAL';
-        raise notice '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
-        raise log '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
-
-        for meter in select metercode
-                          from bw_meter
-                          where firmid = fid
-                            and metercode like mcodeFilter
-                            and powertype = 'MANUAL'
-                          order by metercode
+                from bw_firm
+                where firmId like fidFilter
+                order by firmid
         loop
-            -- one transaction can be commit in procedure; but not function.
-            begin
-                mcode := meter.metercode;
+            fid := firm.firmId;
+            fname := firm.firmName;
 
-                call pcopySingleMeterRead(mcode);
+            select count(1)
+            into mcnt
+            from bw_meter
+            where firmid = fid
+              and metercode like mcodeFilter
+              and powertype = 'MANUAL';
+            raise notice '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
+            raise log '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
 
-                -- A transaction cannot be ended inside a block with exception handlers.
-                commit;
-                totalCnt := totalCnt + rcnt;
-            end;
-        end loop; -- single meter
+            for meter in select metercode
+                         from bw_meter
+                         where firmid = fid
+                           and metercode like mcodeFilter
+                           and powertype = 'MANUAL'
+                         order by metercode
+                loop
+                    -- one transaction can be commit in procedure; but not function.
+                    begin
+                        mcode := meter.metercode;
 
-        raise notice '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
-        raise log '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
-    end loop; -- single firm.
+                        call pcopySingleMeterRead(mcode);
+
+                        -- A transaction cannot be ended inside a block with exception handlers.
+                        commit;
+                        totalCnt := totalCnt + rcnt;
+                    end;
+                end loop; -- single meter
+
+            raise notice '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
+            raise log '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
+        end loop; -- single firm.
 
     raise notice '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
     raise log '% - 累计拷贝数据 %, %: %', current_timestamp, fidFilter, mcodeFilter, totalCnt;
