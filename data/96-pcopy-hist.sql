@@ -167,6 +167,7 @@ as $$
         curMeter refcursor;
         fid varchar(100);
         fname varchar(100);
+        mcnt int4;
         mcode varchar(100);
         localMax timestamptz;
         localYm numeric(6);
@@ -180,8 +181,13 @@ as $$
         loop
             fetch curFirm into fid, fname;
             exit when not FOUND;
-            raise notice '% - 循环拷贝抄表数据: %, %', current_timestamp, fid, fname;
-            raise log '% - 循环拷贝抄表数据: %, %', current_timestamp, fid, fname;
+
+            select count(1) into mcnt from bw_meter
+            where firmid = fid
+              and metercode like mcodeFilter
+              and powertype = 'MANUAL';
+            raise notice '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
+            raise log '% - 循环拷贝抄表数据: % / %, 水表数量: %', current_timestamp, fid, fname, mcnt;
 
             open curMeter for select metercode from bw_meter
             where firmid = fid
@@ -236,8 +242,8 @@ as $$
                 totalCnt = totalCnt + rcnt;
             end loop; -- single meter
 
-            raise notice '% - copy meter-read for firm: % / %', current_timestamp, fid, fname;
-            raise log '% - copy meter-read for firm: % / %', current_timestamp, fid, fname;
+            raise notice '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
+            raise log '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
             close curMeter;
         end loop; -- single firm.
 
