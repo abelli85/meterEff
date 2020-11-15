@@ -195,51 +195,54 @@ as $$
               and powertype = 'MANUAL'
             order by metercode;
             loop
-                fetch curMeter into mcode;
-                exit when not FOUND;
+                -- one transaction.
+                begin
+                    fetch curMeter into mcode;
+                    exit when not FOUND;
 
-                -- 截至到1990年
-                select max(sampletime) into localMax from bw_data where extid = mcode;
-                if localMax is null then
-                    localMax = '1990-1-1'::timestamptz;
-                    localYm = 199001;
-                    else
-                    localYm = to_number(to_char(localMax, 'YYYYMM'), '999999');
-                end if;
-                raise notice 'meter code % @ %', mcode, localYm;
+                    -- 截至到1990年
+                    select max(sampletime) into localMax from bw_data where extid = mcode;
+                    if localMax is null then
+                        localMax = '1990-1-1'::timestamptz;
+                        localYm = 199001;
+                        else
+                        localYm = to_number(to_char(localMax, 'YYYYMM'), '999999');
+                    end if;
+                    raise notice 'meter code % @ %', mcode, localYm;
 
-                insert into bw_data (extid
-                                    , sampletime
-                                    , endtime
-                                    , durationsecond
-                                    , forwardsum
-                                    , forwarddigits
-                                    , literpulse
-                                    , firmid
-                                    , szid)
-                select meterCode AS extid
-                     , thisReadingTime AS sampletime
-                     , lastRead AS endtime
-                     , extract(epoch from age(thisReadingTime, lastRead)) AS durationsecond
-                     , readWater AS forwardsum
-                     , thisFwd AS forwarddigits
-                     , 1000.0 AS literpulse
-                     , '27' AS firmid
-                     , v.readid AS szid
-                from szv_meter_read v
-                         join (select max(readid) as readid
-                               from szv_meter_read
-                               where metercode = mcode
-                                 AND businessYearMonth > localYm
-                                 AND thisReadingTime > localMax
-                               group by businessYearMonth
-                ) v2 on v.readid = v2.readid
-                where v.metercode = mcode
-                  AND v.businessYearMonth > localYm;
-                get diagnostics rcnt = ROW_COUNT ;
-                raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
+                    insert into bw_data (extid
+                                        , sampletime
+                                        , endtime
+                                        , durationsecond
+                                        , forwardsum
+                                        , forwarddigits
+                                        , literpulse
+                                        , firmid
+                                        , szid)
+                    select meterCode AS extid
+                         , thisReadingTime AS sampletime
+                         , lastRead AS endtime
+                         , extract(epoch from age(thisReadingTime, lastRead)) AS durationsecond
+                         , readWater AS forwardsum
+                         , thisFwd AS forwarddigits
+                         , 1000.0 AS literpulse
+                         , '27' AS firmid
+                         , v.readid AS szid
+                    from szv_meter_read v
+                             join (select max(readid) as readid
+                                   from szv_meter_read
+                                   where metercode = mcode
+                                     AND businessYearMonth > localYm
+                                     AND thisReadingTime > localMax
+                                   group by businessYearMonth
+                    ) v2 on v.readid = v2.readid
+                    where v.metercode = mcode
+                      AND v.businessYearMonth > localYm;
+                    get diagnostics rcnt = ROW_COUNT ;
+                    raise notice '% - copy %: % rows', current_timestamp, mcode, rcnt;
 
-                totalCnt = totalCnt + rcnt;
+                    totalCnt = totalCnt + rcnt;
+                end;
             end loop; -- single meter
 
             raise notice '% - copied meter-read for firm: % / %', current_timestamp, fid, fname;
