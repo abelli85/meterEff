@@ -54,6 +54,9 @@ begin
                     raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
                     raise log '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
                     rollback;
+
+                    -- do not execute anymore!
+                    return ;
             end;
 
             -- A transaction cannot be ended inside a block with exception handlers.
