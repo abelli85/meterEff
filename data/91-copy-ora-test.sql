@@ -141,7 +141,7 @@ end copyLuohuSzcc;
 /
 
 /*
-execute copyLuohuoSzcc;
+execute copyLuohuSzcc;
 /
 */
 
