@@ -27,15 +27,130 @@ where devicecode = 'SS_SK_20200065';
 set serveroutput on;
 grant execute on utl_file to public;
 
-create or replace directory tmp as '/tmp/';
-grant read, write on directory tmp to public;
-create or replace procedure copy_szcc(devid1 integer, devid2 integer)
+-- 拷贝单只远传表的数据
+create or replace procedure copyOraSingleSzcc(devId integer, dcode varchar, lgr utl_file.file_type)
 as
     pcnt   integer;
     pdate1 DATE;
     pdate2 DATE;
     vdate1 DATE;
     vdate2 DATE;
+    begin
+        dbms_output.put_line(current_timestamp || ', deviceId:' || devId || ' @ ' || dcode);
+        if utl_file.is_open(lgr) then
+            utl_file.put_line(lgr, current_timestamp || ', deviceId:' || devId || ' @ ' || dcode,
+                              true);
+        end if;
+
+        pcnt := 0;
+        SELECT COUNT(1)
+        INTO pcnt
+        FROM szv_data
+        WHERE deviceCode = dcode;
+
+        if pcnt = 0 THEN
+            BEGIN
+                utl_file.put_line(lgr, 'first time copy data for ' || dcode, true);
+
+                -- insert all data from szcc-oracle
+                /** + ignore_row_on_dupkey_index (szv_data(devicecode, pipe, postdatetodate)) */
+                insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
+                from szcc_jk.v_data@szcclnk
+                where devicecode = dcode;
+            END;
+        ELSE
+            BEGIN
+                -- data period in oracle-jdzx
+                SELECT MIN(postDateToDate), MAX(postDateToDate)
+                INTO pdate1, pdate2
+                FROM szv_data
+                WHERE deviceCode = dcode;
+
+                -- data period in oracle-szcc
+                SELECT MIN(postDateToDate), MAX(postDateToDate)
+                INTO vdate1, vdate2
+                FROM szcc_jk.v_data@szcclnk
+                WHERE deviceCode = dcode;
+
+                if utl_file.is_open(lgr) then
+                    utl_file.put_line(lgr,
+                                      'pgsql data ' || dcode || ' from ' ||
+                                      to_char(pdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
+                                      to_char(pdate2, 'YYYY-MM-DD HH24:MI:SS'),
+                                      true);
+                    utl_file.put_line(lgr,
+                                      'oracle data ' || dcode || ' from ' ||
+                                      to_char(vdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
+                                      to_char(vdate2, 'YYYY-MM-DD HH24:MI:SS'),
+                                      true);
+                end if;
+
+                -- left period
+                insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
+                from szcc_jk.v_data@szcclnk
+                where devicecode = dcode
+                  AND postDateToDate BETWEEN vdate1 AND pdate1;
+
+                -- right period
+                insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
+                from szcc_jk.v_data@szcclnk
+                where devicecode = dcode
+                  AND postDateToDate BETWEEN pdate2 AND vdate2;
+            end;
+        end if;
+    end copyOraSingleSzcc;
+/
+
+declare
+    lgr utl_file.file_type;
+begin
+    lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
+    copyOraSingleSzcc(0, 'SS_SK_557325', lgr);
+end;
+/
+
+
+-- 拷贝某个分公司的远传数据
+create or replace procedure copyLuohuoSzcc
+as
+    lgr    utl_file.file_type;
+begin
+    lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
+    if utl_file.is_open(lgr) then
+        dbms_output.put_line('lgr open good.');
+    else
+        dbms_output.put_line('lgr open failed.');
+    end if;
+
+    for dev in (select distinct d.deviceCode
+        from szv_data_device d
+        join szv_userinfo u on d.metercode = u.metercode
+        where u.subbranch like '%罗湖%')
+    loop
+        begin
+            copyOraSingleSzcc(1, dev.deviceCode, lgr);
+
+            commit;
+        end;
+    end loop;
+
+end copyLuohuoSzcc;
+/
+
+/*
+execute copyLuohuoSzcc;
+/
+*/
+
+create or replace directory tmp as '/tmp/';
+grant read, write on directory tmp to public;
+
+-- 批量拷贝远传表数据
+create or replace procedure copy_szcc(devid1 integer, devid2 integer)
+as
     lgr    utl_file.file_type;
 begin
     lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
@@ -61,67 +176,7 @@ begin
                     order by deviceId
                 )
         LOOP
-            dbms_output.put_line(current_timestamp || ', deviceId:' || dcode.deviceId || ' @ ' || dcode.devicecode);
-            utl_file.put_line(lgr, current_timestamp || ', deviceId:' || dcode.deviceId || ' @ ' || dcode.devicecode,
-                              true);
-
-            pcnt := 0;
-            SELECT COUNT(1)
-            INTO pcnt
-            FROM szv_data
-            WHERE deviceCode = dcode.deviceCode;
-
-            if pcnt = 0 THEN
-                BEGIN
-                    utl_file.put_line(lgr, 'first time copy data for ' || dcode.devicecode, true);
-
-                    -- insert all data from szcc-oracle
-                    /** + ignore_row_on_dupkey_index (szv_data(devicecode, pipe, postdatetodate)) */
-                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
-                    from szcc_jk.v_data@szcclnk
-                    where devicecode = dcode.devicecode;
-                END;
-            ELSE
-                BEGIN
-                    -- data period in oracle-jdzx
-                    SELECT MIN(postDateToDate), MAX(postDateToDate)
-                    INTO pdate1, pdate2
-                    FROM szv_data
-                    WHERE deviceCode = dcode.deviceCode;
-
-                    -- data period in oracle-szcc
-                    SELECT MIN(postDateToDate), MAX(postDateToDate)
-                    INTO vdate1, vdate2
-                    FROM szcc_jk.v_data@szcclnk
-                    WHERE deviceCode = dcode.deviceCode;
-
-                    utl_file.put_line(lgr,
-                                      'pgsql data ' || dcode.devicecode || ' from ' ||
-                                      to_char(pdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
-                                      to_char(pdate2, 'YYYY-MM-DD HH24:MI:SS'),
-                                      true);
-                    utl_file.put_line(lgr,
-                                      'oracle data ' || dcode.devicecode || ' from ' ||
-                                      to_char(vdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
-                                      to_char(vdate2, 'YYYY-MM-DD HH24:MI:SS'),
-                                      true);
-
-                    -- left period
-                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
-                    from szcc_jk.v_data@szcclnk
-                    where devicecode = dcode.devicecode
-                      AND postDateToDate BETWEEN vdate1 AND pdate1;
-
-                    -- right period
-                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
-                    from szcc_jk.v_data@szcclnk
-                    where devicecode = dcode.devicecode
-                      AND postDateToDate BETWEEN pdate2 AND vdate2;
-                end;
-            end if;
+            copyOraSingleSzcc(dcode.deviceId, dcode.devicecode, lgr);
 
             commit;
         END LOOP;
