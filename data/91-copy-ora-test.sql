@@ -114,7 +114,7 @@ end;
 
 
 -- 拷贝某个分公司的远传数据
-create or replace procedure copyLuohuoSzcc
+create or replace procedure copyLuohuSzcc
 as
     lgr    utl_file.file_type;
 begin
@@ -137,7 +137,7 @@ begin
         end;
     end loop;
 
-end copyLuohuoSzcc;
+end copyLuohuSzcc;
 /
 
 /*
