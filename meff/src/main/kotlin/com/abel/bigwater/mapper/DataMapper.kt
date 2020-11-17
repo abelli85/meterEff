@@ -69,6 +69,22 @@ interface DataMapper {
      * @param map
      * @return
      */
+    fun selectRealtimeDay(mp: DataParam): List<BwData>
+
+    /**
+     * This method will retrieve realtime data hourly.
+     *
+     * @param map
+     * @return
+     */
+    fun selectRealtimeMonth(mp: DataParam): List<BwData>
+
+    /**
+     * This method will retrieve realtime data hourly.
+     *
+     * @param map
+     * @return
+     */
     fun selectRealtimeHalf(mp: DataParam): List<BwData>
 
     /**

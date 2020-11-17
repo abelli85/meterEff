@@ -6,6 +6,7 @@ import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.model.BwData
 import com.alibaba.fastjson.JSON
 import org.apache.dubbo.remoting.http.servlet.ServletManager
+import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -48,6 +49,32 @@ class DataServiceImplTest {
         val r1 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam()))
 
         lgr.info("realtime list: {}", JSON.toJSONString(r1))
+        assertEquals(0, r1.code)
+    }
+
+    @Test
+    fun listRealtimeDay() {
+        val ul = TestHelper.login(loginService)
+        val r1 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            sampleTime1 = LocalDate(2020, 10, 1).toDate()
+            duration = DataDuration.DURATION_DAY
+            meterCode = "111200007304"
+        }))
+
+        lgr.info("daily realtime list: {}", JSON.toJSONString(r1))
+        assertEquals(0, r1.code)
+    }
+
+    @Test
+    fun listRealtimeMonth() {
+        val ul = TestHelper.login(loginService)
+        val r1 = dataService!!.listRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            sampleTime1 = LocalDate(2020, 1, 1).toDate()
+            duration = DataDuration.DURATION_MONTH
+            meterCode = "111200007304"
+        }))
+
+        lgr.info("monthly realtime list: {}", JSON.toJSONString(r1))
         assertEquals(0, r1.code)
     }
 

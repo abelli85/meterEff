@@ -57,6 +57,12 @@ class DataServiceImpl : DataService {
             }
 
             val list = when (dp.duration) {
+                DataDuration.DURATION_DAY ->
+                    dataMapper!!.selectRealtimeDay(dp)
+
+                DataDuration.DURATION_MONTH ->
+                    dataMapper!!.selectRealtimeMonth(dp)
+
                 DataDuration.DURATION_0 ->
                     dataMapper!!.selectRealtime(dp)
 

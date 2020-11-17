@@ -564,6 +564,218 @@
         LIMIT #{rows} OFFSET #{index}
     </select>
 
+    <select id="selectRealtimeDay" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.BwData">
+        SELECT m.meterId
+        , r.extId
+        , m.meterCode
+        , m.meterName
+        , m.location
+        , r.sampleTime
+        , r.endTime
+        , r.durationSecond
+        , r.forwardSum
+        , r.revertSum
+        , r.pressure
+        , r.forwardDigits
+        , r.revertDigits
+        , r.literPulse
+        , r.pressureDigits
+        , r.q0Sum
+        , r.q1Sum
+        , r.q2Sum
+        , r.q3Sum
+        , r.q4Sum
+        , r.firmId
+        , r.rssi
+        , r.baseDigits
+        , st_astext(m.meterLoc::geometry) AS meterLoc
+        FROM bw_data r
+        JOIN (
+        SELECT r1.extId
+        , MIN(r1.sampleTime) AS sampleTime
+        FROM bw_data r1
+        LEFT JOIN bw_meter m1 ON r1.extId = m1.extId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    AND m1.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m1.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (m1.firmId IS NULL OR m1.firmId LIKE #{firmId})
+            </if>
+
+            <choose>
+                <when test="extId != null">
+                    AND r1.extId LIKE #{extId}
+                </when>
+                <when test="extIdList != null and extIdList.size > 0">
+                    AND r1.extId IN
+                    <foreach collection="extIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="meterCode != null">
+                AND m1.meterCode LIKE #{meterCode}
+            </if>
+
+            <choose>
+                <when test="sampleTime1 != null and sampleTime2 != null">
+                    AND r1.sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+                </when>
+                <when test="sampleTime1 != null">
+                    AND r1.sampleTime &gt;= #{sampleTime1}
+                </when>
+                <when test="sampleTime2 != null">
+                    AND r1.sampleTime &lt; #{sampleTime2}
+                </when>
+            </choose>
+        </where>
+        GROUP BY r1.extId
+        , date_trunc('day', r1.sampleTime)
+        ) rm ON r.extId = rm.extId AND r.sampleTime = rm.sampleTime
+        LEFT JOIN bw_meter m ON r.extId = m.extId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
+            </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
+        </where>
+        ORDER BY r.sampleTime DESC, m.meterId, r.extId
+        LIMIT #{rows} OFFSET #{index}
+    </select>
+
+    <select id="selectRealtimeMonth" parameterType="com.abel.bigwater.api.DataParam"
+            resultType="com.abel.bigwater.model.BwData">
+        SELECT m.meterId
+        , r.extId
+        , m.meterCode
+        , m.meterName
+        , m.location
+        , r.sampleTime
+        , r.endTime
+        , r.durationSecond
+        , r.forwardSum
+        , r.revertSum
+        , r.pressure
+        , r.forwardDigits
+        , r.revertDigits
+        , r.literPulse
+        , r.pressureDigits
+        , r.q0Sum
+        , r.q1Sum
+        , r.q2Sum
+        , r.q3Sum
+        , r.q4Sum
+        , r.firmId
+        , r.rssi
+        , r.baseDigits
+        , st_astext(m.meterLoc::geometry) AS meterLoc
+        FROM bw_data r
+        JOIN (
+        SELECT r1.extId
+        , MIN(r1.sampleTime) AS sampleTime
+        FROM bw_data r1
+        LEFT JOIN bw_meter m1 ON r1.extId = m1.extId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    AND m1.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m1.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (m1.firmId IS NULL OR m1.firmId LIKE #{firmId})
+            </if>
+
+            <choose>
+                <when test="extId != null">
+                    AND r1.extId LIKE #{extId}
+                </when>
+                <when test="extIdList != null and extIdList.size > 0">
+                    AND r1.extId IN
+                    <foreach collection="extIdList" index="idx" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="meterCode != null">
+                AND m1.meterCode LIKE #{meterCode}
+            </if>
+
+            <choose>
+                <when test="sampleTime1 != null and sampleTime2 != null">
+                    AND r1.sampleTime BETWEEN #{sampleTime1} AND #{sampleTime2}
+                </when>
+                <when test="sampleTime1 != null">
+                    AND r1.sampleTime &gt;= #{sampleTime1}
+                </when>
+                <when test="sampleTime2 != null">
+                    AND r1.sampleTime &lt; #{sampleTime2}
+                </when>
+            </choose>
+        </where>
+        GROUP BY r1.extId
+        , date_trunc('month', r1.sampleTime)
+        ) rm ON r.extId = rm.extId AND r.sampleTime = rm.sampleTime
+        LEFT JOIN bw_meter m ON r.extId = m.extId
+        <where>
+            <choose>
+                <when test="meterId != null">
+                    AND m.meterId LIKE #{meterId}
+                </when>
+                <when test="meterIdList != null and meterIdList.size > 0">
+                    AND m.meterId IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="firmId != null">
+                AND (m.firmId IS NULL OR m.firmId LIKE #{firmId})
+            </if>
+
+            <if test="meterCode != null">
+                AND m.meterCode LIKE #{meterCode}
+            </if>
+        </where>
+        ORDER BY r.sampleTime DESC, m.meterId, r.extId
+        LIMIT #{rows} OFFSET #{index}
+    </select>
+
     <select id="selectRealtimeHalf" parameterType="com.abel.bigwater.api.DataParam"
             resultType="com.abel.bigwater.model.BwData">
         SELECT m.meterId

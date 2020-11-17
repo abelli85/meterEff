@@ -595,17 +595,27 @@ ALTER TABLESPACE USERS
     ON NEXT 1024M
     MAXSIZE UNLIMITED;
 
--- 罗湖远传数据同步计划
+ALTER TABLESPACE USERS
+    ADD DATAFILE '/home/oracle/app/oracle/oradata/helowin/users06.dbf'
+    SIZE 1024M
+    AUTOEXTEND
+    ON NEXT 1024M
+    MAXSIZE UNLIMITED;
+
+-- 罗湖远传数据同步计划, 每周执行一次同步
 declare
     jobno number;
 begin
     sys.dbms_job.submit(
             job => jobno,
             what => 'copyLuohuSzcc;',
-            next_date => to_date('2020-11-18 1:00', 'YYYY-MM-DD HH24:MI'),
-            interval => 'TRUNC(SYSDATE + 1) + 60/1440'
+            next_date => to_date('2020-11-21 1:00', 'YYYY-MM-DD HH24:MI'),
+            interval => 'TRUNC(SYSDATE + 7) + 60/1440'
         );
     commit;
     dbms_output.put_line('create job for copyLuohuSzcc: ' || jobno);
 end;
+/
+
+exec dbms_job.remove(23)
 /
