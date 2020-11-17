@@ -94,7 +94,12 @@ begin
     for curOut in
         select extid, count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
         from bw_data2
-        group by extid
+        where extid in (
+               select extid from bw_meter
+               where firmid like '270101%'
+               and powertype != 'MANUAL'
+        )
+	group by extid
         order by extid
         limit dev2
         loop
