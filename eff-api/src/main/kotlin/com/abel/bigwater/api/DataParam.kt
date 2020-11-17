@@ -146,9 +146,34 @@ data class DataParam(
  * 60 - 在服务器端计算，返回的是小时数据.
  */
 enum class DataDuration(var period: Int = 60) {
+    /**
+     * 当选择时长超过180天, 前端可使用月来查询
+     */
+    DURATION_MONTH(1440 * 30),
+
+    /**
+     * 当选择时长处于[60, 180]天, 前端可使用日来查询
+     */
+    DURATION_DAY(1440),
+
+    /**
+     * 默认查询小时数据
+     */
     DURATION_60_MIN(60),
+
+    /**
+     * 30分钟间隔
+     */
     DURATION_30_MIN(30),
+
+    /**
+     * 15分钟间隔
+     */
     DURATION_15_MIN(15),
+
+    /**
+     * 原始数据
+     */
     DURATION_0(0);
 
     override fun toString(): String {
