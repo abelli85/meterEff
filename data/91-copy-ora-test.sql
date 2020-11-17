@@ -31,6 +31,7 @@ grant execute on utl_file to public;
 create or replace procedure copyOraSingleSzcc(devId integer, dcode varchar, lgr utl_file.file_type)
 as
     pcnt   integer;
+    vcnt   integer;
     pdate1 DATE;
     pdate2 DATE;
     vdate1 DATE;
@@ -48,6 +49,7 @@ as
         FROM szv_data
         WHERE deviceCode = dcode;
 
+        vcnt := 0;
         if pcnt = 0 THEN
             BEGIN
                 utl_file.put_line(lgr, 'first time copy data for ' || dcode, true);
@@ -58,6 +60,7 @@ as
                 select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
                 from szcc_jk.v_data@szcclnk
                 where devicecode = dcode;
+                vcnt := sql%rowcount ;
             END;
         ELSE
             BEGIN
@@ -92,6 +95,7 @@ as
                 from szcc_jk.v_data@szcclnk
                 where devicecode = dcode
                   AND postDateToDate BETWEEN vdate1 AND pdate1;
+                vcnt := sql%rowcount ;
 
                 -- right period
                 insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
@@ -99,8 +103,11 @@ as
                 from szcc_jk.v_data@szcclnk
                 where devicecode = dcode
                   AND postDateToDate BETWEEN pdate2 AND vdate2;
+                vcnt := vcnt + sql%rowcount ;
             end;
         end if;
+
+        utl_file.put_line(lgr, '迁移数据' || vcnt || '行: ' || dcode, true);
     end copyOraSingleSzcc;
 /
 
@@ -109,6 +116,7 @@ declare
 begin
     lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
     copyOraSingleSzcc(0, 'SS_SK_557325', lgr);
+    utl_file.fclose(lgr);
 end;
 /
 
@@ -117,6 +125,7 @@ end;
 create or replace procedure copyLuohuSzcc
 as
     lgr    utl_file.file_type;
+        mcnt integer;
 begin
     lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
     if utl_file.is_open(lgr) then
@@ -125,17 +134,25 @@ begin
         dbms_output.put_line('lgr open failed.');
     end if;
 
+    mcnt := 0;
     for dev in (select distinct d.deviceCode
         from szv_data_device d
         join szv_userinfo u on d.metercode = u.metercode
-        where u.subbranch like '%罗湖%')
+        where u.subbranch like '%罗湖%'
+        order by d.devicecode)
     loop
         begin
             copyOraSingleSzcc(1, dev.deviceCode, lgr);
 
             commit;
+            mcnt := mcnt + 1;
+            if mod (mcnt, 100) = 0 then
+                utl_file.put_line(lgr, current_timestamp || ' - 迁移水表数据 ' || mcnt || ' 只.', true);
+            end if;
         end;
     end loop;
+    utl_file.put_line(lgr, current_timestamp || ' - 完成罗湖数据迁移.', true);
+    utl_file.fclose(lgr);
 
 end copyLuohuSzcc;
 /
@@ -143,6 +160,7 @@ end copyLuohuSzcc;
 /*
 execute copyLuohuSzcc;
 /
+
 */
 
 create or replace directory tmp as '/tmp/';
