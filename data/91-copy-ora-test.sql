@@ -37,9 +37,9 @@ as
     vdate1 DATE;
     vdate2 DATE;
     begin
-        dbms_output.put_line(current_timestamp || ', deviceId:' || devId || ' @ ' || dcode);
+        dbms_output.put_line(current_timestamp || ' - deviceId:' || devId || ' @ ' || dcode);
         if utl_file.is_open(lgr) then
-            utl_file.put_line(lgr, current_timestamp || ', deviceId:' || devId || ' @ ' || dcode,
+            utl_file.put_line(lgr, current_timestamp || ' - deviceId:' || devId || ' @ ' || dcode,
                               true);
         end if;
 
@@ -79,35 +79,39 @@ as
                 if utl_file.is_open(lgr) then
                     utl_file.put_line(lgr,
                                       'pgsql data ' || dcode || ' from ' ||
-                                      to_char(pdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
-                                      to_char(pdate2, 'YYYY-MM-DD HH24:MI:SS'),
+                                      to_char(pdate1, 'YYYY-MM-DD HH24:MI') || ' - ' ||
+                                      to_char(pdate2, 'YYYY-MM-DD HH24:MI'),
                                       true);
                     utl_file.put_line(lgr,
                                       'oracle data ' || dcode || ' from ' ||
-                                      to_char(vdate1, 'YYYY-MM-DD HH24:MI:SS') || ' - ' ||
-                                      to_char(vdate2, 'YYYY-MM-DD HH24:MI:SS'),
+                                      to_char(vdate1, 'YYYY-MM-DD HH24:MI') || ' - ' ||
+                                      to_char(vdate2, 'YYYY-MM-DD HH24:MI'),
                                       true);
                 end if;
 
                 -- left period
-                insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-                select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
-                from szcc_jk.v_data@szcclnk
-                where devicecode = dcode
-                  AND postDateToDate BETWEEN vdate1 AND pdate1;
-                vcnt := sql%rowcount ;
+                if pdate1 > vdate1 then
+                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
+                    from szcc_jk.v_data@szcclnk
+                    where devicecode = dcode
+                      AND postDateToDate BETWEEN vdate1 AND pdate1;
+                    vcnt := sql%rowcount ;
+                end if;
 
                 -- right period
-                insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
-                select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
-                from szcc_jk.v_data@szcclnk
-                where devicecode = dcode
-                  AND postDateToDate BETWEEN pdate2 AND vdate2;
-                vcnt := vcnt + sql%rowcount ;
+                if vdate2 > pdate2 then
+                    insert into szv_data(devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername)
+                    select devicecode, metercode, pipe, postdate, postdatetodate, meternum, diametername
+                    from szcc_jk.v_data@szcclnk
+                    where devicecode = dcode
+                      AND postDateToDate BETWEEN pdate2 AND vdate2;
+                    vcnt := vcnt + sql%rowcount ;
+                end if;
             end;
         end if;
 
-        utl_file.put_line(lgr, '迁移数据' || vcnt || '行: ' || dcode, true);
+        utl_file.put_line(lgr, '迁移 ' || vcnt || '行: ' || dcode, true);
     end copyOraSingleSzcc;
 /
 
@@ -125,7 +129,7 @@ end;
 create or replace procedure copyLuohuSzcc
 as
     lgr    utl_file.file_type;
-        mcnt integer;
+    mcnt integer;
 begin
     lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
     if utl_file.is_open(lgr) then
@@ -153,6 +157,13 @@ begin
     end loop;
     utl_file.put_line(lgr, current_timestamp || ' - 完成罗湖数据迁移.', true);
     utl_file.fclose(lgr);
+EXCEPTION
+    WHEN OTHERS THEN
+        begin
+            ROLLBACK;
+            utl_file.put_line(lgr, 'exception:' || SQLCODE || ', ' || SQLERRM, true);
+            utl_file.fclose(lgr);
+        end;
 
 end copyLuohuSzcc;
 /
@@ -170,6 +181,7 @@ grant read, write on directory tmp to public;
 create or replace procedure copy_szcc(devid1 integer, devid2 integer)
 as
     lgr    utl_file.file_type;
+    mcnt integer;
 begin
     lgr := utl_file.fopen('TMP', 'copy_szcc.log', 'A', 1000);
     if utl_file.is_open(lgr) then
@@ -188,6 +200,7 @@ begin
     dbms_output.put_line(current_timestamp || ' 新装远传表: ' || sql%rowcount );
     utl_file.put_line(lgr, current_timestamp || ' 新装远传表: ' || sql%rowcount );
 
+    mcnt := 0;
     for dcode in (select deviceId, devicecode
                   from szv_data_device
                   where deviceid between devid1 and devid2
@@ -197,6 +210,10 @@ begin
             copyOraSingleSzcc(dcode.deviceId, dcode.devicecode, lgr);
 
             commit;
+            mcnt := mcnt + 1;
+            if mod (mcnt, 100) = 0 then
+                utl_file.put_line(lgr, current_timestamp || ' - 迁移水表数据 ' || mcnt || ' 只.', true);
+            end if;
         END LOOP;
 
     dbms_output.put_line(current_timestamp || ' end.');
@@ -542,3 +559,39 @@ execute copy_ucis(201900, 202101);
 /
 
 */
+
+SELECT UPPER(F.TABLESPACE_NAME) "表空间名",
+       D.TOT_GROOTTE_MB "表空间大小(M)",
+       D.TOT_GROOTTE_MB - F.TOTAL_BYTES "已使用空间(M)",
+       TO_CHAR(ROUND((D.TOT_GROOTTE_MB - F.TOTAL_BYTES) / D.TOT_GROOTTE_MB * 100,2),'990.99') || '%' "使用比",
+       F.TOTAL_BYTES "空闲空间(M)",
+       F.MAX_BYTES "最大块(M)"
+FROM (SELECT TABLESPACE_NAME,
+             ROUND(SUM(BYTES) / (1024 * 1024), 2) TOTAL_BYTES,
+             ROUND(MAX(BYTES) / (1024 * 1024), 2) MAX_BYTES
+      FROM SYS.DBA_FREE_SPACE
+      GROUP BY TABLESPACE_NAME) F,
+     (SELECT DD.TABLESPACE_NAME,
+             ROUND(SUM(DD.BYTES) / (1024 * 1024), 2) TOT_GROOTTE_MB
+      FROM SYS.DBA_DATA_FILES DD
+      GROUP BY DD.TABLESPACE_NAME) D
+WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME
+ORDER BY 1;
+
+select tablespace_name, file_id, file_name,round(bytes/(1024*1024),0) || ' MB' total_space
+from dba_data_files order by tablespace_name;
+
+ALTER TABLESPACE USERS
+    ADD DATAFILE '/home/oracle/app/oracle/oradata/helowin/users04.dbf'
+    SIZE 1024M
+    AUTOEXTEND
+    ON NEXT 1024M
+    MAXSIZE UNLIMITED;
+
+ALTER TABLESPACE USERS
+    ADD DATAFILE '/home/oracle/app/oracle/oradata/helowin/users05.dbf'
+    SIZE 1024M
+    AUTOEXTEND
+    ON NEXT 1024M
+    MAXSIZE UNLIMITED;
+
