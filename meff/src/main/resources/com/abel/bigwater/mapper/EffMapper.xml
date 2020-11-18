@@ -2244,6 +2244,7 @@
         , MAX(p.pointFlow) pointFlow
         , AVG(p.pointWater) pointWater
         , AVG(p.realWater) realWater
+        , COUNT(1) dataRows
         FROM bw_meter_eff_point p
         JOIN bw_eff_meter m ON p.effId = m.effId
         LEFT JOIN bw_eff_task t ON p.taskId = t.taskId

@@ -121,4 +121,11 @@ class EffMeterPoint : BwBase() {
      * 真实水量（方）
      */
     var realWater: Double? = null
+
+    /**
+     * 引用的数据行数
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var dataRows: Int? = null
 }

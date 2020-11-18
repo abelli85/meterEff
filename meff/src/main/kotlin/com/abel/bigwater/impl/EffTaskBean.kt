@@ -623,7 +623,7 @@ open class EffTaskBean {
         }
 
         eff.stdDays = Duration(DateTime(eff.startTime), DateTime(eff.endTime)).standardSeconds.toDouble().div(24 * 3600)
-        eff.dataRows = Duration(DateTime(eff.taskStart!!), DateTime(eff.taskEnd!!)).standardDays.toInt()
+//        eff.dataRows = dataList.indexOf(dend) - dataList.indexOf(dstart)
         eff.meterWater = (eff.endFwd ?: 0.0) - (eff.startFwd ?: 0.0)
 
         val monthParam = EffParam().apply {
@@ -643,6 +643,9 @@ open class EffTaskBean {
             return false
         }
 
+        // 先使用相近远传表
+        eff.dataRows = pteList[0].dataRows ?: 0
+
         val ratioEff = eff.meterWater!! / pteList.sumByDouble { it.pointWater ?: 0.0 }
         eff.pointEffList!!.forEach {
             val lk = pteList.find { p1 -> p1.pointNo == it.pointNo }
@@ -655,7 +658,7 @@ open class EffTaskBean {
             it.periodTypeObj = EffPeriodType.Month
 
             it.pointWater = (lk.pointWater ?: 0.0).times(ratioEff)
-            it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev ?: 0.0)
+            it.realWater = it.pointWater!! - it.pointWater!!.times(it.pointDev ?: 0.0).div(100.0)
         }
         eff.pointEffList!!.last().also {
             if ((it.pointFlow ?: 0.0) > 1.0E12) {
@@ -664,6 +667,7 @@ open class EffTaskBean {
             }
         }
 
+        // 先使用相近远传表
         val ratioModel = eff.meterWater!! / modelList.sumByDouble { it.pointWater ?: 0.0 }
         eff.modelPointList!!.forEach {
             val lk = modelList.find { p1 -> p1.pointNo == it.pointNo }
@@ -1072,7 +1076,8 @@ open class EffTaskBean {
 
             val idxStart = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay() == day }
             val idxEnd = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay()?.isAfter(day) == true }
-            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd ?: dataList.size - 1) + 1) else emptyList()
+            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd
+                    ?: dataList.size - 1) + 1) else emptyList()
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
                 eff.taskResult = EffFailureType.DATA_LESS.name

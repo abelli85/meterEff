@@ -71,11 +71,12 @@ class EffTaskBeanTest {
      */
     @Test
     fun effMeterManual() {
-        val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
-            meterId = "399961"
-        }).firstOrNull() ?: fail("选择的水表不存在: 101")
+        val mp = MeterParam().apply {
+            meterCode = "113540524101"
+        }
+        val meter = meterMapper!!.selectMeterDma(mp).firstOrNull() ?: fail("选择的水表不存在: ${mp.meterCode}")
 
-        if (!bean!!.fillPointList(meter)) fail("水表101缺少检定点")
+        if (!bean!!.fillPointList(meter)) fail("水表${mp.meterCode}缺少检定点")
 
         bean!!.effMeterRange(meter, LocalDate(2020, 10, 1).toDateTimeAtStartOfDay(),
                 LocalDate(2020, 10, 31).toDateTimeAtStartOfDay(),
