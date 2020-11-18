@@ -18,6 +18,7 @@ declare
     szidOra int8;
     szidPg  int8;
     vcnt    int8;
+    hbound  int8;
 begin
     select max(dataid) into szidOra from szv_data;
     if szidOra is null then
@@ -29,11 +30,13 @@ begin
         szidPg := 0;
     end if;
 
-    raise notice 'prepare copy data from % to %', szidOra, szidPg;
+    raise notice '% - prepare copy data [%, %]', current_timestamp, szidPg + 1, szidOra;
 
     while szidPg < szidOra
         loop
             begin
+                hbound := szidPg + 1000000;
+                raise notice '% - copying oracle-test from [%, %]', current_timestamp, szidPg + 1, hbound;
                 INSERT INTO bw_data2(dataid, extId, sampleTime, forwarddigits, literpulse, firmId, szid)
 
                 SELECT zd.dataid
@@ -44,11 +47,11 @@ begin
                      , '27'
                      , zd.dataid
                 FROM szv_data zd
-                WHERE dataId BETWEEN szidPg + 1 AND szidPg + 1000000;
+                WHERE dataId BETWEEN szidPg + 1 AND hbound;
                 get diagnostics vcnt = row_count;
-                raise notice 'copy from oracle-test %s rows', vcnt;
+                raise notice '% - copy okay from oracle-test %s rows from [%, %]', current_timestamp, vcnt, szidPg + 1, hbound;
 
-                szidPg := szidPg + 1000000;
+                szidPg := hbound;
             exception
                 when others then
                     raise notice '% - 从oracle_fdw 迁移历史数据错误: %', current_timestamp, SQLERRM;
