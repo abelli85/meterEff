@@ -752,14 +752,16 @@ class EffServiceImpl : EffService {
                     effTaskBean!!.effMeterRange(it, param.jodaTaskStart!!, param.jodaTaskEnd!!, task)
 
                 // 月度效率
-                if (it.powerTypeObj != PowerType.MANUAL) {
-                    effTaskBean!!.buildMonthEff(DataRange().apply {
-                        meterId = it.meterId
-                        val mlst = lst.filter { e1 -> e1.taskStart != null && e1.taskEnd != null }
-                        minTime = mlst.minOfOrNull { e1 -> e1.taskStart!! }
-                        maxTime = mlst.maxOfOrNull { e1 -> e1.taskEnd!! }
-                    })
+                val drange = DataRange().apply {
+                    meterId = it.meterId
+                    val mlst = lst.filter { e1 -> e1.taskStart != null && e1.taskEnd != null }
+                    minTime = mlst.minOfOrNull { e1 -> e1.taskStart!! }
+                    maxTime = mlst.maxOfOrNull { e1 -> e1.taskEnd!! }
                 }
+                if (it.powerTypeObj != PowerType.MANUAL) {
+                    effTaskBean!!.buildMonthEff(drange)
+                }
+                effTaskBean!!.buildYearEff(drange)
 
                 effList.addAll(lst)
 

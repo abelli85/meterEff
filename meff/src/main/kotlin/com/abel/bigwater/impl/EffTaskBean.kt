@@ -84,15 +84,28 @@ open class EffTaskBean {
                         it.meterId, it.meterName, firm.title)
                 if (effList.isEmpty()) return@forEach
 
-                buildMonthEff(DataRange().apply {
+                val drange = DataRange().apply {
                     meterId = it.meterId
                     minTime = effList.minOf { e1 -> e1.taskStart!! }
                     maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
-                })
+                }
+
+                // both month & year
+                buildMonthEff(drange)
+                buildYearEff(drange)
             } else {
                 val effList = effMeter(it, task)
                 lgr.info("analyze {} eff for {}/{} in {}", effList.size,
                         it.meterId, it.meterName, firm.title)
+
+                // only year for manual
+                val drange = DataRange().apply {
+                    meterId = it.meterId
+                    minTime = effList.minOf { e1 -> e1.taskStart!! }
+                    maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
+                }
+                buildYearEff(drange)
+
                 if (effList.isEmpty()) return@forEach
             }
         }
@@ -102,6 +115,10 @@ open class EffTaskBean {
      * build monthly / annual eff from daily.
      */
     open fun buildMonthEff(drange: DataRange) {
+        if (drange.meterId.isNullOrBlank() || drange.minTime == null) {
+            lgr.error("buildMonthEff: meterId SHOULD BE NON-NULL!")
+            throw IllegalArgumentException("buildYearEff: meterId SHOULD BE NON-NULL!")
+        }
         val pmth = EffParam().apply {
             meterId = drange.meterId
             periodTypeObj = EffPeriodType.Month
@@ -112,7 +129,7 @@ open class EffTaskBean {
         // truncate to month
         pmth.also {
             it.taskStart = it.jodaTaskStart?.withDayOfMonth(1)?.withTimeAtStartOfDay()?.toDate()
-            it.taskEnd = it.jodaTaskEnd?.plusMonths(1)?.withDayOfMonth(1)?.minusSeconds(1)?.toDate()
+            it.taskEnd = it.jodaTaskEnd?.withDayOfMonth(1)?.withTimeAtStartOfDay()?.plusMonths(1)?.minusSeconds(1)?.toDate()
 
         }
         effMapper!!.deleteEffMeter(pmth)
@@ -120,10 +137,21 @@ open class EffTaskBean {
         val cntEff = effMapper!!.buildEffMeterMonth(pmth)
         val cntPt = effMapper!!.buildEffPointMonth(pmth)
         lgr.info("build monthly eff: $cntEff / $cntPt")
+    }
 
-        pmth.also {
-            it.taskStart = it.jodaTaskStart?.withDayOfYear(1)?.toDate()
-            it.periodTypeObj = EffPeriodType.Year
+    /**
+     * build monthly / annual eff from daily.
+     */
+    open fun buildYearEff(drange: DataRange) {
+        if (drange.meterId.isNullOrBlank() || drange.minTime == null) {
+            lgr.error("buildYearEff: meterId SHOULD BE NON-NULL!")
+            throw IllegalArgumentException("buildYearEff: meterId SHOULD BE NON-NULL!")
+        }
+        val pmth = EffParam().apply {
+            meterId = drange.meterId
+            periodTypeObj = EffPeriodType.Year
+            taskStart = drange.minDateTime!!.withDayOfYear(1).withTimeAtStartOfDay().toDate()
+            taskEnd = drange.maxDateTime!!.withDayOfYear(1).withTimeAtStartOfDay().plusYears(1).minusSeconds(1).toDate()
         }
         effMapper!!.deleteEffMeter(pmth)
         effMapper!!.deleteEffPoint(pmth)

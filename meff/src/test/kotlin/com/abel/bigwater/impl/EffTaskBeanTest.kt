@@ -85,7 +85,8 @@ class EffTaskBeanTest {
                     taskName = "test-0"
                 })
 
-        bean!!.buildMonthEff(DataRange().apply {
+        bean!!.buildYearEff(DataRange().apply {
+            meterId = meter.meterId
             minDateTime = LocalDate(2020, 10, 1).toDateTimeAtStartOfDay()
             maxDateTime = LocalDate(2020, 10, 31).toDateTimeAtStartOfDay()
         })
