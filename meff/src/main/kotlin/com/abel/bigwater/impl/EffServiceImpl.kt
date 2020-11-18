@@ -700,8 +700,11 @@ class EffServiceImpl : EffService {
      * @see ZoneMeter.q1 - 2/3/4 如果填充了, 则总是被使用.
      */
     override fun buildMeterEff(holder: BwHolder<EffParam>): BwResult<EffMeter> {
+        lgr.info("${holder.lr?.userId} try to build eff meter: ${JSON.toJSONString(holder, true)}")
+
         if (holder.lr?.sessionId.isNullOrBlank()
-                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty())
+                || (holder.single?.meterId.isNullOrBlank() && holder.single?.meterIdList.isNullOrEmpty()
+                        && holder.single?.meterCode.isNullOrBlank())
                 || holder.single?.jodaTaskEnd?.isAfterNow == true
                 || holder.single?.jodaTaskStart?.isAfterNow == true) {
             return BwResult(2, ERR_PARAM)
@@ -713,7 +716,7 @@ class EffServiceImpl : EffService {
 
         val param = holder.single!!
         val midList = if (param.meterId.isNullOrBlank())
-            param.meterIdList!!
+            param.meterIdList
         else
             param.meterIdList.orEmpty().plus(param.meterId!!)
 
@@ -741,6 +744,7 @@ class EffServiceImpl : EffService {
             var cnt = 0
             meterMapper!!.selectMeterDma(MeterParam().apply {
                 meterIdList = midList
+                meterCode = param.meterCode
             }).forEach {
                 if (!effTaskBean!!.fillPointList(it)) {
                     return BwResult(2, "计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
