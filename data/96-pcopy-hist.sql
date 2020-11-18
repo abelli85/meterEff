@@ -49,7 +49,7 @@ begin
                 FROM szv_data zd
                 WHERE dataId BETWEEN szidPg + 1 AND hbound;
                 get diagnostics vcnt = row_count;
-                raise notice '% - copy okay from oracle-test %s rows from [%, %]', current_timestamp, vcnt, szidPg + 1, hbound;
+                raise notice '% - copy okay from oracle-test % rows from [%, %]', current_timestamp, vcnt, szidPg + 1, hbound;
 
                 szidPg := hbound;
             exception
