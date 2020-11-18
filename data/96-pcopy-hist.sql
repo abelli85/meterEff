@@ -4,10 +4,10 @@ create table bw_data2 (like bw_data including all);
 alter table bw_data2 alter column dataid drop default ;
 drop index bw_data2_extid_sampletime_idx ;
 create index bw_data2_extid_sampletime_idx on bw_data2 (extid, sampletime);
-*/
 
 select count(distinct extid)
 from bw_data2;
+*/
 
 -- 从 szv_data (in oracle) 拷贝到 bw_data2 (in pgsql).
 create or replace procedure pcopyOraTest(dev1 int8, dev2 int8)
@@ -82,6 +82,7 @@ create or replace procedure pcopyHist(dev1 int8, dev2 int8)
 as
 $$
 declare
+    meter     record;
     curOut    record;
     extidOut  varchar;
     dcntOut   int8;
@@ -94,20 +95,23 @@ declare
     vcnt      int8;
 begin
     vidx := 0;
-    for curOut in
-        select extid, count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
-        from bw_data2
-        where extid in (
+    for meter in (
                select extid from bw_meter
                where firmid like '270101%'
                and powertype != 'MANUAL'
-        )
-	group by extid
-        order by extid
-        limit dev2
+               order by extid
+               limit dev2
+               )
         loop
             begin
-                extidOut := curOut.extid;
+                select count(1) dcnt, min(sampletime) mt1, max(sampletime) mt2
+                into curOut
+                from bw_data2
+                where extid = meter.extid;
+                if curOut is null THEN
+                    continue;
+                end if;
+                extidOut := meter.extid;
                 dcntOut := curOut.dcnt;
                 mt1Out := curOut.mt1;
                 mt2Out := curOut.mt2;
@@ -120,7 +124,7 @@ begin
                 vidx := vidx + 1;
                 raise notice '%: copy history for %', vidx, extidOut;
 
-                if dcntLocal is null then
+                if dcntLocal is null or dcntLocal < 1 then
                     -- insert all data
                     insert into bw_data(extid, sampleTime, forwarddigits, literpulse, firmId, szid)
                     select extid, sampletime, forwarddigits, 1000, '27', szid
