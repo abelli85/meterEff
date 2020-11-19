@@ -100,7 +100,7 @@ begin
                where firmid like '270101%'
                and powertype != 'MANUAL'
                order by extid
-               limit dev2
+               limit dev2 offset dev1
                )
         loop
             begin
@@ -243,7 +243,9 @@ exception
 end;
 $$;
 
+/*
 call pcopySingleMeterRead('110111100903');
+*/
 
 -- call pcopySingleMeterRead loop
 create or replace procedure pcopyMeterRead(fidFilter varchar(100), mcodeFilter varchar(100))
@@ -312,8 +314,9 @@ begin
 end;
 $$;
 
+/*
 call pcopyMeterRead('270101001', '110111200103');
-
+*/
 /*
 call pcopyMeterRead('270101001', '%');
 
