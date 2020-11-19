@@ -97,7 +97,8 @@ data class EffMeter(
     var runDuration: Int? = null
 
     /**
-     * 分析结论
+     * 分析结论, 参考:
+     * @see EffFailureType
      */
     var taskResult: String? = null
 

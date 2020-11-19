@@ -243,7 +243,10 @@ class EffServiceImplTest {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
 
         try {
-            effService!!.reportMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam())).also {
+            effService!!.reportMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
+                taskStart = LocalDate(2020, 10, 1).toDate()
+                taskEnd = LocalDate(2020, 11, 1).toDate()
+            })).also {
                 lgr.info("report meter-eff: {}", JSON.toJSONString(it, true))
                 assertEquals(0, it.code)
             }
