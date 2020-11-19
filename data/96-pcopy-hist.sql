@@ -122,7 +122,7 @@ begin
                 where extid = extidOut;
 
                 vidx := vidx + 1;
-                raise notice '%: copy history for %', vidx, extidOut;
+                raise notice '%: copy history for % - %', vidx, extidOut, current_timestamp;
 
                 if dcntLocal is null or dcntLocal < 1 then
                     -- insert all data
@@ -175,6 +175,7 @@ begin
 
             -- A transaction cannot be ended inside a block with exception handlers.
             commit;
+            raise notice '% - copy okay for %', current_timestamp, extidOut;
         end loop;
 
     raise log '% - 清洗历史数据成功: %', current_timestamp, vidx;
