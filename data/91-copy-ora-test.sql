@@ -603,17 +603,24 @@ ALTER TABLESPACE USERS
     MAXSIZE UNLIMITED;
 
 -- 罗湖远传数据同步计划, 每周执行一次同步
+set serveroutput on;
 declare
     jobno number;
 begin
-    sys.dbms_job.submit(
-            job => jobno,
-            what => 'copyLuohuSzcc;',
-            next_date => to_date('2020-11-21 1:00', 'YYYY-MM-DD HH24:MI'),
-            interval => 'TRUNC(SYSDATE + 7) + 60/1440'
-        );
-    commit;
-    dbms_output.put_line('create job for copyLuohuSzcc: ' || jobno);
+    select job into jobno from user_jobs
+    where what like 'copyLuohuSzcc;%';
+    if jobno is null then
+        sys.dbms_job.submit(
+                job => jobno,
+                what => 'copyLuohuSzcc;',
+                next_date => to_date('2020-11-21 1:00', 'YYYY-MM-DD HH24:MI'),
+                interval => 'TRUNC(SYSDATE + 7) + 60/1440'
+            );
+        commit;
+        dbms_output.put_line('create job for copyLuohuSzcc: ' || jobno);
+        else
+        dbms_output.put_line('job for copyLuohuSzcc already exists.');
+    end if;
 end;
 /
 
