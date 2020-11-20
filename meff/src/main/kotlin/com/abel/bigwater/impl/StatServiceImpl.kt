@@ -44,10 +44,38 @@ class StatServiceImpl : StatService {
                 }
             }
 
+            val firmList = meterMapper!!.statMeterFirm(dp)
             val ms = MeterStat().also {
                 it.sizeList = meterMapper!!.statMeterSize(dp)
-                it.firmList = meterMapper!!.statMeterFirm(dp)
+                it.firmList = firmList
             }
+
+            val gfirm = firmList.first()
+            firmList.forEachIndexed { index, firm ->
+                // skip 0
+                when {
+                    index > 0 -> {
+                        firm.meterCount = firmList.sumBy {
+                            if (it.firmId!!.startsWith(firm.firmId!!)) (it.meterCount ?: 0) else 0
+                        }
+                        val last = firmList[index - 1]
+                        if (!firm.firmId!!.startsWith(last.firmId!!) // sub-firm of last or sub-firm of top-most.
+                                && !firm.firmId!!.startsWith(gfirm.firmId!!)) {
+                            if (firmList.take(index - 1).firstOrNull { firm.firmId!!.startsWith(it.firmId!!) } == null) {
+                                return BwResult(ms).apply {
+                                    code = 3
+                                    error = "机构编码有间断: ${firm.firmId}/${firm.firmName}"
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        lgr.info("开始匹配: ${firm.firmId}/${firm.firmName}")
+                        firm.meterCount = firmList.sumBy { it.meterCount ?: 0 }
+                    }
+                }
+            }
+
             return BwResult(ms).apply {
                 error = "口径列表： ${ms.sizeList?.size}"
             }
