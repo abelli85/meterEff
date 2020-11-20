@@ -21,29 +21,8 @@ alter table bw_data_2024 add constraint bw_data_2024_check check ( sampletime >=
 alter table bw_data_2025 add constraint bw_data_2025_check check ( sampletime >= '2025-1-1'::date and sampletime < '2026-1-1'::date );
 alter table bw_data_2026 add constraint bw_data_2026_check check ( sampletime >= '2026-1-1'::date );
 
-create or replace function bw_data_part_fun()
-returns trigger as $$
-    begin
-        if     ( sampletime < '2018-1-1'::date ) then insert into bw_data_2017 values (new.*);
-        elseif ( sampletime >= '2018-1-1'::date and sampletime < '2019-1-1'::date ) then insert into bw_data_2018 values (new.*);
-        elseif ( sampletime >= '2019-1-1'::date and sampletime < '2020-1-1'::date ) then insert into bw_data_2019 values (new.*);
-        elseif ( sampletime >= '2020-1-1'::date and sampletime < '2021-1-1'::date ) then insert into bw_data_2020 values (new.*);
-        elseif ( sampletime >= '2021-1-1'::date and sampletime < '2022-1-1'::date ) then insert into bw_data_2021 values (new.*);
-        elseif ( sampletime >= '2022-1-1'::date and sampletime < '2023-1-1'::date ) then insert into bw_data_2022 values (new.*);
-        elseif ( sampletime >= '2023-1-1'::date and sampletime < '2024-1-1'::date ) then insert into bw_data_2023 values (new.*);
-        elseif ( sampletime >= '2024-1-1'::date and sampletime < '2025-1-1'::date ) then insert into bw_data_2024 values (new.*);
-        elseif ( sampletime >= '2025-1-1'::date and sampletime < '2026-1-1'::date ) then insert into bw_data_2025 values (new.*);
-        elseif ( sampletime >= '2026-1-1'::date ) then insert into bw_data_2026 values (new.*);
-        end if;
-    end;
-    $$
-language plpgsql;
+drop trigger bw_data_insert_trigger on bw_data;
 
-create trigger bw_data_insert_trigger
-    before insert on bw_data
-    for each row execute procedure bw_data_part_fun();
-
-/*
 alter table bw_data_2017 no inherit bw_data;
 alter table bw_data_2018 no inherit bw_data;
 alter table bw_data_2019 no inherit bw_data;
@@ -54,10 +33,12 @@ alter table bw_data_2023 no inherit bw_data;
 alter table bw_data_2024 no inherit bw_data;
 alter table bw_data_2025 no inherit bw_data;
 alter table bw_data_2026 no inherit bw_data;
-*/
 
 -- backup all data.
-create table bw_data_bak as select * from bw_data;
+create table bw_data_bak (like bw_data including all);
+copy bw_data to '/tmp/meff-data-bak.txt';
+copy bw_data_bak from '/tmp/meff-data-bak.txt';
+-- insert into bw_data_bak select * from bw_data;
 
 insert into bw_data_2017 select * from bw_data where sampletime < '2018-1-1'::date;
 insert into bw_data_2018 select * from bw_data where sampletime >= '2018-1-1'::date and sampletime < '2019-1-1'::date;
@@ -91,3 +72,25 @@ alter table bw_data_2023 inherit bw_data;
 alter table bw_data_2024 inherit bw_data;
 alter table bw_data_2025 inherit bw_data;
 alter table bw_data_2026 inherit bw_data;
+
+create or replace function bw_data_part_fun()
+    returns trigger as $$
+begin
+    if     ( new.sampletime < '2018-1-1'::date ) then insert into bw_data_2017 values (new.*);
+    elseif ( new.sampletime >= '2018-1-1'::date and new.sampletime < '2019-1-1'::date ) then insert into bw_data_2018 values (new.*);
+    elseif ( new.sampletime >= '2019-1-1'::date and new.sampletime < '2020-1-1'::date ) then insert into bw_data_2019 values (new.*);
+    elseif ( new.sampletime >= '2020-1-1'::date and new.sampletime < '2021-1-1'::date ) then insert into bw_data_2020 values (new.*);
+    elseif ( new.sampletime >= '2021-1-1'::date and new.sampletime < '2022-1-1'::date ) then insert into bw_data_2021 values (new.*);
+    elseif ( new.sampletime >= '2022-1-1'::date and new.sampletime < '2023-1-1'::date ) then insert into bw_data_2022 values (new.*);
+    elseif ( new.sampletime >= '2023-1-1'::date and new.sampletime < '2024-1-1'::date ) then insert into bw_data_2023 values (new.*);
+    elseif ( new.sampletime >= '2024-1-1'::date and new.sampletime < '2025-1-1'::date ) then insert into bw_data_2024 values (new.*);
+    elseif ( new.sampletime >= '2025-1-1'::date and new.sampletime < '2026-1-1'::date ) then insert into bw_data_2025 values (new.*);
+    elseif ( new.sampletime >= '2026-1-1'::date ) then insert into bw_data_2026 values (new.*);
+    end if;
+end;
+$$
+    language plpgsql;
+
+create trigger bw_data_insert_trigger
+    before insert on bw_data
+    for each row execute procedure bw_data_part_fun();
