@@ -178,6 +178,7 @@ begin
             raise notice '% - copy okay for %', current_timestamp, extidOut;
         end loop;
 
+    raise notice '% - 清洗历史数据成功: %', current_timestamp, vidx;
     raise log '% - 清洗历史数据成功: %', current_timestamp, vidx;
 end;
 $$;
