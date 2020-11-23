@@ -42,7 +42,7 @@ open class EffTaskBean {
     @Autowired
     private var effMapper: EffMapper? = null
 
-    @Scheduled(cron = "0 15 0/6 * * ?")
+    @Scheduled(initialDelay = 30 * 1000, fixedDelay = 17L * 24 * 3600 * 1000)
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
         val firmList = configMapper!!.selectFirm("%")
@@ -71,7 +71,7 @@ open class EffTaskBean {
 
         meterMapper!!.selectMeterDma(MeterParam().apply {
             firmId = firm.firmId
-        }).forEach {
+        }).sortedBy { it.powerType }.forEach {
             if (!fillPointList(it)) {
                 lgr.warn("计量点不足3个或Q2/Q3不存在: {}/{}", it.meterId, it.meterName)
                 return@forEach
@@ -79,7 +79,7 @@ open class EffTaskBean {
             lgr.info("fill-point-list result: {}", JSON.toJSONString(it, true))
 
             if (it.powerTypeObj != PowerType.MANUAL) {
-                val effList = effMeter(it, task, 31)
+                val effList = effMeter(it, task, 183)
                 lgr.info("analyze {} eff for {}/{} in {}", effList.size,
                         it.meterId, it.meterName, firm.title)
                 if (effList.isEmpty()) return@forEach
@@ -98,6 +98,8 @@ open class EffTaskBean {
                 lgr.info("analyze {} eff for {}/{} in {}", effList.size,
                         it.meterId, it.meterName, firm.title)
 
+                if (effList.isEmpty()) return@forEach
+
                 // only year for manual
                 val drange = DataRange().apply {
                     meterId = it.meterId
@@ -105,8 +107,6 @@ open class EffTaskBean {
                     maxTime = effList.maxOf { e1 -> e1.taskEnd!! }
                 }
                 buildYearEff(drange)
-
-                if (effList.isEmpty()) return@forEach
             }
         }
     }
@@ -431,7 +431,10 @@ open class EffTaskBean {
                 it.maxDateTime = it.maxDateTime!!.plusDays(days!!)
             } ?: DataRange().also {
                 it.meterId = meter.meterId
-                it.minTime = timeRange.minTime
+                val lastyr = DateTime.now().withTimeAtStartOfDay().withDayOfYear(1).minusYears(1)
+                it.minTime = if (timeRange.minDateTime!!.isBefore(lastyr))
+                    lastyr.toDate()
+                else timeRange.minTime
                 it.maxDateTime = timeRange.minDateTime!!.plusDays(days!!)
             }
         else
