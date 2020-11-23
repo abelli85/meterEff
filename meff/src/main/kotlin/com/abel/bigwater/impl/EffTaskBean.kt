@@ -42,7 +42,7 @@ open class EffTaskBean {
     @Autowired
     private var effMapper: EffMapper? = null
 
-    @Scheduled(initialDelay = 30 * 1000, fixedDelay = 17L * 24 * 3600 * 1000)
+    @Scheduled(cron = "0 15 23 * * ?")
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
         val firmList = configMapper!!.selectFirm("%")
