@@ -120,7 +120,6 @@ class EffTaskBeanTest {
     }
 
     @Test
-    @Ignore
     fun testEffAll() {
         bean!!.effAll()
     }

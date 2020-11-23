@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import smile.clustering.GMeans
 import java.lang.IllegalArgumentException
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
@@ -42,9 +43,21 @@ open class EffTaskBean {
     @Autowired
     private var effMapper: EffMapper? = null
 
-    @Scheduled(cron = "0 15 23 * * ?")
+    @Autowired
+    private var cronConfig: EffTaskConfig? = null
+
+    @Scheduled(cron = "0 15 12,20,2 * * ?")
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
+        val now = LocalDateTime.now()
+        if (now.hour in 5..19) {
+            if (cronConfig?.cronDaytime != true) {
+                lgr.info("白天不执行分析任务~")
+                return
+            } else {
+                lgr.warn("白天启动计量效率分析任务...")
+            }
+        }
         val firmList = configMapper!!.selectFirm("%")
         firmList.forEach {
             try {

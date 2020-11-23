@@ -106,4 +106,8 @@
     <dubbo:service interface="com.abel.bigwater.api.EffService" ref="effService"
                    protocol="rest"
                    validation="true"/>
+
+    <bean id="cronConfig" class="com.abel.bigwater.impl.EffTaskConfig">
+        <property name="cronDaytime" value="false"/>
+    </bean>
 </beans>
