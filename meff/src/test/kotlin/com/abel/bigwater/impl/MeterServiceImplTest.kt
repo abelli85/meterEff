@@ -242,6 +242,7 @@ class MeterServiceImplTest {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
         val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
             rows = 10
+            meterIdList = listOf("02290200306822")
         })
 
         meterService!!.listMeter(holder).also { r1 ->

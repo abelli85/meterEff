@@ -1080,10 +1080,14 @@
             </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
-                    AND m.meterId IN
+                    AND (m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
+                    OR m.steelNo IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>)
                 </when>
                 <when test="meterId != null">
                     AND (m.meterId LIKE #{meterId} OR m.steelNo LIKE #{meterId})
@@ -1255,10 +1259,14 @@
             </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
-                    AND m.meterId IN
+                    AND (m.meterId IN
                     <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
                         #{mid}
                     </foreach>
+                    OR m.steelNo IN
+                    <foreach collection="meterIdList" item="mid" open="(" close=")" separator=",">
+                        #{mid}
+                    </foreach>)
                 </when>
                 <when test="meterId != null">
                     AND (m.meterId LIKE #{meterId} OR m.steelNo LIKE #{meterId})
