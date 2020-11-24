@@ -1103,7 +1103,7 @@
                 AND m.userCode LIKE #{userCode}
             </if>
             <if test="meterCode != null">
-                AND m.meterCode LIKE #{meterCode}
+                AND (m.meterCode LIKE #{meterCode} OR m.steelNo LIKE #{meterCode})
             </if>
             <if test="meterName != null">
                 AND m.meterName LIKE #{meterName}
@@ -1276,7 +1276,7 @@
                 AND m.userCode LIKE #{userCode}
             </if>
             <if test="meterCode != null">
-                AND m.meterCode LIKE #{meterCode}
+                AND (m.meterCode LIKE #{meterCode} OR m.steelNo LIKE #{meterCode})
             </if>
             <if test="meterName != null">
                 AND m.meterName LIKE #{meterName}

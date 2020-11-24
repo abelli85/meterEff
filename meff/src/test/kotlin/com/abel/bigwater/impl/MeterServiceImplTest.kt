@@ -255,6 +255,7 @@ class MeterServiceImplTest {
         val login = TestHelper.login(loginService).single ?: fail("fail to login")
         val holder = BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
             dmaId = "%"
+            meterCode = "02290200306822"
             rows = 10
         })
 
