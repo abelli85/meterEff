@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component
 import smile.clustering.GMeans
 import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
@@ -49,7 +50,7 @@ open class EffTaskBean {
     @Scheduled(cron = "0 15 12,20,2 * * ?")
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now().atZone(ZoneId.of("Asia/Shanghai"))
         if (now.hour in 5..19) {
             if (cronConfig?.cronDaytime != true) {
                 lgr.info("白天不执行分析任务~")
