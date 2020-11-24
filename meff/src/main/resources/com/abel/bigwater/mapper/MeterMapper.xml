@@ -1086,7 +1086,7 @@
                     </foreach>
                 </when>
                 <when test="meterId != null">
-                    m.meterId LIKE #{meterId}
+                    AND (m.meterId LIKE #{meterId} OR m.steelNo LIKE #{meterId})
                 </when>
                 <when test="excludeMeterIdList != null and excludeMeterIdList.size != 0">
                     AND m.meterId NOT IN
@@ -1261,7 +1261,7 @@
                     </foreach>
                 </when>
                 <when test="meterId != null">
-                    m.meterId LIKE #{meterId}
+                    AND (m.meterId LIKE #{meterId} OR m.steelNo LIKE #{meterId})
                 </when>
             </choose>
             <if test="userCode != null">
