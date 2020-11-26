@@ -205,7 +205,13 @@ class DataServiceImpl : DataService {
     }
 
     /**
-     * 批量删除数据
+     * 批量删除数据, 每次最多删除1只水表1天的历史数据. 须填写:
+     * @see DataParam.extId 或者
+     * @see DataParam.extIdList - 最多只能填写1个
+     *
+     * @see DataParam.sampleTime - 删除1条数据, 或者填写如下时段(最长1天):
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2 - 时段最长1天
      */
     override fun deleteRealtime(holder: BwHolder<DataParam>): BwResult<BwData> {
         if (holder.lr?.sessionId.isNullOrBlank() || (
@@ -223,7 +229,7 @@ class DataServiceImpl : DataService {
                         && (holder.single?.sampleTime1 == null
                         || holder.single?.sampleTime2 == null
                         || Duration(DateTime(holder.single?.sampleTime1), DateTime(holder.single?.sampleTime2)).standardSeconds > 86400))) {
-            return BwResult(2, "每次只能删除1只水表1天的历史数据")
+            return BwResult(2, "每次最多删除1只水表1天的历史数据")
         }
 
         lgr.info("${holder.lr?.userId} try to delete data: ${JSON.toJSONString(holder.single)}")

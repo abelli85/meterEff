@@ -86,7 +86,13 @@ interface DataService {
     fun addRealtimeUser(holder: BwHolder<BwData>): BwResult<BwData>
 
     /**
-     * 批量删除数据
+     * 批量删除数据, 每次最多删除1只水表1天的历史数据. 须填写:
+     * @see DataParam.extId 或者
+     * @see DataParam.extIdList - 最多只能填写1个
+     *
+     * @see DataParam.sampleTime - 删除1条数据, 或者填写如下时段(最长1天):
+     * @see DataParam.sampleTime1
+     * @see DataParam.sampleTime2 - 时段最长1天
      */
     @POST
     @Path(PATH_DELETE_REALTIME)
