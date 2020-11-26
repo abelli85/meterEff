@@ -5,6 +5,7 @@ import com.abel.bigwater.mapper.DataMapper
 import com.abel.bigwater.model.*
 import com.alibaba.fastjson.JSON
 import org.joda.time.DateTime
+import org.joda.time.Duration
 import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -217,10 +218,12 @@ class DataServiceImpl : DataService {
             holder.list.orEmpty()
         else
             holder.list.orEmpty().plus(holder.single!!)
-        list.forEach {
-            if (it.extId.isNullOrBlank() || it.sampleTime == null) {
-                return BwResult(2, "通道/时间不能为空: ${it.meterId}")
-            }
+        if (list.size > 1
+                || (holder.single?.sampleTime == null
+                        && (holder.single?.sampleTime1 == null
+                        || holder.single?.sampleTime2 == null
+                        || Duration(DateTime(holder.single?.sampleTime1), DateTime(holder.single?.sampleTime2)).standardSeconds > 86400))) {
+            return BwResult(2, "每次只能删除1只水表1天的历史数据")
         }
 
         lgr.info("${holder.lr?.userId} try to delete data: ${JSON.toJSONString(holder.single)}")

@@ -1,5 +1,6 @@
 package com.abel.bigwater.impl
 
+import com.abel.bigwater.Helper
 import com.abel.bigwater.TestHelper
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.DataMapper
@@ -226,6 +227,31 @@ class DataServiceImplTest {
                     sampleTime = it.sampleTime
                 })
             }
+        }
+    }
+
+    @Test
+    fun deleteRealtimeMore() {
+        val ul = TestHelper.login(loginService)
+        dataService!!.deleteRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            extId = "hello"
+            extIdList = listOf("world")
+        })).also {
+            lgr.info("can't delete: {}", JSON.toJSONString(it))
+            assertNotEquals(0, it.code)
+        }
+    }
+
+    @Test
+    fun deleteRealtimeLong() {
+        val ul = TestHelper.login(loginService)
+        dataService!!.deleteRealtime(BwHolder(TestHelper.buildLoginRequest(ul.single!!), DataParam().apply {
+            extId = "hello"
+            sampleTime1 = LocalDateTime(2020, 10, 1, 0, 0).toDate()
+            sampleTime2 = LocalDateTime(2020, 10, 2, 0, 1).toDate()
+        })).also {
+            lgr.info("can't delete: {}", JSON.toJSONString(it))
+            assertNotEquals(0, it.code)
         }
     }
 
