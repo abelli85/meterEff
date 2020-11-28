@@ -1078,6 +1078,10 @@
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
                 OR to_tsvector('parser_name', m.location) @@ to_tsquery('parser_name', #{keywords})
             </if>
+            <if test="pinyin != null">
+                fetchPyzm(tsvector_to_array(to_tsvector('parser_name', m.meterName)))
+                @> tsvector_to_array(to_tsvector('parser_name', #{pinyin}))
+            </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">
                     AND (m.meterId IN
@@ -1256,6 +1260,10 @@
             <if test="keywords != null">
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
                 OR to_tsvector('parser_name', m.location) @@ to_tsquery('parser_name', #{keywords})
+            </if>
+            <if test="pinyin != null">
+                fetchPyzm(tsvector_to_array(to_tsvector('parser_name', m.meterName)))
+                @> tsvector_to_array(to_tsvector('parser_name', #{pinyin}))
             </if>
             <choose>
                 <when test="meterIdList != null and meterIdList.size != 0">

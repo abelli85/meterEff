@@ -392,8 +392,14 @@ open class MeterServiceImpl : MeterService {
                 if (!it.firmId!!.endsWith("%")) {
                     it.firmId = it.firmId + "%"
                 }
-                val rx = Regex("\\s+")
-                it.keywords = it.keywords?.trim()?.replace(rx, "|")
+
+                if (it.keywords?.contains(Regex("[a-zA-Z]+")) == true) {
+                    it.pinyin = it.keywords
+                    it.keywords = null
+                } else {
+                    val rx = Regex("\\s+")
+                    it.keywords = it.keywords?.trim()?.replace(rx, "|")
+                }
             }
 
             return BwResult(

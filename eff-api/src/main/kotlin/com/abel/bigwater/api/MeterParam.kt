@@ -102,6 +102,12 @@ data class MeterParam(
          * 不支持量词、通用词的全文检索，如 *花园* 、 *一期* 、*五期* 等。
          */
         var keywords: String? = null) : BaseParam() {
+    /**
+     * 采用拼音查询, 可配合汉字关键词:
+     * @see keywords
+     */
+    var pinyin: String? = null
+
     @JsonSerialize(using = JsonDateSerializer::class)
     @JsonDeserialize(using = JsonDateDeserializer::class)
     @JSONField(serializeUsing = DateCodec::class, format = JsonHelper.FULL_DATE_FORMAT)
