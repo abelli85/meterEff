@@ -6958,4 +6958,4 @@ INSERT INTO "pinyin" ("hz", "py", "zm") VALUES ('龛', 'KAN', 'K');
 INSERT INTO "pinyin" ("hz", "py", "zm") VALUES ('龟', 'GUI', 'G');
 INSERT INTO "pinyin" ("hz", "py", "zm") VALUES ('龠', 'YUE', 'Y');
 
-update pinyin set py = lower(py), zm = lower(zm);
+-- update pinyin set py = lower(py), zm = lower(zm);
