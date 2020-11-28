@@ -65,15 +65,21 @@
     </delete>
 
     <select id="listCode" resultType="com.abel.bigwater.model.VcCode">
-        SELECT codeId
-             , codeName
-             , memo
-             , preInit
-             , createBy
-             , createDate
-             , updateBy
-             , updateDate
-        FROM vc_code
+        SELECT c.codeId
+             , c.codeName
+             , c.memo
+             , c.preInit
+             , c.createBy
+             , c.createDate
+             , c.updateBy
+             , c.updateDate
+             , v.valueCount
+        FROM vc_code AS c
+        LEFT JOIN (SELECT codeid
+            , COUNT(1) valueCount
+            FROM vc_code_value
+            GROUP BY codeid) v ON c.codeid = v.codeid
+        ORDER BY c.codeId
     </select>
 
     <select id="listValue" parameterType="com.abel.bigwater.model.VcCode"
@@ -134,6 +140,29 @@
         WHERE codeId = #{codeId}
           AND valueId = #{valueId}
           AND preInit = false
+    </update>
+
+    <update id="updateValueOrder" parameterType="com.abel.bigwater.api.CodeParam">
+        UPDATE vc_code_value AS cv
+        SET valueorder = tmp.valueOrder
+        , updatedate = now()
+        , updateby = #{userId}
+        FROM (
+             VALUES
+             <foreach collection="valueList" item="v1" separator=",">
+                (
+                 #{v1.codeId}
+                 , #{v1.valueId}
+                 , #{v1.valueOrder}
+                 )
+             </foreach>
+                 ) AS tmp (
+                     codeId
+                     , valueId
+                     , valueOrder
+        )
+        WHERE cv.codeId = tmp.codeId
+        AND cv.valueId = tmp.valueId
     </update>
 
     <update id="disableValue" parameterType="com.abel.bigwater.model.VcCodeValue">

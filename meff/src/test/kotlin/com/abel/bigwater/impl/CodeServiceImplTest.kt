@@ -129,6 +129,26 @@ class CodeServiceImplTest {
     }
 
     /**
+     * 修改顺序
+     */
+    @Test
+    fun updateValueOrder() {
+        val clist = listOf(VcCodeValue().apply {
+            codeId = "SIZE"
+            valueId = "90"
+            valueOrder = 290
+        }, VcCodeValue().apply {
+            codeId = "SIZE"
+            valueId = "91"
+            valueOrder = 291
+        })
+        bean!!.updateValue(BwHolder(TestHelper.buildLoginRequest(ul!!), clist)).also {
+            lgr.info("update value: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+        }
+    }
+
+    /**
      * 删除代码值
      */
     @Test

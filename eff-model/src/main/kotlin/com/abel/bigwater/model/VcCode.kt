@@ -8,4 +8,8 @@ data class VcCode(var codeId: String? = null,
 
                   var preInit: Boolean? = null) : BwBase() {
 
+    /**
+     * 代码值的数量
+     */
+    var valueCount: Int? = null
 }

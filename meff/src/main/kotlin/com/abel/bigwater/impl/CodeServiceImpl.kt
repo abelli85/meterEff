@@ -1,10 +1,7 @@
 package com.abel.bigwater.impl
 
 import com.abel.bigwater.Helper
-import com.abel.bigwater.api.BwHolder
-import com.abel.bigwater.api.BwResult
-import com.abel.bigwater.api.CodeService
-import com.abel.bigwater.api.UserOperParam
+import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.CodeMapper
 import com.abel.bigwater.mapper.ConfigMapper
 import com.abel.bigwater.model.*
@@ -92,6 +89,11 @@ open class CodeServiceImpl : CodeService {
                 cnt += codeMapper!!.updateValue(it)
                 cnt += codeMapper!!.disableValue(it)
             }
+
+            lgr.info("修改代码值顺序:{}", codeMapper!!.updateValueOrder(CodeParam().apply {
+                userId = ul.single?.userId
+                valueList = lst
+            }))
 
             return BwResult(0, "更新代码:$cnt")
         } catch (ex: Exception) {

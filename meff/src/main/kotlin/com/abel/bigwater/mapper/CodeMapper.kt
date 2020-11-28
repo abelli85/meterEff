@@ -1,5 +1,6 @@
 package com.abel.bigwater.mapper
 
+import com.abel.bigwater.api.CodeParam
 import com.abel.bigwater.model.*
 import org.apache.ibatis.annotations.Mapper
 
@@ -18,6 +19,8 @@ interface CodeMapper {
     fun createValue(v: VcCodeValue): Int
 
     fun updateValue(v: VcCodeValue): Int
+
+    fun updateValueOrder(p: CodeParam): Int
 
     fun disableValue(v: VcCodeValue): Int
 
