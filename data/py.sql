@@ -2,8 +2,8 @@
 create table pinyin (hz varchar(1),py varchar(6),zm varchar(1));
 --索引以及唯一约束
 create index idx_pinyin_hz on pinyin(hz);
---create unique index idx_pinyin_hz_py on pinyin(hz,py);
---create unique index idx_pinyin_hz_zm on pinyin(hz,zm);
+create unique index idx_pinyin_hz_py on pinyin(hz,py);
+create unique index idx_pinyin_hz_zm on pinyin(hz,zm);
 -- 未收录汉字插入以下表
 create table new_discover (hz varchar(1) primary key,py varchar(6),zm varchar(1));
 

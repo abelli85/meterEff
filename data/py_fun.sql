@@ -75,6 +75,9 @@ select firmid, firmname from bw_firm
 where fetchPyzm(tsvector_to_array(to_tsvector('parser_name', firmname)))
           @> tsvector_to_array(to_tsvector('parser_name', '南山Ns'));
 
+create index idx_meter_name_gin on bw_meter using
+	gin(fetchPyzm(tsvector_to_array(to_tsvector('parser_name', meterName))));
+
 create table test(id int, info text);
 create index idx on test using gin (get_hzpy(info));
 
