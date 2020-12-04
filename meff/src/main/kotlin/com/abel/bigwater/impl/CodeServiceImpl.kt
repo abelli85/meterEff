@@ -13,8 +13,16 @@ import org.springframework.stereotype.Service
 @Service("codeService")
 open class CodeServiceImpl : CodeService {
     companion object {
-        const val ERR_PARAM = "无效参数"
+        const val ERR_PARAM = "参数不完整"
+        const val ERR_INTERNAL = "内部错误:"
         const val ERR_PREINIT = "预置设备不允许删除"
+
+        const val EXPIRED_SESSION = "会话已失效，请注销后重新登录"
+
+        const val WARN_NO_RIGHT = "无权执行该操作: "
+
+        const val CANNOT_LOGIN_WEB = "抱歉，您不具有登录网页系统的权限！"
+
         private val lgr = LoggerFactory.getLogger(CodeServiceImpl::class.java)
     }
 
@@ -242,11 +250,13 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 新增厂家的水表型号
+     * 新增厂家的水表型号, 可以填充:
+     * @see BwHolder.single - 单个增加
+     * @see BwHolder.list - 批量增加
      */
     override fun insertFactoryModel(holder: BwHolder<VcFactoryModel>): BwResult<VcFactoryModel> {
-        if (holder.lr == null || holder.single == null) {
-            return BwResult(1, "无效参数")
+        if (holder.lr == null || (holder.single == null && holder.list.isNullOrEmpty())) {
+            return BwResult(1, ERR_PARAM);
         }
 
         val rn = CodeService.URL_BASE + CodeService.PATH_CREATE_VALUE
@@ -254,7 +264,20 @@ open class CodeServiceImpl : CodeService {
             val ul = loginManager!!.verifySession(holder.lr!!, rn, rn, JSON.toJSONString(holder.list))
             if (ul.code != 0) return BwResult(ul.code, ul.error!!)
 
-            var cnt = codeMapper!!.insertFactoryModel(holder.single!!)
+            val lst = if (holder.single != null)
+                listOf(holder.single!!)
+            else
+                holder.list!!
+            lst.forEach {
+                if (it.factId.isNullOrBlank() || it.modelSize.isNullOrBlank() || it.sizeId ?: 0 < 1) {
+                    return BwResult(2, "$ERR_PARAM: [${it.factId}, ${it.modelSize}, ${it.sizeId}]")
+                }
+                if (it.typeId.isNullOrBlank()) it.typeId = "1"
+            }
+
+            val cnt = codeMapper!!.insertFactoryModelBatch(VcFactory().apply {
+                modelList = lst
+            })
 
             return BwResult(0, "创建型号规格($cnt): ${holder.single?.modelSize}")
         } catch (ex: Exception) {
@@ -264,7 +287,7 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 移除厂家的水表型号
+     * 移除厂家的水表型号. 只能删除非预置的型号.
      */
     override fun deleteFactoryModel(holder: BwHolder<VcFactoryModel>): BwResult<VcFactoryModel> {
         if (holder.lr == null || holder.single == null) {
@@ -278,8 +301,9 @@ open class CodeServiceImpl : CodeService {
 
             var cnt = codeMapper!!.deleteFactoryModel(holder.single!!)
 
-            return if (cnt == 1) BwResult(0, "删除规格型号($cnt): ${holder.single?.modelSize}")
-            else BwResult(3, "预置规格型号无法删除: ${holder.single?.modelSize}")
+            val fm = holder.single!!
+            return if (cnt > 0) BwResult(0, "删除规格型号($cnt): ${fm.factId}/${fm.modelSize}")
+            else BwResult(3, "预置规格型号无法删除: ${fm.factId}/${fm.modelSize}")
         } catch (ex: Exception) {
             lgr.error("delete fact-model fail", ex)
             return BwResult(1, "内部错误:${ex.message?.take(100)}")

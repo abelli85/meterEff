@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/11/6 17:41:20                           */
+/* Created on:     2020/12/4 16:31:43                           */
 /*==============================================================*/
 
 
@@ -133,6 +133,8 @@ drop table bw_zone_meter;
 drop table vc_code;
 
 drop table vc_code_value;
+
+drop index idx_factory_meter_model_order;
 
 drop table vc_factory_meter_model;
 
@@ -1214,9 +1216,19 @@ create table vc_factory_meter_model (
    factId               varchar(2)           not null,
    typeId               varchar(2)           not null,
    modelSize            varchar(100)         not null,
+   sizeId               NUMERIC(6)           not null,
    modelList            varchar(500)         null,
+   valueOrder           INT4                 null,
    preInit              BOOL                 null default true,
-   constraint PK_VC_FACTORY_METER_MODEL primary key (factId, typeId, modelSize)
+   constraint PK_VC_FACTORY_METER_MODEL primary key (factId, typeId, modelSize, sizeId)
+);
+
+/*==============================================================*/
+/* Index: idx_factory_meter_model_order                         */
+/*==============================================================*/
+create  index idx_factory_meter_model_order on vc_factory_meter_model (
+factId,
+valueOrder
 );
 
 /*==============================================================*/

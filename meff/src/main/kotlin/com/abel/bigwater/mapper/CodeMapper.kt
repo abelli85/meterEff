@@ -36,6 +36,8 @@ interface CodeMapper {
 
     fun insertFactoryModel(fm: VcFactoryModel): Int
 
+    fun insertFactoryModelBatch(fm: VcFactory): Int
+
     fun deleteFactoryModel(fm: VcFactoryModel): Int
 
     fun insertWorkdayHoliday(wd: VcWorkdayHoliday): Int

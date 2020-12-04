@@ -26,4 +26,16 @@ data class VcFactoryModel(var factId: String? = null,
                           /**
                            * 预置标志，1 - 不可删改; 0 - 可删改.
                            */
-                          var preInit: Boolean? = false) : BwBase()
+                          var preInit: Boolean? = false) : BwBase() {
+
+    /**
+     * 口径
+     * the size to set
+     */
+    var sizeId: Int? = null
+
+    /**
+     * 排序
+     */
+    var valueOrder: Int? = null
+}

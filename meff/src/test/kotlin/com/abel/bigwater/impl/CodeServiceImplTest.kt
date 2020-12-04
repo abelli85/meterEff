@@ -290,29 +290,34 @@ class CodeServiceImplTest {
 
     @Test
     fun test41InsertFactModel() {
-        val r1 = bean!!.insertFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), VcFactoryModel(
+        bean!!.insertFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), VcFactoryModel(
                 factId = "01",
                 typeId = "1",
-                modelSize = "LXS")))
-        lgr.info("new fact-model: {}", JSON.toJSONString(r1, true))
-        assertEquals(true, r1.code > 0)
+                modelSize = "LXS"))).also { r1 ->
+            lgr.info("new fact-model: {}", JSON.toJSONString(r1, true))
+            assertEquals(true, r1.code > 0)
+        }
 
-        kotlin.run {
-            val r2 = bean!!.insertFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), VcFactoryModel(
-                    factId = "10",
-                    typeId = "1",
-                    modelSize = "X123"
-            )))
+        bean!!.insertFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), listOf(VcFactoryModel().apply {
+            factId = "10"
+            typeId = "1"
+            modelSize = "X123"
+            sizeId = 10
+        }, VcFactoryModel().apply {
+            factId = "10"
+            typeId = "1"
+            modelSize = "X123"
+            sizeId = 100
+        }))).also { r2 ->
             lgr.info("new fact-model: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
         }
 
-        kotlin.run {
-            val r2 = bean!!.deleteFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), VcFactoryModel(
-                    factId = "10",
-                    typeId = "1",
-                    modelSize = "X123"
-            )))
+        bean!!.deleteFactoryModel(BwHolder(TestHelper.buildLoginRequest(ul!!), VcFactoryModel(
+                factId = "10",
+                typeId = "1",
+                modelSize = "X123"
+        ))).also { r2 ->
             lgr.info("delete fact-model: {}", JSON.toJSONString(r2, true))
             assertEquals(0, r2.code)
         }

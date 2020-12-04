@@ -21,6 +21,7 @@
              , updateBy
              , updateDate
         FROM vc_meter_factory
+        ORDER BY factId
     </select>
 
     <insert id="insertFactory" parameterType="com.abel.bigwater.model.VcFactory">
@@ -215,7 +216,9 @@
         SELECT factId
         ,typeId
         ,modelSize
+        , sizeId
         ,modelList
+        , valueOrder
         ,preInit
         FROM vc_factory_meter_model
         <where>
@@ -223,6 +226,8 @@
                 factId = #{factId}
             </if>
         </where>
+        ORDER BY factId
+        , valueOrder
     </select>
 
     <insert id="insertFactoryModel" parameterType="com.abel.bigwater.model.VcFactoryModel">
@@ -230,15 +235,42 @@
         ( factId
         , typeId
         , modelSize
+        , sizeId
         , modelList
+        , valueOrder
         , preInit
         )
         VALUES ( #{factId}
                , #{typeId}
+               , #{sizeId}
                , #{modelSize}
                , #{modelList}
+               , #{valueOrder}
                , false
                )
+    </insert>
+
+    <insert id="insertFactoryModelBatch" parameterType="com.abel.bigwater.model.VcFactory">
+        INSERT INTO vc_factory_meter_model
+        ( factId
+        , typeId
+        , modelSize
+        , sizeId
+        , modelList
+        , valueOrder
+        , preInit
+        )
+        VALUES
+               <foreach collection="modelList" item="m1" separator=",">
+                   ( #{m1.factId}
+                   , #{m1.typeId}
+                   , #{m1.modelSize}
+                   , #{m1.sizeId}
+                   , #{m1.modelList}
+                   , #{m1.valueOrder}
+                   , false
+                   )
+               </foreach>
     </insert>
 
     <delete id="deleteFactoryModel" parameterType="com.abel.bigwater.model.VcFactoryModel">
@@ -247,6 +279,9 @@
         WHERE factId = #{factId}
           AND typeId = #{typeId}
           AND modelSize = #{modelSize}
+          <if test="sizeId != null">
+              AND sizeId = #{sizeId}
+          </if>
           AND preInit = false
     </delete>
 

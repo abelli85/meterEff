@@ -53,4 +53,9 @@ class VcFactory : BwBase() {
      * 预置标志，1 - 不可删改; 0 - 可删改.
      */
     var preInit: Boolean? = null
+
+    /**
+     * 该厂商的规格型号列表
+     */
+    var modelList: List<VcFactoryModel>? = null
 }
