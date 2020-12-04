@@ -1192,10 +1192,10 @@ open class EffTaskBean {
                     String.format("%.3f", meterEff?.minus(decay) ?: 0.0)
                 }
 
-                q0v = pointEffList?.getOrNull(0)?.pointWater
-                q1v = pointEffList?.find { it.pointName?.equals("Q1", true) == true }?.pointWater ?: 0.0
-                q2v = pointEffList?.find { it.pointName?.equals("Q2", true) == true }?.pointWater ?: 0.0
-                q3v = pointEffList?.find { it.pointName?.equals("Q3", true) == true }?.pointWater ?: 0.0
+                q0v = pointEffList?.find { it.pointName?.equals("Q1", true) == true }?.pointWater ?: 0.0
+                q1v = pointEffList?.find { it.pointName?.equals("Q2", true) == true }?.pointWater ?: 0.0
+                q2v = pointEffList?.find { it.pointName?.equals("Q3", true) == true }?.pointWater ?: 0.0
+                q3v = pointEffList?.find { it.pointName?.equals("Q4", true) == true }?.pointWater ?: 0.0
                 q4v = pointEffList?.getOrNull(4)?.pointWater
                 qtv = pointEffList?.drop(5)?.sumByDouble { it.pointWater!! }
 
