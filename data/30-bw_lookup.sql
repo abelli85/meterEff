@@ -159,12 +159,12 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('SIZE', '40', 'DN40',  40, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
 ('SIZE', '50', 'DN50',  50, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
 ('SIZE', '80', 'DN80',  80, 'INT', true, false, 'robot', timestamptz '2020-8-19'),
-('SIZE', '90', 'DN100', 90, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', '91', 'DN150', 91, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', '92', 'DN200', 92, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', '93', 'DN300', 93, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', '94', 'DN400', 94, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
-('SIZE', '95', 'DN250', 95, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '90', 'DN100', 290, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '91', 'DN150', 291, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '92', 'DN200', 292, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '93', 'DN300', 293, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '94', 'DN400', 294, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
+('SIZE', '95', 'DN250', 295, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN15',  'DN15',  115, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN20',  'DN20',  120, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
 ('SIZE', 'DN25',  'DN25',  125, 'INT', true, true, 'robot', timestamptz '2020-8-19'),
@@ -245,7 +245,9 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('BRAND', '06', '三川智慧', 60, 'VARCHAR', true),
 ('BRAND', '07', '宁波东海', 70, 'VARCHAR', true),
 ('BRAND', '08', '重庆智慧', 80, 'VARCHAR', true),
-('BRAND', '09', '杭州水表', 90, 'VARCHAR', true);
+('BRAND', '09', '杭州水表', 90, 'VARCHAR', true),
+('BRAND', '11', '拓安信', 100, 'VARCHAR', true),
+('BRAND', '12', '爱知时计', 110, 'VARCHAR', true);
 INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit) VALUES
 ('REMOTE', '01', '宁波水表', 10, 'VARCHAR', true),
 ('REMOTE', '02', '申舒斯',   20, 'VARCHAR', true),
@@ -255,7 +257,9 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('REMOTE', '06', '三川智慧', 60, 'VARCHAR', true),
 ('REMOTE', '07', '宁波东海', 70, 'VARCHAR', true),
 ('REMOTE', '08', '重庆智慧', 80, 'VARCHAR', true),
-('REMOTE', '09', '杭州水表', 90, 'VARCHAR', true);
+('REMOTE', '09', '杭州水表', 90, 'VARCHAR', true),
+('REMOTE', '11', '拓安信', 100, 'VARCHAR', true),
+('REMOTE', '12', '爱知时计', 110, 'VARCHAR', true);
 
 /**
   "01-普通机械水表
