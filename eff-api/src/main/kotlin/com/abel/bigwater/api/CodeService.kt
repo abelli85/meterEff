@@ -104,63 +104,86 @@ interface CodeService {
     fun deleteValue(holder: BwHolder<VcCodeValue>): BwResult<VcCodeValue>
 
     /**
-     * 所有厂商
+     * 所有厂商. 总是返回全部厂商。
      */
     @POST
     @Path(PATH_LIST_FACTORY)
     fun listFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory>
 
     /**
-     * 新增厂商
+     * 新增厂商. 只能逐个添加，必填：
+     * @see VcFactory.factId
+     * @see VcFactory.factName
      */
     @POST
     @Path(PATH_INSERT_FACTORY)
     fun insertFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory>
 
     /**
-     * 移除厂商
+     * 移除厂商. 只能逐个删除，且预置厂商无法删除。必填：
+     * @see VcFactory.factId
      */
     @POST
     @Path(PATH_DELETE_FACTORY)
     fun deleteFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory>
 
     /**
-     * 水表类型
+     * 水表类型.
+     * 默认为 '1'
      */
+    @Deprecated("不适用，在本项目内保留")
     @POST
     @Path(PATH_LIST_METER_TYPE)
     fun listMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType>
 
     /**
      * 新增水表类型
+     * 默认为 '1'
      */
+    @Deprecated("不适用，在本项目内保留")
     @POST
     @Path(PATH_INSERT_METER_TYPE)
     fun insertMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType>
 
     /**
      * 移除水表类型
+     * 默认为 '1'
      */
+    @Deprecated("不适用，在本项目内保留")
     @POST
     @Path(PATH_DELETE_METER_TYPE)
     fun deleteMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType>
 
     /**
-     * 厂家的水表型号
+     * 厂家的水表型号. 如下字段可选：
+     * @see VcFactory.factId - 不填写，返回全部厂家的全部类型；填写，返回指定厂家的类型。
      */
     @POST
     @Path(PATH_LIST_FACTORY_MODEL)
     fun listFactoryModel(holder: BwHolder<VcFactory>): BwResult<VcFactoryModel>
 
     /**
-     * 新增厂家的水表型号
+     * 新增厂家的水表型号, 可以填充:
+     * @see BwHolder.single - 单个增加
+     * @see BwHolder.list - 批量增加
+     * 对每个型号，必须填充：
+     * @see VcFactoryModel.factId
+     * @see VcFactoryModel.modelSize
+     * @see VcFactoryModel.sizeId
+     * 型号的下列字段可不填充：
+     * @see VcFactoryModel.valueOrder - 显示顺序，如果不填写，按自然顺序。
+     * @see VcFactoryModel.typeId - 不填充的时候默认为 '1'
+     * @see VcFactoryModel.preInit - 无需填写，后台自动填充为 false.
      */
     @POST
     @Path(PATH_INSERT_FACTORY_MODEL)
     fun insertFactoryModel(holder: BwHolder<VcFactoryModel>): BwResult<VcFactoryModel>
 
     /**
-     * 移除厂家的水表型号
+     * 移除厂家的水表型号. 只能删除非预置的型号. 只能逐个厂家删除，必填：
+     * @see VcFactoryModel.factId
+     * @see VcFactoryModel.modelSize - 可选。不填写表示 删除这个厂家的所有型号的所有口径。
+     * @see VcFactoryModel.sizeId - 可选。不填写表示 删除这个厂家的指定型号的所有口径。
      */
     @POST
     @Path(PATH_DELETE_FACTORY_MODEL)

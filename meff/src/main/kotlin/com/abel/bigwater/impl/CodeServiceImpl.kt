@@ -139,18 +139,21 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 所有厂商
+     * 所有厂商. 总是返回全部厂商。
      */
     override fun listFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory> {
         return BwResult(codeMapper!!.listFactory())
     }
 
     /**
-     * 新增厂商
+     * 新增厂商. 只能逐个添加，必填：
+     * @see VcFactory.factId
+     * @see VcFactory.factName
      */
     override fun insertFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory> {
-        if (holder.lr == null || holder.single == null) {
-            return BwResult(1, "无效参数")
+        if (holder.lr == null || holder.single?.factId.isNullOrBlank()
+                || holder.single?.factName.isNullOrBlank()) {
+            return BwResult(1, ERR_PARAM)
         }
 
         val rn = CodeService.URL_BASE + CodeService.PATH_CREATE_VALUE
@@ -168,11 +171,12 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 移除厂商
+     * 移除厂商. 只能逐个删除，且预置厂商无法删除。必填：
+     * @see VcFactory.factId
      */
     override fun deleteFactory(holder: BwHolder<VcFactory>): BwResult<VcFactory> {
-        if (holder.lr == null || holder.single == null) {
-            return BwResult(1, "无效参数")
+        if (holder.lr == null || holder.single?.factId.isNullOrBlank()) {
+            return BwResult(1, ERR_PARAM)
         }
 
         val rn = CodeService.URL_BASE + CodeService.PATH_DELETE_VALUE
@@ -192,6 +196,7 @@ open class CodeServiceImpl : CodeService {
 
     /**
      * 水表类型
+     * 默认为 '1'
      */
     override fun listMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType> {
         return BwResult(codeMapper!!.listMeterType())
@@ -199,6 +204,7 @@ open class CodeServiceImpl : CodeService {
 
     /**
      * 新增水表类型
+     * 默认为 '1'
      */
     override fun insertMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType> {
         if (holder.lr == null || holder.single == null) {
@@ -221,6 +227,7 @@ open class CodeServiceImpl : CodeService {
 
     /**
      * 移除水表类型
+     * 默认为 '1'
      */
     override fun deleteMeterType(holder: BwHolder<VcMeterType>): BwResult<VcMeterType> {
         if (holder.lr == null || holder.single == null) {
@@ -243,7 +250,8 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 厂家的水表型号
+     * 厂家的水表型号. 如下字段可选：
+     * @see VcFactory.factId - 不填写，返回全部厂家的全部类型；填写，返回指定厂家的类型。
      */
     override fun listFactoryModel(holder: BwHolder<VcFactory>): BwResult<VcFactoryModel> {
         return BwResult(codeMapper!!.listFactoryModel(holder.single!!))
@@ -253,6 +261,14 @@ open class CodeServiceImpl : CodeService {
      * 新增厂家的水表型号, 可以填充:
      * @see BwHolder.single - 单个增加
      * @see BwHolder.list - 批量增加
+     * 对每个型号，必须填充：
+     * @see VcFactoryModel.factId
+     * @see VcFactoryModel.modelSize
+     * @see VcFactoryModel.sizeId
+     * 型号的下列字段可不填充：
+     * @see VcFactoryModel.valueOrder - 显示顺序，如果不填写，按自然顺序。
+     * @see VcFactoryModel.typeId - 不填充的时候默认为 '1'
+     * @see VcFactoryModel.preInit - 无需填写，后台自动填充为 false.
      */
     override fun insertFactoryModel(holder: BwHolder<VcFactoryModel>): BwResult<VcFactoryModel> {
         if (holder.lr == null || (holder.single == null && holder.list.isNullOrEmpty())) {
@@ -287,11 +303,14 @@ open class CodeServiceImpl : CodeService {
     }
 
     /**
-     * 移除厂家的水表型号. 只能删除非预置的型号.
+     * 移除厂家的水表型号. 只能删除非预置的型号. 只能逐个厂家删除，必填：
+     * @see VcFactoryModel.factId
+     * @see VcFactoryModel.modelSize - 可选。不填写表示 删除这个厂家的所有型号的所有口径。
+     * @see VcFactoryModel.sizeId - 可选。不填写表示 删除这个厂家的指定型号的所有口径。
      */
     override fun deleteFactoryModel(holder: BwHolder<VcFactoryModel>): BwResult<VcFactoryModel> {
-        if (holder.lr == null || holder.single == null) {
-            return BwResult(1, "无效参数")
+        if (holder.lr == null || holder.single?.factId.isNullOrBlank()) {
+            return BwResult(1, ERR_PARAM)
         }
 
         val rn = CodeService.URL_BASE + CodeService.PATH_DELETE_VALUE
