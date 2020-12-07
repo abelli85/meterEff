@@ -247,6 +247,7 @@ class MeterServiceImplTest {
 
         meterService!!.listMeter(holder).also { r1 ->
             lgr.info("zone-meter list: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
         }
     }
 
@@ -261,6 +262,7 @@ class MeterServiceImplTest {
 
         meterService!!.listMeter(holder).also { r1 ->
             lgr.info("dma-meter list: {}", JSON.toJSONString(r1, true))
+            assertEquals(0, r1.code)
         }
     }
 

@@ -1043,6 +1043,7 @@
         , m.chargable
         , m.firmId
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.steelNo
         , m.remoteBrandId
         , m.rtuId
@@ -1073,6 +1074,7 @@
         FROM bw_meter m
         LEFT JOIN bw_dma_meter dm on m.meterid = dm.meterid
         LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
+        LEFT JOIN vc_meter_factory fact ON m.meterbrandid = fact.factid
         <where>
             <if test="keywords != null">
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})
@@ -1226,6 +1228,7 @@
         , m.chargable
         , m.firmId
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.steelNo
         , m.remoteBrandId
         , m.rtuId
@@ -1256,6 +1259,7 @@
         FROM bw_meter m
         LEFT JOIN bw_zone_meter zm on m.meterId = zm.meterId
         LEFT JOIN bw_zone z on z.zoneId = zm.zoneId
+        LEFT JOIN vc_meter_factory fact ON m.meterbrandid = fact.factid
         <where>
             <if test="keywords != null">
                 to_tsvector('parser_name', m.meterName) @@ to_tsquery('parser_name', #{keywords})

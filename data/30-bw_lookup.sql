@@ -238,7 +238,7 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
  */
 INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit) VALUES
 ('BRAND', '01', '宁波水表', 10, 'VARCHAR', true),
-('BRAND', '02', '申舒斯',   20, 'VARCHAR', true),
+('BRAND', '02', '福州申舒斯',   20, 'VARCHAR', true),
 ('BRAND', '03', '杭州山科', 30, 'VARCHAR', true),
 ('BRAND', '04', '兴源鼎新', 40, 'VARCHAR', true),
 ('BRAND', '05', '浙江和达', 50, 'VARCHAR', true),
@@ -250,7 +250,7 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('BRAND', '12', '爱知时计', 110, 'VARCHAR', true);
 INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, preInit) VALUES
 ('REMOTE', '01', '宁波水表', 10, 'VARCHAR', true),
-('REMOTE', '02', '申舒斯',   20, 'VARCHAR', true),
+('REMOTE', '02', '福州申舒斯',   20, 'VARCHAR', true),
 ('REMOTE', '03', '杭州山科', 30, 'VARCHAR', true),
 ('REMOTE', '04', '兴源鼎新', 40, 'VARCHAR', true),
 ('REMOTE', '05', '浙江和达', 50, 'VARCHAR', true),
@@ -260,6 +260,11 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('REMOTE', '09', '杭州水表', 90, 'VARCHAR', true),
 ('REMOTE', '11', '拓安信', 100, 'VARCHAR', true),
 ('REMOTE', '12', '爱知时计', 110, 'VARCHAR', true);
+
+update bw_meter set meterbrandid = '01' where meterbrandid = '宁波水表';
+update bw_meter set meterbrandid = '02' where meterbrandid = '福州申舒斯';
+-- UPDATE 28790
+
 
 /**
   "01-普通机械水表
