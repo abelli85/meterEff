@@ -213,6 +213,13 @@ open class BwMeter : BwBase() {
     var meterBrandId: String? = null
 
     /**
+     * 水表品牌名称
+     * the meterBrandName to set
+     * @see VcFactoryModel.factName
+     */
+    var meterBrandName: String? = null
+
+    /**
      * 水表钢印号 / 表码
      */
     var steelNo: String? = null
