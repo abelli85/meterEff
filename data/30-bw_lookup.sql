@@ -37,6 +37,10 @@ INSERT INTO vc_meter_factory(factId, factName, createBy, createDate) VALUES
 ('11', '拓安信', 'robot', '2020-12-1'::timestamptz),
 ('12', '爱知时计', 'robot', '2020-12-1'::timestamptz);
 
+update bw_meter set meterbrandid = '01' where meterbrandid = '宁波水表';
+update bw_meter set meterbrandid = '02' where meterbrandid = '福州申舒斯';
+-- UPDATE 28790
+
 delete from vc_factory_meter_model where preinit = true;
 TRUNCATE TABLE vc_meter_type;
 INSERT INTO vc_meter_type(typeId, typeName) VALUES
@@ -271,10 +275,6 @@ INSERT INTO vc_code_value(codeId, valueId, valueName, valueOrder, valueType, pre
 ('REMOTE', '09', '杭州水表', 90, 'VARCHAR', true),
 ('REMOTE', '11', '拓安信', 100, 'VARCHAR', true),
 ('REMOTE', '12', '爱知时计', 110, 'VARCHAR', true);
-
-update bw_meter set meterbrandid = '01' where meterbrandid = '宁波水表';
-update bw_meter set meterbrandid = '02' where meterbrandid = '福州申舒斯';
--- UPDATE 28790
 
 
 /**
