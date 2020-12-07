@@ -213,21 +213,23 @@
 
     <select id="listFactoryModel" parameterType="com.abel.bigwater.model.VcFactory"
             resultType="com.abel.bigwater.model.VcFactoryModel">
-        SELECT factId
-        ,typeId
-        ,modelSize
-        , sizeId
-        ,modelList
-        , valueOrder
-        ,preInit
-        FROM vc_factory_meter_model
+        SELECT vf.factId
+        ,f.factName
+        ,vf.typeId
+        ,vf.modelSize
+        ,vf.sizeId
+        ,vf.modelList
+        ,vf.valueOrder
+        ,vf.preInit
+        FROM vc_factory_meter_model vf
+        JOIN vc_meter_factory f ON vf.factid = f.factid
         <where>
             <if test="factId != null">
-                factId = #{factId}
+                vf.factId = #{factId}
             </if>
         </where>
-        ORDER BY factId
-        , valueOrder
+        ORDER BY vf.factId
+        , vf.valueOrder
     </select>
 
     <insert id="insertFactoryModel" parameterType="com.abel.bigwater.model.VcFactoryModel">
