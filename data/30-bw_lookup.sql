@@ -1,7 +1,5 @@
 ﻿-- platform operator.
 
-TRUNCATE TABLE vc_meter_factory;
-
 /**
   "01-宁波水表股份有限公司
 02-申舒斯仪表系统（福州）有限公司
@@ -12,21 +10,34 @@ TRUNCATE TABLE vc_meter_factory;
 07-宁波东海集团有限公司
 08-重庆智慧水务有限公司
 09-杭州水表股份有限公司"
+('BRAND', '01', '宁波水表', 10, 'VARCHAR', true),
+('BRAND', '02', '福州申舒斯',   20, 'VARCHAR', true),
+('BRAND', '03', '杭州山科', 30, 'VARCHAR', true),
+('BRAND', '04', '兴源鼎新', 40, 'VARCHAR', true),
+('BRAND', '05', '浙江和达', 50, 'VARCHAR', true),
+('BRAND', '06', '三川智慧', 60, 'VARCHAR', true),
+('BRAND', '07', '宁波东海', 70, 'VARCHAR', true),
+('BRAND', '08', '重庆智慧', 80, 'VARCHAR', true),
+('BRAND', '09', '杭州水表', 90, 'VARCHAR', true),
+('BRAND', '11', '拓安信', 100, 'VARCHAR', true),
+('BRAND', '12', '爱知时计', 110, 'VARCHAR', true);
  */
+
+delete from vc_meter_factory where preinit = true;
 INSERT INTO vc_meter_factory(factId, factName, createBy, createDate) VALUES
-('01', '宁波水表股份有限公司', 'robot', timestamptz '2020-8-19'),
-('02', '申舒斯仪表系统（福州）有限公司', 'robot', timestamptz '2020-8-19'),
-('03', '杭州山科智能科技股份有限公司', 'robot', timestamptz '2020-8-19'),
-('04', '深圳市兴源鼎新科技有限公司', 'robot', timestamptz '2020-8-19'),
-('05', '浙江和达科技股份有限公司', 'robot', timestamptz '2020-8-19'),
-('06', '三川智慧科技股份有限公司', 'robot', timestamptz '2020-8-19'),
-('07', '宁波东海集团有限公司', 'robot', timestamptz '2020-8-19'),
-('08', '重庆智慧水务有限公司', 'robot', timestamptz '2020-8-19'),
-('09', '杭州水表股份有限公司', 'robot', timestamptz '2020-8-19'),
+('01', '宁波水表', 'robot', timestamptz '2020-8-19'),
+('02', '福州申舒斯', 'robot', timestamptz '2020-8-19'),
+('03', '杭州山科', 'robot', timestamptz '2020-8-19'),
+('04', '兴源鼎新', 'robot', timestamptz '2020-8-19'),
+('05', '浙江和达', 'robot', timestamptz '2020-8-19'),
+('06', '三川智慧', 'robot', timestamptz '2020-8-19'),
+('07', '宁波东海', 'robot', timestamptz '2020-8-19'),
+('08', '重庆智慧', 'robot', timestamptz '2020-8-19'),
+('09', '杭州水表', 'robot', timestamptz '2020-8-19'),
 ('11', '拓安信', 'robot', '2020-12-1'::timestamptz),
 ('12', '爱知时计', 'robot', '2020-12-1'::timestamptz);
 
-TRUNCATE TABLE vc_factory_meter_model;
+delete from vc_factory_meter_model where preinit = true;
 TRUNCATE TABLE vc_meter_type;
 INSERT INTO vc_meter_type(typeId, typeName) VALUES
 ('1', '普通'), ('2', '宽量程');
