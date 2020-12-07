@@ -29,6 +29,11 @@ data class VcFactoryModel(var factId: String? = null,
                           var preInit: Boolean? = false) : BwBase() {
 
     /**
+     * 名称
+     */
+    var factName: String? = null
+
+    /**
      * 口径
      * the size to set
      */

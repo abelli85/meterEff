@@ -1,5 +1,8 @@
 package com.abel.bigwater.model
 
+import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 /**
  * 水表厂商
  */
@@ -57,5 +60,7 @@ class VcFactory : BwBase() {
     /**
      * 该厂商的规格型号列表
      */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
     var modelList: List<VcFactoryModel>? = null
 }
