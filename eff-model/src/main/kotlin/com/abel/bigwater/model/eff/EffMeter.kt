@@ -187,6 +187,13 @@ data class EffMeter(
     var meterBrandId: String? = null
 
     /**
+     * 水表品牌名称
+     * the meterBrandName to set
+     * @see VcFactoryModel.factName
+     */
+    var meterBrandName: String? = null
+
+    /**
      * 口径
      * the size to set
      */
