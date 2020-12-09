@@ -164,6 +164,7 @@
         , m.endFwd
         , m.powerType
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.sizeId
         , m.sizeName
         , m.modelSize
@@ -186,6 +187,7 @@
         FROM bw_eff_meter m
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
         LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN vc_meter_factory fact ON bm.meterbrandid = fact.factid
         LEFT JOIN bw_firm bf ON bf.firmId = bm.firmId
 
         <where>
@@ -308,6 +310,7 @@
         , m.endFwd
         , m.powerType
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.sizeId
         , m.sizeName
         , m.modelSize
@@ -330,6 +333,7 @@
         FROM bw_eff_failure m
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
         LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN vc_meter_factory fact ON bm.meterbrandid = fact.factid
         LEFT JOIN bw_firm bf ON bm.firmId = bf.firmId
 
         <where>
@@ -459,6 +463,7 @@
         , m.endFwd
         , m.powerType
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.sizeId
         , m.sizeName
         , m.modelSize
@@ -481,6 +486,7 @@
         FROM bw_eff_meter m
         LEFT JOIN bw_eff_task t on m.taskId = t.taskId
         LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN vc_meter_factory fact ON bm.meterbrandid = fact.factid
         LEFT JOIN bw_firm bf ON bf.firmId = bm.firmId
 
         <where>
@@ -752,6 +758,7 @@
         , m.endFwd
         , m.powerType
         , m.meterBrandId
+        , fact.factname AS meterBrandName
         , m.sizeId
         , m.sizeName
         , m.modelSize
@@ -823,6 +830,7 @@
         ) m1
         JOIN bw_eff_meter m ON m.effId = m1.effId
         LEFT JOIN bw_meter bm ON m.meterId = bm.meterId
+        LEFT JOIN vc_meter_factory fact ON bm.meterbrandid = fact.factid
         LEFT JOIN bw_firm bf ON bm.firmId = bf.firmId
         <where>
             <if test="firmId != null">

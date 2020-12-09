@@ -220,7 +220,6 @@ class EffServiceImplTest {
 
         effService!!.listMeterEff(BwHolder(TestHelper.buildLoginRequest(login), EffParam().apply {
             firmId = "27%"
-            meterId = "164"
         })).also {
             lgr.info("meter eff list: {}", JSON.toJSONString(it, true))
             assertEquals(0, it.code)

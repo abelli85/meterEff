@@ -213,7 +213,7 @@
 
     <select id="listFactoryModel" parameterType="com.abel.bigwater.model.VcFactory"
             resultType="com.abel.bigwater.model.VcFactoryModel">
-        SELECT vf.factId
+        SELECT coalesce(vf.factId, f.factId) AS factId
         ,f.factName
         ,vf.typeId
         ,vf.modelSize
@@ -222,13 +222,13 @@
         ,vf.valueOrder
         ,vf.preInit
         FROM vc_factory_meter_model vf
-        JOIN vc_meter_factory f ON vf.factid = f.factid
+        RIGHT JOIN vc_meter_factory f ON vf.factid = f.factid
         <where>
             <if test="factId != null">
-                vf.factId = #{factId}
+                AND (vf.factId = #{factId} OR f.factId = #{factId})
             </if>
         </where>
-        ORDER BY vf.factId
+        ORDER BY coalesce(vf.factId, f.factId)
         , vf.valueOrder
     </select>
 
