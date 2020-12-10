@@ -467,7 +467,7 @@ open class MeterServiceImpl : MeterService {
                 meterBrandId = meter.meterBrandId
                 sizeId = meter.sizeId
                 sizeName = meter.sizeName
-                modelSize = meter.modelSize
+                modelSize = meter.modelSize?.substringBefore('-')
             }).firstOrNull()
 
             return BwResult(meter)

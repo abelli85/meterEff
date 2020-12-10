@@ -293,7 +293,7 @@ open class EffTaskBean {
             meterBrandId = meter.meterBrandId
             sizeId = meter.sizeId
             sizeName = meter.sizeName
-            modelSize = meter.modelSize
+            modelSize = meter.modelSize?.substringBefore('-')
         }).firstOrNull()?.also { decay ->
             meter.decayObj = decay
 
