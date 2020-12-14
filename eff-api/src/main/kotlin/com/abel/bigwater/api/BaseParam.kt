@@ -2,6 +2,7 @@ package com.abel.bigwater.api
 
 import com.abel.bigwater.model.*
 import com.alibaba.fastjson.annotation.JSONField
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.util.*
@@ -71,6 +72,15 @@ open class BaseParam : BwBase() {
             firmId = if (withWildcard) login.firmId?.plus('%') else login.firmId
         }
     }
+
+    /**
+     * 仅供后端批量更新使用.
+     * 下级机构ID, 一般采用 {@see firmId}%, 供后台统计查询.
+     */
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    var subFirmId: String? = null
+        get() = if (firmId?.endsWith('%') == true) firmId else firmId.orEmpty().plus('%')
 
     companion object {
         const val TOP_FIRM_ID = "1"

@@ -1187,9 +1187,7 @@
             <if test="remoteBrandId != null">
                 AND m.remoteBrandId LIKE #{remoteBrandId}
             </if>
-            <if test="firmId != null">
-                AND m.firmId LIKE #{firmId}
-            </if>
+            AND m.firmId LIKE #{subFirmId}
         </where>
         ORDER BY m.meterId
         LIMIT #{rows} OFFSET #{index}
@@ -1356,9 +1354,7 @@
             <if test="remoteBrandId != null">
                 AND m.remoteBrandId LIKE #{remoteBrandId}
             </if>
-            <if test="firmId != null">
-                AND m.firmId LIKE #{firmId}
-            </if>
+            AND m.firmId LIKE #{subFirmId}
         </where>
         ORDER BY m.meterId
         LIMIT #{rows} OFFSET #{index}

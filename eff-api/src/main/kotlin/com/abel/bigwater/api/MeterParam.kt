@@ -202,12 +202,4 @@ data class MeterParam(
     @JsonIgnore
     @JSONField(serialize = false, deserialize = false)
     var meterList: List<ZoneMeter>? = null
-
-    /**
-     * 仅供后端批量更新使用.
-     * 下级机构ID, 一般采用 {@see firmId}%, 供后台统计查询.
-     */
-    @JsonIgnore
-    @JSONField(serialize = false, deserialize = false)
-    var subFirmId: String? = null
 }
