@@ -4,6 +4,8 @@ import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.*
+import com.abel.bigwater.model.eff.VcMeterVerify
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import org.slf4j.LoggerFactory
@@ -203,13 +205,30 @@ open class MeterServiceImpl : MeterService {
     /**
      * 增加检定点
      * holder#single holds the meter to be updated.
-     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.meterId
+     * @see ZoneMeter.steelNo - 表码
+     * @see ZoneMeter.verifyList - 可选
      * @see ZoneMeter.pointList
+     * 其中, 如下字段需要填写：
+     * @see VcMeterVerifyPoint.pointNo
+     * @see VcMeterVerifyPoint.pointName
+     * @see VcMeterVerifyPoint.pointFlow
+     * @see VcMeterVerifyPoint.pointDev
+     * @see VcMeterVerifyPoint.highLimit - 可选
+     * @see VcMeterVerifyPoint.lowLimit - 可选
      */
     override fun addMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter> {
-        if (holder.lr?.sessionId.isNullOrBlank() || (
-                        holder.single?.meterId.isNullOrBlank())) {
-            return BwResult(2, ERR_PARAM)
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.meterId.isNullOrBlank()
+                || holder.single?.steelNo.isNullOrBlank()
+                || holder.single?.pointList.isNullOrEmpty()) {
+            return BwResult(2, "$ERR_PARAM:水表ID、表码、检定点不能为空.")
+        }
+        holder.single!!.pointList!!.forEach {
+            if (it.pointFlow == null || it.pointNo == null || it.pointName.isNullOrBlank()
+                    || it.pointDev == null) {
+                return BwResult(2, "$ERR_PARAM: 检定点的流量、编号、名称、误差不能为空.")
+            }
         }
 
         lgr.info("${holder.lr?.userId} try to add verify: ${JSON.toJSONString(holder.single)}")

@@ -449,27 +449,37 @@ class MeterServiceImplTest {
                 assertEquals(0, r1.code)
             }
 
-            meterService!!.addMeterPoint(BwHolder(TestHelper.buildLoginRequest(login), ZoneMeter().apply {
-                meterId = meter.meterId
-                verifyList = listOf(VcMeterVerify().also {
-                    it.meterId = meter.meterId
-                    it.batchId = meter.meterId
-                    it.verifyDate = LocalDate(2020, 8, 1).toDate()
+            meterService!!.addMeterPoint(BwHolder(TestHelper.buildLoginRequest(login), ZoneMeter().also {
+                it.meterId = meter.meterId
+                it.steelNo = meter.steelNo
+                it.verifyList = listOf(VcMeterVerify().apply {
+                    meterId = meter.meterId
+                    batchId = meter.meterId
+                    verifyDate = LocalDate(2020, 8, 1).toDate()
                 })
 
-                pointList = listOf(
-                        VcMeterVerifyPoint().also {
-                            it.meterId = meter.meterId
-                            it.pointFlow = 2.0
-                            it.verifyDate = LocalDate(2020, 8, 1).toDate()
+                it.pointList = listOf(
+                        VcMeterVerifyPoint().apply {
+                            meterId = meter.meterId
+                            pointNo = 1
+                            pointName = "Q1"
+                            pointFlow = 2.0
+                            pointDev = 1.2
+                            verifyDate = LocalDate(2020, 8, 1).toDate()
                         },
-                        VcMeterVerifyPoint().also {
-                            it.meterId = meter.meterId
-                            it.pointFlow = 2.5
-                            it.verifyDate = LocalDate(2020, 8, 1).toDate()
+                        VcMeterVerifyPoint().apply {
+                            meterId = meter.meterId
+                            pointNo = 2
+                            pointName = "Q2"
+                            pointFlow = 3.2
+                            pointDev = -1.7
+                            verifyDate = LocalDate(2020, 8, 1).toDate()
                         }
                 )
-            }))
+            })).also {
+                lgr.info("add meter point: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
 
             meterService!!.fetchMeter(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
                 meterId = meter.meterId
