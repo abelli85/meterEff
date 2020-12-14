@@ -225,10 +225,18 @@ open class MeterServiceImpl : MeterService {
                 || holder.single?.pointList.isNullOrEmpty()) {
             return BwResult(2, "$ERR_PARAM:水表ID、表码、检定点不能为空.")
         }
+        holder.single!!.verifyList?.forEach {
+            if (it.verifyDate == null) {
+                return BwResult(2, "$ERR_PARAM: 检定结果的检定日期不能为空.")
+            }
+            if (it.batchId.isNullOrBlank()) {
+                it.batchId = "n/a"
+            }
+        }
         holder.single!!.pointList!!.forEach {
             if (it.pointFlow == null || it.pointNo == null || it.pointName.isNullOrBlank()
-                    || it.pointDev == null) {
-                return BwResult(2, "$ERR_PARAM: 检定点的流量、编号、名称、误差不能为空.")
+                    || it.pointDev == null || it.verifyDate == null) {
+                return BwResult(2, "$ERR_PARAM: 检定点的流量、编号、名称、误差、检定日期不能为空.")
             }
         }
 
