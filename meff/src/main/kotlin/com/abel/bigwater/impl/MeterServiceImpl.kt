@@ -214,6 +214,7 @@ open class MeterServiceImpl : MeterService {
      * @see VcMeterVerifyPoint.pointName
      * @see VcMeterVerifyPoint.pointFlow
      * @see VcMeterVerifyPoint.pointDev
+     * @see VcMeterVerifyPoint.verifyDate
      * @see VcMeterVerifyPoint.highLimit - 可选
      * @see VcMeterVerifyPoint.lowLimit - 可选
      */
