@@ -212,6 +212,11 @@ data class EffMeter(
     var modelSize: String? = null
 
     /**
+     * 水表钢印号 / 表码
+     */
+    var steelNo: String? = null
+
+    /**
      * 安装地址
      * the location to set
      */

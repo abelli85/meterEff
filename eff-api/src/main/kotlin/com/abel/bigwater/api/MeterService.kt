@@ -1,6 +1,7 @@
 package com.abel.bigwater.api
 
 import com.abel.bigwater.model.*
+import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import org.apache.dubbo.rpc.protocol.rest.support.ContentType
 import javax.ws.rs.*
@@ -78,8 +79,17 @@ interface MeterService {
     /**
      * 增加检定点
      * holder#single holds the meter to be updated.
-     * @see ZoneMeter.verifyList
+     * @see ZoneMeter.meterId
+     * @see ZoneMeter.steelNo - 表码
+     * @see ZoneMeter.verifyList - 可选
      * @see ZoneMeter.pointList
+     * 其中, 如下字段需要填写：
+     * @see VcMeterVerifyPoint.pointNo
+     * @see VcMeterVerifyPoint.pointName
+     * @see VcMeterVerifyPoint.pointFlow
+     * @see VcMeterVerifyPoint.pointDev
+     * @see VcMeterVerifyPoint.highLimit - 可选
+     * @see VcMeterVerifyPoint.lowLimit - 可选
      */
     @POST
     @Path(PATH_ADD_METER_POINT)
