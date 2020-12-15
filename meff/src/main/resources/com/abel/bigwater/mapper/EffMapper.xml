@@ -142,6 +142,8 @@
         , m.meterId
         , bm.meterCode
         , m.meterName
+        , bm.steelNo
+
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -290,6 +292,8 @@
         , m.meterId
         , bm.meterCode
         , m.meterName
+        , bm.steelNo
+
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -440,6 +444,8 @@
         , m.meterId
         , bm.meterCode
         , m.meterName
+        , bm.steelNo
+
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -587,6 +593,8 @@
         , m.meterId
         , bm.meterCode
         , m.meterName
+        , bm.steelNo
+
         , m.taskStart
         , m.taskEnd
         , m.periodType
@@ -740,6 +748,8 @@
         , m.meterId
         , bm.meterCode
         , m.meterName
+        , bm.steelNo
+
         , m.taskName
         , #{taskStart} taskStart
         , #{taskEnd} taskEnd
