@@ -219,6 +219,8 @@ open class MeterServiceImpl : MeterService {
      * @see VcMeterVerifyPoint.lowLimit - 可选
      */
     override fun addMeterPoint(holder: BwHolder<ZoneMeter>): BwResult<ZoneMeter> {
+        lgr.info("${holder.lr?.userId} try to add verify: ${JSON.toJSONString(holder.single, true)}")
+
         if (holder.lr?.sessionId.isNullOrBlank()
                 || holder.single?.meterId.isNullOrBlank()
                 || holder.single?.steelNo.isNullOrBlank()
@@ -239,8 +241,6 @@ open class MeterServiceImpl : MeterService {
                 return BwResult(2, "$ERR_PARAM: 检定点的流量、编号、名称、误差、检定日期不能为空.")
             }
         }
-
-        lgr.info("${holder.lr?.userId} try to add verify: ${JSON.toJSONString(holder.single)}")
 
         val rightName = MeterService.BASE_PATH + MeterService.PATH_ADD_METER_POINT
         try {
