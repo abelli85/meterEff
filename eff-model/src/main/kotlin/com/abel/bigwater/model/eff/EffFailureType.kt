@@ -9,7 +9,15 @@ enum class EffFailureType(val msg: String) {
 
     POINT("计量点不足3个或Q2/Q3不存在"),
 
+    /**
+     * 日水量可统计, 则写入日水量表, 否则写入失败表
+     */
     ABSENT_POINT("计量点不能为空"),
+
+    /**
+     * 日水量可统计, 则写入日水量表, 否则写入失败表
+     */
+    EXCEED_2AVG_3STD("超出2倍均值或3倍方差"),
 
     ABSENT_TIME("采样时间不能为空"),
 

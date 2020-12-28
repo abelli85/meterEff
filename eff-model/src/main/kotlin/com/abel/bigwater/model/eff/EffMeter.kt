@@ -102,6 +102,13 @@ data class EffMeter(
      */
     var taskResult: String? = null
 
+    var taskResultObj: EffFailureType? = null
+        get() = if (taskResult.isNullOrBlank()) null else EffFailureType.values().first { it.name == taskResult }
+        set(value) {
+            field = value
+            taskResult = value?.name
+        }
+
     /**
      * 实测水量（方）
      */
@@ -306,4 +313,14 @@ data class EffMeter(
      * 分析无效后的处理结果
      */
     var checkResult: String? = null
+
+    /**
+     * 前10天的均值
+     */
+    var avgTen: Double? = null
+
+    /**
+     * 前10天的方差
+     */
+    var stdTen: Double ? = null
 }
