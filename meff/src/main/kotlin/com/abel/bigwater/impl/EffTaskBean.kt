@@ -579,9 +579,13 @@ open class EffTaskBean {
                 sampleTime2 = day1.plusMonths(1).plusHours(1).toDate()
                 rows = 20000
             })
-            if (dlist.isEmpty()) eff.taskResult = EffFailureType.DATA.name
 
-            if (dlist.isNotEmpty() && effSingleMeterDay(meter, day1, dlist, eff)) {
+            val effResult = if (dlist.isEmpty()) {
+                eff.taskResult = EffFailureType.DATA.name
+                false
+            } else effSingleMeterDay(meter, day1, dlist, eff)
+            if (effResult || eff.taskResultObj in arrayOf(EffFailureType.ABSENT_POINT,
+                            EffFailureType.EXCEED_2AVG_3STD)) {
                 val param = EffParam().apply {
                     meterId = meter.meterId
                     periodType = "%"
@@ -593,11 +597,13 @@ open class EffTaskBean {
                 )
 
                 val cntEff = effMapper!!.insertEffMeterSingle(eff)
-                val pp = EffParam().apply {
-                    pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
-                    pointEffList?.forEach { it.effId = eff.effId }
-                }
-                val cntPt = effMapper!!.insertEffPoint(pp)
+                val cntPt = if (effResult) {
+                    val pp = EffParam().apply {
+                        pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
+                        pointEffList?.forEach { it.effId = eff.effId }
+                    }
+                    effMapper!!.insertEffPoint(pp)
+                } else -1
                 lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
 
                 retList.add(eff)
@@ -1089,24 +1095,65 @@ open class EffTaskBean {
          * @param day
          * @param eff
          */
-        fun effSingleMeterDay(meter: ZoneMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
-            if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
-                    || meter.modelPointList?.size ?: 0 < 3) {
-                lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
-                eff.taskResult = EffFailureType.ABSENT_POINT.name
-                return false
-            }
+        fun effSingleMeterDay(meter: ZoneMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter,
+                              avgStdValidator: StdValidator? = null): Boolean {
             if (day.withTimeAtStartOfDay() != day) {
                 lgr.error("不能包含时间部分: ${day.toString(ISODateTimeFormat.basicDateTime())}")
-                eff.taskResult = EffFailureType.ABSENT_TIME.name
+                eff.taskResultObj = EffFailureType.ABSENT_TIME
                 return false
             }
 
             if (dataList.size < 1) {
-                eff.taskResult = EffFailureType.DEVICE_OFFLINE.name
+                eff.taskResultObj = EffFailureType.DEVICE_OFFLINE
                 return false
             } else if (dataList.size < 2) {
-                eff.taskResult = EffFailureType.DATA_LESS.name
+                eff.taskResultObj = EffFailureType.DATA_LESS
+                return false
+            }
+
+            val idxStart = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay() == day }
+            val idxEnd = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay()?.isAfter(day) == true }
+            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd
+                    ?: dataList.size - 1) + 1) else emptyList()
+            if (dlist.size < 2) {
+                lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                eff.taskResultObj = EffFailureType.DATA_LESS
+                return false
+            }
+            eff.also {
+                it.startFwd = dlist.firstOrNull()?.forwardReading
+                it.startTime = dlist.firstOrNull()?.sampleTime
+                it.endFwd = dlist.lastOrNull()?.forwardReading
+                it.endTime = dlist.lastOrNull()?.sampleTime
+                it.meterWater = (it.endFwd ?: 0.0) - (it.startFwd ?: 0.0)
+                if (it.meterWater ?: 0.0 < 1.0E-3) {
+                    it.meterWater = 1.0E-3
+                    it.taskResultObj = EffFailureType.DATA
+                    return false
+                }
+                it.stdDays = Duration(DateTime(it.startTime), DateTime(it.endTime)).standardSeconds.toDouble().div(24 * 3600)
+            }
+
+            // verify 2*avg or 3*std-error
+            avgStdValidator?.validate(eff)?.also {
+                if (it.avg.toDouble() > 1.0E-3 && it.err.toDouble() > 1.0E-3
+                        && eff.meterWater!! > it.avg.toDouble().times(2)
+                        && eff.meterWater!!.minus(it.avg.toDouble()).absoluteValue > it.err.toDouble().times(3)) {
+                    eff.taskResultObj = EffFailureType.EXCEED_2AVG_3STD
+                    return false
+                }
+            }
+
+            if (dlist.size < 8) {
+                lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
+                eff.taskResultObj = EffFailureType.DATA_LESS
+                return false
+            }
+
+            if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
+                    || meter.modelPointList?.size ?: 0 < 3) {
+                lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
+                eff.taskResultObj = EffFailureType.ABSENT_POINT
                 return false
             }
 
@@ -1118,29 +1165,6 @@ open class EffTaskBean {
             }
 
             if (!convertMeterEffPoint(eff, meter)) return false
-
-            val idxStart = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay() == day }
-            val idxEnd = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay()?.isAfter(day) == true }
-            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd
-                    ?: dataList.size - 1) + 1) else emptyList()
-            if (dlist.size < 2) {
-                lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
-                eff.taskResult = EffFailureType.DATA_LESS.name
-                return false
-            }
-            eff.also {
-                it.startFwd = dlist.firstOrNull()?.forwardReading
-                it.startTime = dlist.firstOrNull()?.sampleTime
-                it.endFwd = dlist.lastOrNull()?.forwardReading
-                it.endTime = dlist.lastOrNull()?.sampleTime
-                it.meterWater = (it.endFwd ?: 0.0) - (it.startFwd ?: 0.0)
-                if (it.meterWater ?: 0.0 < 1.0E-3) {
-                    it.meterWater = 1.0E-3
-                    it.taskResult = EffFailureType.DATA.name
-                    return false
-                }
-                it.stdDays = Duration(DateTime(it.startTime), DateTime(it.endTime)).standardSeconds.toDouble().div(24 * 3600)
-            }
 
             for (idx in 1.until(dlist.size)) {
                 val d1 = dlist[idx - 1]
