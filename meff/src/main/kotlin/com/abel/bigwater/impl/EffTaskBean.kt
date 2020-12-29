@@ -523,9 +523,15 @@ open class EffTaskBean {
                     sampleTime2 = day1.plusMonths(3).toDate()
                     rows = 20000
                 })
-                if (dlist.isEmpty()) eff.taskResult = EffFailureType.DATA.name
 
-                if (dlist.isNotEmpty() && effMeterManual(meter, day1, dlist, eff)) {
+                val effResult = if (dlist.isEmpty()) {
+                    eff.taskResult = EffFailureType.DATA.name
+                    false
+                } else effMeterManual(meter, day1, dlist, eff)
+
+                // 可计算水量
+                if (effResult || eff.taskResultObj in arrayOf(EffFailureType.ABSENT_POINT,
+                                EffFailureType.EXCEED_2AVG_3STD)) {
                     val param = EffParam().apply {
                         meterId = meter.meterId
                         periodType = "%"
@@ -537,11 +543,15 @@ open class EffTaskBean {
                     )
 
                     val cntEff = effMapper!!.insertEffMeterSingle(eff)
-                    val pp = EffParam().apply {
-                        pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
-                        pointEffList?.forEach { it.effId = eff.effId }
-                    }
-                    val cntPt = effMapper!!.insertEffPoint(pp)
+
+                    // 计量点
+                    val cntPt = if (effResult) {
+                        val pp = EffParam().apply {
+                            pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
+                            pointEffList?.forEach { it.effId = eff.effId }
+                        }
+                        effMapper!!.insertEffPoint(pp)
+                    } else -1
                     lgr.info("insert eff meter: {}/{} @ {} / {}", cntEff, cntPt, eff.meterId, LocalDate(eff.taskStart))
 
                     retList.add(eff)
@@ -584,6 +594,8 @@ open class EffTaskBean {
                 eff.taskResult = EffFailureType.DATA.name
                 false
             } else effSingleMeterDay(meter, day1, dlist, eff)
+
+            // 可计算水量
             if (effResult || eff.taskResultObj in arrayOf(EffFailureType.ABSENT_POINT,
                             EffFailureType.EXCEED_2AVG_3STD)) {
                 val param = EffParam().apply {
@@ -597,6 +609,8 @@ open class EffTaskBean {
                 )
 
                 val cntEff = effMapper!!.insertEffMeterSingle(eff)
+
+                // 计量点
                 val cntPt = if (effResult) {
                     val pp = EffParam().apply {
                         pointEffList = eff.pointEffList?.plus(eff.modelPointList.orEmpty())
@@ -632,12 +646,6 @@ open class EffTaskBean {
     }
 
     fun effMeterManual(meter: ZoneMeter, day: DateTime, dataList: List<BwData>, eff: EffMeter): Boolean {
-        if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
-                || meter.modelPointList?.size ?: 0 < 3) {
-            lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
-            eff.taskResult = EffFailureType.ABSENT_POINT.name
-            return false
-        }
         if (eff.periodTypeObj != EffPeriodType.Month || day.withTimeAtStartOfDay().withDayOfMonth(1) != day) {
             lgr.error("必须为当月1日: ${day.toString(ISODateTimeFormat.basicDateTime())}")
             eff.taskResult = EffFailureType.ABSENT_TIME.name
@@ -677,6 +685,12 @@ open class EffTaskBean {
 //        eff.dataRows = dataList.indexOf(dend) - dataList.indexOf(dstart)
         eff.meterWater = (eff.endFwd ?: 0.0) - (eff.startFwd ?: 0.0)
 
+        if (meter.meterId.isNullOrBlank() || meter.pointList?.size ?: 0 < 3
+                || meter.modelPointList?.size ?: 0 < 3) {
+            lgr.error("计量点不足3个或Q2/Q3不存在: ${meter.meterId}")
+            eff.taskResult = EffFailureType.ABSENT_POINT.name
+            return false
+        }
         val monthParam = EffParam().apply {
             firmId = meter.firmId?.plus('%')
             pointTypeObj = EffPointType.EFF
@@ -1343,7 +1357,7 @@ open class EffTaskBean {
                 realWater = 0.0
             })
 
-            eff.modelPointList = meter.modelPointList!!.map {
+            eff.modelPointList = meter.modelPointList?.map {
                 EffMeterPoint().apply {
                     taskId = eff.taskId
                     effId = eff.effId
@@ -1363,7 +1377,7 @@ open class EffTaskBean {
                     pointWater = 0.0
                     realWater = 0.0
                 }
-            }.plus(EffMeterPoint().apply {
+            }?.plus(EffMeterPoint().apply {
                 taskId = eff.taskId
                 effId = eff.effId
                 taskStart = eff.taskStart

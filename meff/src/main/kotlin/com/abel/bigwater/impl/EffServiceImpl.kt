@@ -742,12 +742,18 @@ class EffServiceImpl : EffService {
             val effList = arrayListOf<EffMeter>()
 
             var cnt = 0
-            meterMapper!!.selectMeterDma(MeterParam().apply {
+            val mlist = meterMapper!!.selectMeterDma(MeterParam().apply {
                 meterIdList = midList
                 meterCode = param.meterCode
-            }).forEach {
-                if (!effTaskBean!!.fillPointList(it)) {
-                    return BwResult(2, "计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
+            })
+
+            val msgList = ArrayList<String>()
+            mlist.forEach {
+                val ptFilled = effTaskBean!!.fillPointList(it)
+                if (!ptFilled) {
+                    lgr.warn("计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
+                    msgList.add("计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
+                    // return BwResult(2, "计量点不足3个或Q2/Q3不存在: ${it.meterId} (${it.meterName})")
                 }
 
                 val lst = if (param.jodaTaskStart == null || param.jodaTaskEnd == null)
@@ -773,7 +779,7 @@ class EffServiceImpl : EffService {
             }
 
             return BwResult(effList.toList()).also {
-                it.error = "分析计量效率: ${cnt}只水表"
+                it.error = "分析计量效率: ${cnt}只水表,\n${msgList.joinToString()}"
             }
         } catch (ex: Exception) {
             lgr.error(ex.message, ex)
