@@ -27,6 +27,12 @@ data class EffMeter(
         var meterId: String? = null,
 
         /**
+         * 用户编号
+         * the userCode to set
+         */
+        var userCode: String? = null,
+
+        /**
          * 水表编号
          * the meterCode to set
          */
