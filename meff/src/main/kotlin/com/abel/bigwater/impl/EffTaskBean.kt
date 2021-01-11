@@ -586,8 +586,8 @@ open class EffTaskBean {
             val dlist = dataMapper!!.selectMeterRealtime(DataParam().apply {
                 meterId = meter.meterId
                 sampleTime1 = day1.toDate()
-                sampleTime2 = day1.plusMonths(1).plusHours(1).toDate()
-                rows = 20000
+                sampleTime2 = day1.plusDays(7).plusHours(1).toDate()
+                rows = 5000
             })
 
             val effResult = if (dlist.isEmpty()) {
@@ -1127,8 +1127,8 @@ open class EffTaskBean {
 
             val idxStart = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay() == day }
             val idxEnd = dataList.indexOfFirst { it.jodaSample?.withTimeAtStartOfDay()?.isAfter(day) == true }
-            val dlist = if (idxStart > -1) dataList.subList(idxStart, (idxEnd
-                    ?: dataList.size - 1) + 1) else emptyList()
+            val dlist = if (idxStart > -1) dataList.subList(idxStart,
+                    if (idxEnd < 0) dataList.size else idxEnd + 1) else emptyList()
             if (dlist.size < 2) {
                 lgr.warn("not enough data for ${meter.meterId} in ${day.toString(ISODateTimeFormat.basicDateTime())}")
                 eff.taskResultObj = EffFailureType.DATA_LESS

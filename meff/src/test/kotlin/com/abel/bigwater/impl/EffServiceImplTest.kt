@@ -531,7 +531,8 @@ class EffServiceImplTest {
             kotlin.run {
                 val r1 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
                         EffParam().apply {
-                            meterIdList = listOf("hello", "world")
+                            meterIdList = listOf("JTHJ1900010")
+                            taskStart = LocalDate(2020, 7, 6).toDate()
                         }))
                 lgr.info("build eff result: {}", JSON.toJSONString(r1, true))
                 assertEquals(0, r1.code)
@@ -540,7 +541,8 @@ class EffServiceImplTest {
             kotlin.run {
                 val r2 = effService!!.buildMeterEff(BwHolder(TestHelper.buildLoginRequest(login),
                         EffParam().apply {
-                            meterId = "fz-JTIJ1900015"
+                            meterId = "JTHJ1900010"
+                            taskStart = LocalDate(2020, 7, 6).toDate()
                         }))
                 lgr.info("build eff result: {}", JSON.toJSONString(r2, true))
                 assertEquals(0, r2.code)
