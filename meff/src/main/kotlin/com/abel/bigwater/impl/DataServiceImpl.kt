@@ -258,6 +258,7 @@ class DataServiceImpl : DataService {
 
                 meterMapper!!.selectMeterZone(MeterParam().apply {
                     firmId = it.subFirmId
+                    meterId = it.meterId
                     extId = it.extId
                 }).firstOrNull()?.also { meter ->
                     // failure
