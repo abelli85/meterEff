@@ -2,6 +2,8 @@ package com.abel.bigwater.impl
 
 import com.abel.bigwater.api.*
 import com.abel.bigwater.mapper.DataMapper
+import com.abel.bigwater.mapper.EffMapper
+import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.*
 import com.alibaba.fastjson.JSON
 import org.joda.time.DateTime
@@ -10,7 +12,6 @@ import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service("dataService")
 class DataServiceImpl : DataService {
@@ -20,6 +21,12 @@ class DataServiceImpl : DataService {
 
     @Autowired
     private var dataMapper: DataMapper? = null
+
+    @Autowired
+    var meterMapper: MeterMapper? = null
+
+    @Autowired
+    private var effMapper: EffMapper? = null
 
     /**
      * 实时数据列表
@@ -248,6 +255,23 @@ class DataServiceImpl : DataService {
                 }
 
                 dataMapper!!.deleteRealtime(it)
+
+                meterMapper!!.selectMeterZone(MeterParam().apply {
+                    firmId = it.subFirmId
+                    extId = it.extId
+                }).firstOrNull()?.also { meter ->
+                    // failure
+                    val param = EffParam().apply {
+                        meterId = meter.meterId
+                        periodType = "%"
+                        taskStart = DateTime(it.sampleTime1).withTimeAtStartOfDay().toDate()
+                    }
+                    lgr.info("删除 {} @ {} 数据对应的 eff {} & failure {}",
+                            meter.meterId?.plus('/').plus(meter.meterName),
+                            DateTime(it.sampleTime1).toLocalDate(),
+                            effMapper!!.deleteEffMeter(param),
+                            effMapper!!.deleteEffFailure(param))
+                }
             }
 
             return BwResult(0, "删除数据： ${list.size}")

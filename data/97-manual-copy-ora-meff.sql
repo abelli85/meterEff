@@ -250,6 +250,11 @@ Name					   Null?    Type
  DELETESTATUS					    NUMBER(1)
  EDEPTID					    NUMBER(6)
 */
+select LEVEL || ' | ' || deptcode || ' | ' || deptname AS "层级 | 代码 | 名称"
+from szv_deptment t
+start with t.deptid = 1
+connect by prior t.deptid = t.parentdeptid;
+
 
 insert into bw_firm(firmid, firmname, grade)
 select deptcode || '-' || deptid, deptname, deptid from szv_deptment;
