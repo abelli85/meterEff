@@ -3013,8 +3013,8 @@
     </insert>
 
     <delete id="deleteEffDecay" parameterType="com.abel.bigwater.api.EffParam">
-        DELETE FROM bw_eff_decay
-            USING bw_eff_decay ed,
+        DELETE FROM bw_eff_decay AS ed
+            USING
                 (VALUES
                     <foreach collection="decayList" item="d1" separator=",">
                         (
