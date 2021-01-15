@@ -47,6 +47,9 @@ open class EffTaskBean {
     @Autowired
     private var cronConfig: EffTaskConfig? = null
 
+    @Autowired
+    private var stdValidator: StdValidator? = null
+
     @Scheduled(cron = "0 15 12,20,2 * * ?")
     fun effAll() {
         lgr.info("定时任务: 分析所有水司的水表计量效率...")
@@ -593,7 +596,7 @@ open class EffTaskBean {
             val effResult = if (dlist.isEmpty()) {
                 eff.taskResult = EffFailureType.DATA.name
                 false
-            } else effSingleMeterDay(meter, day1, dlist, eff)
+            } else effSingleMeterDay(meter, day1, dlist, eff, stdValidator)
 
             // 可计算水量
             if (effResult || eff.taskResultObj in arrayOf(EffFailureType.ABSENT_POINT,
