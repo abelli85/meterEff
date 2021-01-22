@@ -1432,6 +1432,7 @@
                     AND m.taskId = #{taskId}
                 </if>
                 AND m.periodType = 'Day'
+                AND m.realwater IS NOT NULL
 
                 <choose>
                     <when test="meterIdList != null and meterIdList.size > 0">
