@@ -16,6 +16,9 @@ declare
     declare authRow      RECORD;
     declare pathFact     varchar;
     declare factJson     json;
+    DECLARE factCnt      int;
+    declare fact         JSON;
+    DECLARE rcnt         int;
 begin
     url := 'http://10.200.6.72:8082/';
     pathAccess := 'hdl/oauth/v1.0/access.json';
@@ -27,29 +30,31 @@ begin
     accessToken := '';
 
     -- find most recent auth
-    select accessToken, respTime, expiresIn
+    select auth.accessToken, auth.respTime, auth.expiresIn
     into authRow
-    from scada.scada_auth_list
-    order by respTime desc
+    from scada.scada_auth_list AS auth
+    order by auth.respTime desc
     limit 1;
     if found then
         if authRow.respTime + interval '1 second' * authRow.expiresIn > now() + interval '5 minute' then
             accessToken := authRow.accessToken;
+            raise notice 'using exist accessToken: %', accessToken;
         end if;
     end if;
 
+    -- accessToken not exist in database
+    perform http_set_curlopt('CURLOPT_TIMEOUT', '10');
     if length(accessToken) < 1 then
         cs := substring(digest(clientId || '$' || clientSecret, 'sha256')::text from 3);
         reqJson := json_object(
                 array ['grant_type', grantType, 'client_id', clientId, 'client_secret', cs]::text[]);
         raise notice 'access.json request: %', reqJson;
 
-        perform http_set_curlopt('CURLOPT_TIMEOUT', '10');
         select http.status, http.content::json
         into statusCode, authJson
         from http_post(url || pathAccess, reqJson, 'application/json') AS http;
         raise notice 'access.json got %: %', statusCode, authJson;
-        accessToken := authJson::json -> 'access_token';
+        accessToken := authJson::json ->> 'access_token';
 
         insert into scada.scada_auth_list(reqTime, grantType, clientId, clientSecret,
                                           respTime, statusCode, retFine,
@@ -57,42 +62,49 @@ begin
                                           respText)
         values (now(), grantType, clientId, clientSecret,
                 now(), statusCode, length(accessToken) > 0,
-                authJson -> 'token_type', accessToken, authJson -> 'refresh_token', authJson -> 'expires_in',
-                authJson::text);
+                authJson ->> 'token_type', accessToken, authJson ->> 'refresh_token', (authJson ->> 'expires_in')::int,
+                authJson::TEXT);
+
+        commit;
     end if;
 
-    reqJson := ('{"access_token":' || accessToken || '}');
+    reqJson := json_object(ARRAY['access_token', accessToken]::text[])::text;
     raise notice 'monitors.json request: %', reqJson;
     select http.status, http.content::json
     into statusCode, factJson
     from http_post(url || pathFact, reqJson, 'application/json') AS http;
 
-    raise notice 'monitors.json response %: %', statusCode, factJson::text;
+    raise notice 'monitors.json response %: %', statusCode, factJson;
 
     -- insert fact
-    if factJson -> 'code' != 0 then
-        raise notice 'fail to list fact: %', factJson -> 'code';
+    statusCode := (factJson ->> 'Code')::int;
+    if statusCode != 0 then
+        raise notice 'fail to list fact: %', statusCode;
     end if;
 
-    for fact in (select factJson::json -> 'Response')
+    select json_array_length(factJson->'Response') into factCnt;
+    for i in 0..(factCnt - 1)
         loop
-            update scada.scada_stat_fact
-            set fname    = fact -> 'name',
-                sname    = fact -> 'sname',
-                mty      = fact -> 'mty',
-                position = fact -> 'position',
+            fact := factJson->'Response'->i;
+            raise notice 'proceed factory group:%, code:%, %', fact->>'group', fact->>'code', fact::text;
+            update scada.scada_stat
+            set fname    = fact ->> 'name',
+                sname    = fact ->> 'sname',
+                mty      = fact ->> 'mty',
+                position = fact ->> 'position',
                 sensors  = fact -> 'sensors'
-            where fgroup = fact -> 'group'
-              and fcode = fact -> 'code';
+            where fgroup = fact ->> 'group'
+              and fcode = fact ->> 'code';
+            get DIAGNOSTICS rcnt := ROW_COUNT;
 
-            if @@rowcount < 1 then
-                insert into scada.scada_stat_fact(fgroup, fcode, fname, sname, mty, position, sensors)
-                values (fact -> 'group',
-                        fact -> 'code',
-                        fact -> 'name',
-                        fact -> 'sname',
-                        fact -> 'mty',
-                        fact -> 'position',
+            if rcnt < 1 then
+                insert into scada.scada_stat(fgroup, fcode, fname, sname, mty, position, sensors)
+                values (fact ->> 'group',
+                        fact ->> 'code',
+                        fact ->> 'name',
+                        fact ->> 'sname',
+                        fact ->> 'mty',
+                        fact ->> 'position',
                         fact -> 'sensors');
             end if;
         end loop;
