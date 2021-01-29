@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/1/27 15:20:59                           */
+/* Created on:     2021/1/28 15:53:31                           */
 /*==============================================================*/
 
 
@@ -271,6 +271,7 @@ create table scada.scada_stat (
    mty                  VARCHAR(100)         null,
    "position"           VARCHAR(100)         null,
    sensors              JSON                 null,
+   statWork             VARCHAR(16)          null default 'WORK',
    createDate           DATE                 null default CURRENT_TIMESTAMP,
    updateDate           DATE                 null default CURRENT_TIMESTAMP,
    constraint PK_SCADA_STAT primary key (statAuto)
