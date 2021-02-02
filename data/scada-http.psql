@@ -9,17 +9,24 @@ declare
     declare clientSecret varchar;
     declare cs           varchar;
     declare grantType    varchar;
+
+    declare tsReq timestamptz;
+    declare tsResp timestamptz;
     declare reqJson      varchar;
     declare statusCode   int4;
+
     declare authJson     json;
     declare accessToken  varchar;
     declare authRow      RECORD;
+
     declare pathFact     varchar;
     declare factJson     json;
     DECLARE factCnt      int;
     declare fact         JSON;
     DECLARE rcnt         int;
 begin
+    -- url: http://10.200.6.72:8082/hdl/oauth/v1.0/access.json
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/factory/monitors.json
     url := 'http://10.200.6.72:8082/';
     pathAccess := 'hdl/oauth/v1.0/access.json';
     clientId := 'lousun';
@@ -52,9 +59,12 @@ begin
                 array ['grant_type', grantType, 'client_id', clientId, 'client_secret', cs]::text[]);
         raise notice 'access.json request: %', reqJson;
 
+        tsReq := now();
         select http.status, http.content::json
         into statusCode, authJson
         from http_post(url || pathAccess, reqJson, 'application/json') AS http;
+        tsResp := now();
+
         raise notice 'access.json got %: %', statusCode, authJson;
         accessToken := authJson::json ->> 'access_token';
 
@@ -62,19 +72,22 @@ begin
                                           respTime, statusCode, retFine,
                                           tokenType, accessToken, refreshToken, expiresIn,
                                           respText)
-        values (now(), grantType, clientId, clientSecret,
-                now(), statusCode, length(accessToken) > 0,
+        values (tsReq, grantType, clientId, clientSecret,
+                tsResp, statusCode, length(accessToken) > 0,
                 authJson ->> 'token_type', accessToken, authJson ->> 'refresh_token', (authJson ->> 'expires_in')::int,
-                authJson::TEXT);
+                authJson);
 
         commit;
     end if;
 
     reqJson := json_build_object('access_token', accessToken)::text;
     raise notice 'monitors.json request: %', reqJson;
+
+    tsReq := now();
     select http.status, http.content::json
     into statusCode, factJson
     from http_post(url || pathFact, reqJson, 'application/json') AS http;
+    tsResp := now();
 
     raise notice 'monitors.json response %: %', statusCode, factJson;
 
@@ -84,8 +97,13 @@ begin
         raise notice 'fail to list fact: %', statusCode;
         raise log 'fail to list fact: %', statusCode;
     end if;
-
     select json_array_length(factJson->'Response') into factCnt;
+
+    -- insert into request-log
+    insert into scada.scada_stat_req(accessToken, fgroup, fmodel, sensor, reqTime, respTime, statusCode,
+    retFine, dataCount, respText)
+    values(accessToken, '', '', false, tsReq, tsResp, statusCode, statusCode = 0, factCnt, factJson);
+
     for i in 0..(factCnt - 1)
         loop
             fact := factJson->'Response'->i;
@@ -97,8 +115,7 @@ begin
                 sname    = fact ->> 'sname',
                 mty      = fact ->> 'mty',
                 position = fact ->> 'position',
-                sensors  = fact -> 'sensors',
-                statWork = 'WORK'
+                sensors  = fact -> 'sensors'
             where fgroup = fact ->> 'group'
               and fcode = fact ->> 'code';
             get DIAGNOSTICS rcnt := ROW_COUNT;
@@ -112,7 +129,7 @@ begin
                         fact ->> 'mty',
                         fact ->> 'position',
                         fact -> 'sensors',
-                        'WORK');
+                        'PAUSE');
             end if;
         end loop;
 end;
@@ -132,8 +149,12 @@ declare
     declare clientSecret varchar;
     declare cs           varchar;
     declare grantType    varchar;
-    declare reqJson      varchar;
+
+    declare tsreq   timestamptz;
+    declare tsresp  timestamptz;
     declare statusCode   int4;
+    declare reqJson      varchar;
+
     declare authJson     json;
     declare accessToken  varchar;
     declare authRow      RECORD;
@@ -142,9 +163,17 @@ declare
     declare pathHist    varchar;
     declare lastDataTime timestamp;
     declare histJson    json;
+    declare histCnt int4;
+    declare hist json;
+
     declare pathReal    varchar;
     declare realJson    json;
+    declare rt json;
+    declare rtCnt int4;
 begin
+    -- url: http://10.200.6.72:8082/hdl/oauth/v1.0/access.json
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/sensor/history.json
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/sensor/realtime.json
     url := 'http://10.200.6.72:8082/';
     pathAccess := 'hdl/oauth/v1.0/access.json';
     clientId := 'lousun';
@@ -178,9 +207,12 @@ begin
                 array ['grant_type', grantType, 'client_id', clientId, 'client_secret', cs]::text[]);
         raise notice 'access.json request: %', reqJson;
 
+        tsreq := now();
         select http.status, http.content::json
         into statusCode, authJson
         from http_post(url || pathAccess, reqJson, 'application/json') AS http;
+        tsresp := now();
+
         raise notice 'access.json got %: %', statusCode, authJson;
         accessToken := authJson::json ->> 'access_token';
 
@@ -188,10 +220,10 @@ begin
                                           respTime, statusCode, retFine,
                                           tokenType, accessToken, refreshToken, expiresIn,
                                           respText)
-        values (now(), grantType, clientId, clientSecret,
-                now(), statusCode, length(accessToken) > 0,
+        values (tsreq, grantType, clientId, clientSecret,
+                tsresp, statusCode, length(accessToken) > 0,
                 authJson ->> 'token_type', accessToken, authJson ->> 'refresh_token', (authJson ->> 'expires_in')::int,
-                authJson::TEXT);
+                authJson);
 
         commit;
     end if;
@@ -211,26 +243,77 @@ begin
         end if;
 
         reqJson = json_build_object('access_token', accessToken, 'codes', array[fact.fcode]::text[],
-        'begin', extract(epoch from lastDataTime)::int, 'end', extract(epoch from now())::int);
+        'begin', extract(epoch from lastDataTime)::int + 1, 'end', extract(epoch from now())::int + 10);
         raise notice 'fetching history for %,% from %: %', fact.fgroup, fact.fcode, lastDataTime, reqJson;
         raise log 'fetching history for %,% from %: %', fact.fgroup, fact.fcode, lastDataTime, reqJson;
 
+        tsreq := now();
         select status, content::json
         into statusCode, histJson
         from http_post(url || pathHist, reqJson, 'application/json');
+        tsresp := now();
+
         raise notice 'got history % @ [%,%] from %: %', fact.fcode, lastDataTime, now(), url || pathHist, histJson;
         raise log 'got history % @ [%,%] from %: %', fact.fcode, lastDataTime, now(), url || pathHist, histJson;
+
+        -- store scada-history-request
+        statusCode := histJson->>'Code';
+        if statusCode = 0 then        
+            select json_array_length(histJson->'Response') into histCnt;
+        else
+            histCnt := -1;
+        end if;
+        insert into scada.scada_hist_req(codes, dataStartTime, dataEndTime, reqTime, respTime, retFine, dataCount, respText)
+        values(json_build_array(fact.fcode), lastDataTime, null, tsreq, tsresp, statusCode = 0, histCnt, histJson);
+
+        -- store scada-history one-by-one
+        if statusCode = 0 then
+            for i in 0..(histCnt - 1) loop
+                hist := histJson->'Response'->i;
+                insert into scada.scada_hist(fcode, ftime, fvalue, fts, ftype)
+                values(hist->>'code', to_timestamp(cast(hist->>'time' as bigint)),
+                    cast(hist->>'value' as float8), cast(hist->>'time' as bigint), 'HIST');
+                if mod(i, 100) = 0 then
+                    raise log 'upload history for %: %', hist->>'code', i;
+                    raise notice 'upload history for %: %', hist->>'code', i;
+                end if;
+            end loop;
+            raise log 'upload history totally for %: %', hist->>'code', histCnt;
+            raise notice 'upload history totally for %: %', hist->>'code', histCnt;
+        else 
+            raise log 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
+            raise notice 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
+        end if;
 
         -- fetch realtime one by one
         reqJson = json_build_object('access_token', accessToken, 'codes', array[fact.fcode]::text[]);
         raise notice 'fetching realtime for %,% : %', fact.fgroup, fact.fcode, reqJson;
         raise log 'fetching realtime for %,% : %', fact.fgroup, fact.fcode, reqJson;
 
+        tsreq := now();
         select status, content::json
         into statusCode, realJson
         from http_post(url || pathReal, reqJson, 'application/json');
+        tsresp := now();
+
         raise notice 'got realtime % from %: %', fact.fcode, url || pathReal, realJson;
         raise log 'got realtime % from %: %', fact.fcode, url || pathReal, realJson;
+
+        statusCode := realJson->>'Code';
+        if statusCode = 0 then
+            select json_array_length(realJson->'Response') into rtCnt;
+            for i in 0..(rtCnt - 1) loop
+                rt := realJson->'Response'->i;
+                insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, ftype, fts)
+                values(rt->>'station', rt->>'code', to_timestamp(cast(rt->>'time' as bigint)),
+                    cast(rt->>'value' as float8), rt->>'tag', cast(rt->>'time' as bigint));
+            end loop;
+        else
+            rtCnt := -1;
+        end if;
+
+        raise log 'upload realtime totally for %: %', fact.fcode, rtCnt;
+        raise notice 'upload realtime totally for %: %', fact.fcode, rtCnt;
     end loop;
 end;
 

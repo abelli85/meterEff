@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/1/28 15:53:31                           */
+/* Created on:     2021/2/2 17:41:14                            */
 /*==============================================================*/
 
 
@@ -69,18 +69,18 @@ drop table scada.scada_stat_req;
 /*==============================================================*/
 create table scada.scada_auth_list (
    authAuto             SERIAL8              not null,
-   reqTime              DATE                 not null,
+   reqTime              TIMESTAMP WITH TIME ZONE not null,
    grantType            VARCHAR(60)          null,
    clientId             VARCHAR(60)          null,
    clientSecret         VARCHAR(160)         null,
-   respTime             DATE                 null,
+   respTime             TIMESTAMP WITH TIME ZONE null,
    statusCode           INT4                 null,
    retFine              BOOL                 not null,
    tokenType            VARCHAR(60)          null,
    accessToken          VARCHAR(160)         null,
    refreshToken         VARCHAR(160)         null,
    expiresIn            INT8                 null,
-   respText             TEXT                 null,
+   respText             JSON                 null,
    constraint PK_SCADA_AUTH_LIST primary key (authAuto)
 );
 
@@ -123,12 +123,12 @@ create table scada.scada_auth_refresh (
    clientId             VARCHAR(60)          null,
    clientSecret         VARCHAR(160)         null,
    refreshToken1        VARCHAR(160)         null,
-   requestTime          DATE                 null,
+   requestTime          TIMESTAMP WITH TIME ZONE null,
    tokenType            VARCHAR(60)          null,
    accessToken          VARCHAR(160)         null,
    refreshToken2        VARCHAR(160)         null,
    expiresIn            INT8                 null,
-   responseTime         DATE                 null,
+   responseTime         TIMESTAMP WITH TIME ZONE null,
    constraint PK_SCADA_AUTH_REFRESH primary key (refreshAuto)
 );
 
@@ -168,10 +168,10 @@ refreshAuto
 create table scada.scada_hist (
    fauto                SERIAL8              not null,
    fcode                VARCHAR(100)         null,
-   ftime                DATE                 null,
+   ftime                TIMESTAMP WITH TIME ZONE null,
    fvalue               VARCHAR(100)         null,
-   createDate           DATE                 null default CURRENT_TIMESTAMP,
-   updateDate           DATE                 null default CURRENT_TIMESTAMP,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    fts                  INT8                 null,
    ftype                VARCHAR(100)         null,
    constraint PK_SCADA_HIST primary key (fauto)
@@ -199,14 +199,14 @@ fauto
 create table scada.scada_hist_req (
    reqAuto              SERIAL8              not null,
    codes                JSON                 null,
-   dataStartTime        DATE                 null,
-   dataEndTime          DATE                 null,
-   reqTime              DATE                 not null,
-   respTime             DATE                 null,
+   dataStartTime        TIMESTAMP WITH TIME ZONE null,
+   dataEndTime          TIMESTAMP WITH TIME ZONE null,
+   reqTime              TIMESTAMP WITH TIME ZONE not null,
+   respTime             TIMESTAMP WITH TIME ZONE null,
    statusCode           INT4                 null,
    retFine              BOOL                 null,
    dataCount            INT4                 null,
-   respText             TEXT                 null,
+   respText             JSON                 null,
    constraint PK_SCADA_HIST_REQ primary key (reqAuto)
 );
 
@@ -232,11 +232,11 @@ create table scada.scada_realtime (
    fauto                SERIAL8              not null,
    fstation             VARCHAR(100)         null,
    fcode                VARCHAR(100)         null,
-   ftime                DATE                 null,
+   ftime                TIMESTAMP WITH TIME ZONE null,
    fvalue               VARCHAR(100)         null,
    ftype                VARCHAR(100)         null,
-   createDate           DATE                 null default CURRENT_TIMESTAMP,
-   updateDate           DATE                 null default CURRENT_TIMESTAMP,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    fts                  INT8                 null,
    constraint PK_SCADA_REALTIME primary key (fauto)
 );
@@ -272,8 +272,8 @@ create table scada.scada_stat (
    "position"           VARCHAR(100)         null,
    sensors              JSON                 null,
    statWork             VARCHAR(16)          null default 'WORK',
-   createDate           DATE                 null default CURRENT_TIMESTAMP,
-   updateDate           DATE                 null default CURRENT_TIMESTAMP,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    constraint PK_SCADA_STAT primary key (statAuto)
 );
 
@@ -299,11 +299,11 @@ create table scada.scada_stat_real_data (
    fauto                SERIAL8              not null,
    fid                  VARCHAR(100)         null,
    fstation             VARCHAR(100)         null,
-   ftime                DATE                 null,
+   ftime                TIMESTAMP WITH TIME ZONE null,
    fgroup               VARCHAR(100)         null,
    msn                  VARCHAR(100)         null,
-   createDate           DATE                 null default CURRENT_TIMESTAMP,
-   updateDate           DATE                 null default CURRENT_TIMESTAMP,
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    fmemo                VARCHAR(100)         null,
    constraint PK_SCADA_STAT_REAL_DATA primary key (fauto)
 );
@@ -342,7 +342,7 @@ create table scada.scada_stat_real_sensor (
    scode                VARCHAR(100)         null,
    stype                VARCHAR(100)         null,
    sname                VARCHAR(100)         null,
-   stime                DATE                 null,
+   stime                TIMESTAMP WITH TIME ZONE null,
    sval                 VARCHAR(100)         null,
    sunit                VARCHAR(100)         null,
    sprec                VARCHAR(100)         null,
@@ -365,14 +365,14 @@ create table scada.scada_stat_req (
    reqAuto              SERIAL8              not null,
    accessToken          VARCHAR(160)         null,
    fgroup               VARCHAR(100)         null,
-   frmodel              VARCHAR(100)         null,
+   fmodel               VARCHAR(100)         null,
    sensor               BOOL                 null,
-   reqTime              DATE                 not null,
-   respTime             DATE                 null,
+   reqTime              TIMESTAMP WITH TIME ZONE not null,
+   respTime             TIMESTAMP WITH TIME ZONE null,
    statusCode           INT4                 null,
    retFine              BOOL                 not null,
    dataCount            INT4                 null,
-   respText             TEXT                 null,
+   respText             JSON                 null,
    constraint PK_SCADA_STAT_REQ primary key (reqAuto)
 );
 
