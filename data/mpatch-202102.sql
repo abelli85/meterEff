@@ -4,6 +4,7 @@ alter table bw_data add column
     createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP;
 alter table bw_data add column
     updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP;
+-- alter table bw_data alter column dataId type int8;
 
 comment on column bw_data.dtype is
     'TOTAL/AVG/REAL/DELTA';

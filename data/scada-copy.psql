@@ -1,0 +1,32 @@
+create server pgjdzx_aliyun foreign data wrapper postgres_fdw options (host'msg.intel-water.cn', port'5432', dbname 'meff');
+create user MAPPING FOR meff server pgjdzx_aliyun options (user'meff', password'abelli');
+import foreign schema public limit to (bw_firm, bw_data, bw_meter, pinyin) from server pgjdzx_aliyun into scada;
+
+\d scada.bw_data
+\d scada.bw_meter
+
+-- drop foreign table scada.bw_meter;
+-- drop foreign table scada.bw_data ;
+-- drop foreign table scada.pinyin;
+-- drop foreign table scada.bw_firm;
+
+select * from scada.bw_meter limit 2 offset 10;
+select * from scada.bw_data limit 5 offset 100000;
+
+insert into scada.bw_firm(firmId, firmName, firmCity) values
+('270107', '盐田港供水公司', '深圳');
+
+insert into scada.bw_meter (meterId, meterCode, userCode, meterName, sizeId, powerType, meterStatus, extId, firmId,
+createBy, createDate, updateBy, updateDate, dtype)
+select fcode, fcode, fcode, fname, 0, 'POWER', statWork, fcode, '270107',
+'scada', CURRENT_TIMESTAMP, 'scada', CURRENT_TIMESTAMP, dtype
+from scada.scada_stat
+where statWork = 'WORK';
+
+select max(dataId) from scada.bw_data;
+
+insert into scada.bw_data(dataId, extId, sampleTime, forwardDigits, literPulse, firmId, dtype, szid)
+select fauto + 265494564, fcode, ftime, cast(fvalue as float8), 1000, '1', dtype, fauto
+from scada.scada_hist
+where fauto > 0
+;

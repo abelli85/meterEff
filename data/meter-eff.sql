@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/3 16:16:30                            */
+/* Created on:     2021/2/3 18:27:06                            */
 /*==============================================================*/
 
 
@@ -212,7 +212,7 @@ create table bw_config (
 /* Table: bw_data                                               */
 /*==============================================================*/
 create table bw_data (
-   dataId               SERIAL not null,
+   dataId               SERIAL8              not null,
    extId                VARCHAR(200)         not null,
    sampleTime           TIMESTAMP WITH TIME ZONE not null,
    endTime              TIMESTAMP WITH TIME ZONE null,
