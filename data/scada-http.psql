@@ -229,7 +229,7 @@ begin
     end if;
 
     -- fetch history one by one
-    for fact IN (select fgroup, fcode, fname, sname, mty, position, sensors, statWork
+    for fact IN (select fgroup, fcode, fname, sname, dtype, mty, position, sensors, statWork
     FROM scada.scada_stat
     where statWork = 'WORK' OR statWork IS NULL)
     loop
@@ -270,9 +270,10 @@ begin
         if statusCode = 0 then
             for i in 0..(histCnt - 1) loop
                 hist := histJson->'Response'->i;
-                insert into scada.scada_hist(fcode, ftime, fvalue, fts, ftype)
+                insert into scada.scada_hist(fcode, ftime, fvalue, dtype, fts, ftype)
                 values(hist->>'code', to_timestamp(cast(hist->>'time' as bigint)),
-                    cast(hist->>'value' as float8), cast(hist->>'time' as bigint), 'HIST');
+                    cast(hist->>'value' as float8), fact.dtype,
+                    cast(hist->>'time' as bigint), 'HIST');
                 if mod(i, 100) = 0 then
                     raise log 'upload history for %: %', hist->>'code', i;
                     raise notice 'upload history for %: %', hist->>'code', i;
@@ -304,9 +305,10 @@ begin
             select json_array_length(realJson->'Response') into rtCnt;
             for i in 0..(rtCnt - 1) loop
                 rt := realJson->'Response'->i;
-                insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, ftype, fts)
+                insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, dtype, ftype, fts)
                 values(rt->>'station', rt->>'code', to_timestamp(cast(rt->>'time' as bigint)),
-                    cast(rt->>'value' as float8), rt->>'tag', cast(rt->>'time' as bigint));
+                    cast(rt->>'value' as float8), fact.dtype,
+                    rt->>'tag', cast(rt->>'time' as bigint));
             end loop;
         else
             rtCnt := -1;

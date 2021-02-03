@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/2 17:41:14                            */
+/* Created on:     2021/2/3 11:53:50                            */
 /*==============================================================*/
 
 
@@ -41,6 +41,8 @@ drop index idx_scada_real_auto;
 drop index idx_scada_real_stat;
 
 drop table scada.scada_realtime;
+
+drop index idx_scada_stat_state;
 
 drop index idx_scada_stat_group;
 
@@ -170,12 +172,16 @@ create table scada.scada_hist (
    fcode                VARCHAR(100)         null,
    ftime                TIMESTAMP WITH TIME ZONE null,
    fvalue               VARCHAR(100)         null,
+   dtype                VARCHAR(20)          null default 'TOTAL',
    createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    fts                  INT8                 null,
    ftype                VARCHAR(100)         null,
    constraint PK_SCADA_HIST primary key (fauto)
 );
+
+comment on column scada_hist.dtype is
+'TOTAL/AVG/REAL/DELTA';
 
 /*==============================================================*/
 /* Index: idx_scada_hist_code                                   */
@@ -234,12 +240,19 @@ create table scada.scada_realtime (
    fcode                VARCHAR(100)         null,
    ftime                TIMESTAMP WITH TIME ZONE null,
    fvalue               VARCHAR(100)         null,
+   dtype                VARCHAR(20)          null default 'TOTAL',
    ftype                VARCHAR(100)         null,
    createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    fts                  INT8                 null,
    constraint PK_SCADA_REALTIME primary key (fauto)
 );
+
+comment on column scada_realtime.dtype is
+'TOTAL/AVG/REAL/DELTA';
+
+comment on column scada_realtime.ftype is
+'tag';
 
 /*==============================================================*/
 /* Index: idx_scada_real_stat                                   */
@@ -268,6 +281,7 @@ create table scada.scada_stat (
    fcode                VARCHAR(100)         null,
    fname                VARCHAR(100)         null,
    sname                VARCHAR(100)         null,
+   dtype                VARCHAR(20)          null default 'TOTAL',
    mty                  VARCHAR(100)         null,
    "position"           VARCHAR(100)         null,
    sensors              JSON                 null,
@@ -276,6 +290,12 @@ create table scada.scada_stat (
    updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    constraint PK_SCADA_STAT primary key (statAuto)
 );
+
+comment on column scada_stat.dtype is
+'TOTAL/AVG/REAL/DELTA';
+
+comment on column scada_stat.statWork is
+'WORK/PAUSE/RETIRED/RESERVED';
 
 /*==============================================================*/
 /* Index: idx_scada_stat_code                                   */
@@ -289,6 +309,14 @@ fcode
 /*==============================================================*/
 create  index idx_scada_stat_group on scada_stat (
 fgroup,
+fcode
+);
+
+/*==============================================================*/
+/* Index: idx_scada_stat_state                                  */
+/*==============================================================*/
+create  index idx_scada_stat_state on scada_stat (
+statWork,
 fcode
 );
 
