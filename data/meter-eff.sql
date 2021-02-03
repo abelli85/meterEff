@@ -1,10 +1,12 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2020/12/4 16:31:43                           */
+/* Created on:     2021/2/3 16:16:30                            */
 /*==============================================================*/
 
 
 drop table bw_config;
+
+drop index idx_data_create;
 
 drop index idx_data_szid;
 
@@ -27,6 +29,8 @@ drop index idx_loss_firm;
 drop index idx_loss_dma;
 
 drop table bw_dma_loss;
+
+drop index idx_dma_meter_child;
 
 drop table bw_dma_meter;
 
@@ -59,6 +63,8 @@ drop index idx_eff_firm;
 drop table bw_eff_task;
 
 drop table bw_firm;
+
+drop index idx_meter_dtype;
 
 drop index idx_meter_online;
 
@@ -232,8 +238,14 @@ create table bw_data (
    firmId               VARCHAR(45)          null,
    rssi                 INT4                 null,
    szid                 INT8                 null,
+   dtype                VARCHAR(20)          null default 'TOTAL',
+   createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    constraint PK_BW_DATA primary key (dataId)
 );
+
+comment on column bw_data.dtype is
+'TOTAL/AVG/REAL/DELTA';
 
 /*==============================================================*/
 /* Index: idx_data_time                                         */
@@ -256,6 +268,15 @@ sampleTime
 /*==============================================================*/
 create  index idx_data_szid on bw_data (
 szid
+);
+
+/*==============================================================*/
+/* Index: idx_data_create                                       */
+/*==============================================================*/
+create  index idx_data_create on bw_data (
+createDate,
+extId,
+sampleTime
 );
 
 /*==============================================================*/
@@ -370,7 +391,20 @@ create table bw_dma_meter (
    dmaId                VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
    inOutput             INT4                 not null,
+   childType            VARCHAR(20)          null default 'PARENT',
    constraint PK_BW_DMA_METER primary key (dmaId, meterId)
+);
+
+comment on column bw_dma_meter.childType is
+'PARENT/CHILD';
+
+/*==============================================================*/
+/* Index: idx_dma_meter_child                                   */
+/*==============================================================*/
+create  index idx_dma_meter_child on bw_dma_meter (
+dmaId,
+childType,
+meterId
 );
 
 /*==============================================================*/
@@ -737,8 +771,12 @@ create table bw_meter (
    createDate           TIMESTAMP WITH TIME ZONE null,
    updateBy             VARCHAR(45)          null,
    updateDate           TIMESTAMP WITH TIME ZONE null,
+   dtype                VARCHAR(20)          null default 'TOTAL',
    constraint PK_BW_METER primary key (meterId)
 );
+
+comment on column bw_meter.dtype is
+'TOTAL/AVG/REAL/DELTA';
 
 /*==============================================================*/
 /* Index: idx_meter_code                                        */
@@ -793,6 +831,14 @@ meterName
 create  index idx_meter_online on bw_meter (
 firmId,
 onlineDate
+);
+
+/*==============================================================*/
+/* Index: idx_meter_dtype                                       */
+/*==============================================================*/
+create  index idx_meter_dtype on bw_meter (
+dtype,
+meterCode
 );
 
 /*==============================================================*/
@@ -1173,8 +1219,12 @@ create table bw_zone_meter (
    zoneId               VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
    inOutput             INT4                 not null,
+   childType            VARCHAR(20)          null default 'PARENT',
    constraint PK_BW_ZONE_METER primary key (zoneId, meterId)
 );
+
+comment on column bw_zone_meter.childType is
+'PARENT/CHILD';
 
 /*==============================================================*/
 /* Table: vc_code                                               */
