@@ -241,91 +241,16 @@ begin
             lastDataTime := date_trunc('day', now() - interval '7 days');
         end if;
 
-        reqJson = json_build_object('access_token', accessToken, 'codes', array[fact.fcode]::text[],
-        'begin', extract(epoch from lastDataTime)::int + 1, 'end', extract(epoch from now())::int + 10);
-        raise notice 'fetching history for %,% from %: %', fact.fgroup, fact.fcode, lastDataTime, reqJson;
-        raise log 'fetching history for %,% from %: %', fact.fgroup, fact.fcode, lastDataTime, reqJson;
+        -- fetch history
+        call fetchHistPeriod(accessToken, fact.fcode, fact.fname, fact.dtype,
+        extract(epoch from lastDataTime)::int + 1, extract(epoch from now())::int + 10);
 
-        tsreq := now();
-        select status, content::json
-        into statusCode, histJson
-        from http_post(url || pathHist, reqJson, 'application/json');
-        tsresp := now();
-
-        raise notice 'got history % @ [%,%] from %: %', fact.fcode, lastDataTime, now(), url || pathHist, histJson;
-        raise log 'got history % @ [%,%] from %: %', fact.fcode, lastDataTime, now(), url || pathHist, histJson;
-
-        -- store scada-history-request
-        statusCode := histJson->>'Code';
-        if statusCode = 0 then
-            if histJson->>'Response' is null then
-                histCnt := -1;
-            else
-                select json_array_length(histJson->'Response') into histCnt;
-            end if;
-        else
-            histCnt := -1;
-        end if;
-        insert into scada.scada_hist_req(codes, dataStartTime, dataEndTime, reqTime, respTime, retFine, dataCount, respText)
-        values(json_build_array(fact.fcode), lastDataTime, null, tsreq, tsresp, statusCode = 0, histCnt, histJson);
-
-        -- store scada-history one-by-one
-        if statusCode = 0 then
-            for i in 0..(histCnt - 1) loop
-                hist := histJson->'Response'->i;
-                insert into scada.scada_hist(fcode, ftime, fvalue, dtype, fts, ftype)
-                values(hist->>'code', to_timestamp(cast(hist->>'time' as bigint)),
-                    cast(hist->>'value' as float8), fact.dtype,
-                    cast(hist->>'time' as bigint), 'HIST');
-                if mod(i, 100) = 0 then
-                    raise log 'upload history for %: %', hist->>'code', i;
-                    raise notice 'upload history for %: %', hist->>'code', i;
-                end if;
-            end loop;
-            raise log 'upload history totally for %: %', hist->>'code', histCnt;
-            raise notice 'upload history totally for %: %', hist->>'code', histCnt;
-        else 
-            raise log 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
-            raise notice 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
-        end if;
         commit;
 
         -- fetch realtime one by one
-        reqJson = json_build_object('access_token', accessToken, 'codes', array[fact.fcode]::text[]);
-        raise notice 'fetching realtime for %,% : %', fact.fgroup, fact.fcode, reqJson;
-        raise log 'fetching realtime for %,% : %', fact.fgroup, fact.fcode, reqJson;
+        call fetchRealtime(accessToken, fact.fcode, fact.fname, fact.dtype);
 
-        tsreq := now();
-        select status, content::json
-        into statusCode, realJson
-        from http_post(url || pathReal, reqJson, 'application/json');
-        tsresp := now();
-
-        raise notice 'got realtime % from %: %', fact.fcode, url || pathReal, realJson;
-        raise log 'got realtime % from %: %', fact.fcode, url || pathReal, realJson;
-
-        statusCode := realJson->>'Code';
-        if statusCode = 0 then
-            if realJson->>'Response' is null then
-                rtCnt := -1;
-            else
-                select json_array_length(realJson->'Response') into rtCnt;
-            end if;
-
-            for i in 0..(rtCnt - 1) loop
-                rt := realJson->'Response'->i;
-                insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, dtype, ftype, fts)
-                values(rt->>'station', rt->>'code', to_timestamp(cast(rt->>'time' as bigint)),
-                    cast(rt->>'value' as float8), fact.dtype,
-                    rt->>'tag', cast(rt->>'time' as bigint));
-            end loop;
-        else
-            rtCnt := -1;
-        end if;
         commit;
-
-        raise log 'upload realtime totally for %: %', fact.fcode, rtCnt;
-        raise notice 'upload realtime totally for %: %', fact.fcode, rtCnt;
     end loop;
 end;
 
@@ -336,6 +261,7 @@ create or replace procedure fetchHistPeriod(
     accessToken  varchar,
     pfcode varchar,
     pfname varchar,
+    pdtype varchar,
     tsBegin int8,
     tsEnd int8
 )
@@ -394,7 +320,7 @@ begin
                 hist := histJson->'Response'->i;
                 insert into scada.scada_hist(fcode, ftime, fvalue, dtype, fts, ftype)
                 values(hist->>'code', to_timestamp(cast(hist->>'time' as bigint)),
-                    cast(hist->>'value' as float8), fact.dtype,
+                    cast(hist->>'value' as float8), pdtype,
                     cast(hist->>'time' as bigint), 'HIST');
                 if mod(i, 100) = 0 then
                     raise log 'upload history for %: %', hist->>'code', i;
@@ -407,8 +333,83 @@ begin
             raise log 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
             raise notice 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
         end if;
-        
-        commit;
+    exception
+        when others then
+        raise notice 'EXCEPTION when fetch history for %,% [%, %] cased by %', pfcode, pfname, 
+        to_timestamp(tsBegin), to_timestamp(tsEnd), SQLERRM;
+        raise log 'EXCEPTION when fetch history for %,% [%, %] cased by %', pfcode, pfname, 
+        to_timestamp(tsBegin), to_timestamp(tsEnd), SQLERRM;
+
+        rollback;
+end;
+$$;
+
+create or replace procedure fetchRealtime(
+    accessToken  varchar,
+    pfcode varchar,
+    pfname varchar,
+    pdtype varchar)
+    language plpgsql
+as
+$$
+    declare url varchar;
+
+    declare tsreq   timestamptz;
+    declare tsresp  timestamptz;
+    declare statusCode   int4;
+    declare reqJson      varchar;
+
+    declare pathReal    varchar;
+    declare realJson    json;
+    declare rt json;
+    declare rtCnt int4;
+begin
+    -- url: http://10.200.6.72:8082/hdl/oauth/v1.0/access.json
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/sensor/history.json
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/sensor/realtime.json
+    url := 'http://10.200.6.72:8082/';
+    pathReal := 'hdl/scada/v1.0/sensor/realtime.json';
+
+        reqJson = json_build_object('access_token', accessToken, 'codes', array[pfcode]::text[]);
+        raise notice 'fetching realtime for %,% : %', pfcode, pfname, reqJson;
+        raise log 'fetching realtime for %,% : %', pfcode, pfname, reqJson;
+
+        tsreq := now();
+        select status, content::json
+        into statusCode, realJson
+        from http_post(url || pathReal, reqJson, 'application/json');
+        tsresp := now();
+
+        raise notice 'got realtime % from %: %', pfcode, url || pathReal, realJson;
+        raise log 'got realtime % from %: %', pfcode, url || pathReal, realJson;
+
+        statusCode := realJson->>'Code';
+        if statusCode = 0 then
+            if realJson->>'Response' is null then
+                rtCnt := -1;
+            else
+                select json_array_length(realJson->'Response') into rtCnt;
+            end if;
+
+            for i in 0..(rtCnt - 1) loop
+                rt := realJson->'Response'->i;
+                insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, dtype, ftype, fts)
+                values(rt->>'station', rt->>'code', to_timestamp(cast(rt->>'time' as bigint)),
+                    cast(rt->>'value' as float8), pdtype,
+                    rt->>'tag', cast(rt->>'time' as bigint));
+            end loop;
+        else
+            rtCnt := -1;
+        end if;
+
+        raise log 'upload realtime totally for %: %', pfcode, rtCnt;
+        raise notice 'upload realtime totally for %: %', pfcode, rtCnt;
+    exception
+        when others then
+        raise notice 'EXCEPTION when fetch realtime for %,% caused by %', pfcode, pfname, SQLERRM;
+        raise log 'EXCEPTION when fetch realtime for %,% caused by %', pfcode, pfname, SQLERRM;
+
+        rollback;
 end;
 $$;
 
