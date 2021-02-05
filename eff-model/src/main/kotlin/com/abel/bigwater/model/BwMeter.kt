@@ -387,6 +387,18 @@ open class BwMeter : BwBase() {
     var memo: String? = null
 
     /**
+     * 默认的数据类型
+     * @sees
+     */
+    var dtype: String? = null
+
+    /**
+     * dtype 对应的枚举值
+     */
+    var dtypeObj: MeterDataType? = null
+    get() = if (dtype.isNullOrBlank()) null else MeterDataType.findByCode(dtype!!)
+
+    /**
      * 老化模板ID
      */
     var decayId: Long? = null

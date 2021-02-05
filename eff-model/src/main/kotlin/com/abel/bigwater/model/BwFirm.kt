@@ -15,6 +15,12 @@ class BwFirm : BwBase() {
     var firmName: String? = null
 
     /**
+     * 单位层级, 根节点为1.
+     * 任何层级用户登录, 其看到的机构层级不变.
+     */
+    var firmLevel: Int? = null
+
+    /**
      * 位置的WKT数据，对应矢量坐标Point。
      * 转换矢量坐标对象，请参考Geo（C#）等相关框架。
      */

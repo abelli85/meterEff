@@ -288,6 +288,18 @@ class BwData : BwBase() {
      */
     var rssi: Int? = null
 
+    /**
+     * 默认的数据类型
+     * @sees
+     */
+    var dtype: String? = null
+
+    /**
+     * dtype 对应的枚举值
+     */
+    var dtypeObj: MeterDataType? = null
+        get() = if (dtype.isNullOrBlank()) null else MeterDataType.findByCode(dtype!!)
+
     @JsonIgnore
     var localSample: LocalDateTime? = null
         get() = if (sampleTime == null) null else LocalDateTime(sampleTime)
