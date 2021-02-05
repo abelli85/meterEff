@@ -142,8 +142,7 @@ create or replace procedure httpScada()
     language plpgsql
 as
 $$
-declare
-    url                  varchar;
+    declare url          varchar;
     declare pathAccess   varchar;
     declare clientId     varchar;
     declare clientSecret varchar;
@@ -258,8 +257,12 @@ begin
 
         -- store scada-history-request
         statusCode := histJson->>'Code';
-        if statusCode = 0 then        
-            select json_array_length(histJson->'Response') into histCnt;
+        if statusCode = 0 then
+            if histJson->>'Response' is null then
+                histCnt := -1;
+            else
+                select json_array_length(histJson->'Response') into histCnt;
+            end if;
         else
             histCnt := -1;
         end if;
@@ -285,6 +288,7 @@ begin
             raise log 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
             raise notice 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
         end if;
+        commit;
 
         -- fetch realtime one by one
         reqJson = json_build_object('access_token', accessToken, 'codes', array[fact.fcode]::text[]);
@@ -302,7 +306,12 @@ begin
 
         statusCode := realJson->>'Code';
         if statusCode = 0 then
-            select json_array_length(realJson->'Response') into rtCnt;
+            if realJson->>'Response' is null then
+                rtCnt := -1;
+            else
+                select json_array_length(realJson->'Response') into rtCnt;
+            end if;
+
             for i in 0..(rtCnt - 1) loop
                 rt := realJson->'Response'->i;
                 insert into scada.scada_realtime(fstation, fcode, ftime, fvalue, dtype, ftype, fts)
@@ -313,11 +322,93 @@ begin
         else
             rtCnt := -1;
         end if;
+        commit;
 
         raise log 'upload realtime totally for %: %', fact.fcode, rtCnt;
         raise notice 'upload realtime totally for %: %', fact.fcode, rtCnt;
     end loop;
 end;
 
+$$;
+
+-- fetch history for specified fcode & period
+create or replace procedure fetchHistPeriod(
+    accessToken  varchar,
+    pfcode varchar,
+    pfname varchar,
+    tsBegin int8,
+    tsEnd int8
+)
+language plpgsql
+as
+$$
+    declare url varchar;
+
+    declare tsreq   timestamptz;
+    declare tsresp  timestamptz;
+    declare statusCode   int4;
+    declare reqJson      varchar;
+
+    declare pathHist    varchar;
+    declare histJson    json;
+    declare histCnt int4;
+    declare hist json;
+begin
+    -- url: http://10.200.6.72:8082/hdl/scada/v1.0/sensor/history.json
+    url := 'http://10.200.6.72:8082/';
+    pathHist := 'hdl/scada/v1.0/sensor/history.json';
+
+        reqJson = json_build_object('access_token', accessToken, 'codes', array[pfcode]::text[],
+        'begin', tsBegin + 1, 'end', tsEnd + 10);
+        raise notice 'fetching history for %,% from [%, %]: %', pfcode, pfname, to_timestamp(tsBegin), to_timestamp(tsEnd), reqJson;
+        raise log 'fetching history for %,% from [%, %]: %', pfcode, pfname, to_timestamp(tsBegin), to_timestamp(tsEnd), reqJson;
+
+        tsreq := now();
+        select status, content::json
+        into statusCode, histJson
+        from http_post(url || pathHist, reqJson, 'application/json');
+        tsresp := now();
+
+        raise notice 'got history % @ [%,%] from %: %', pfcode, to_timestamp(tsBegin), to_timestamp(tsEnd), url || pathHist, histJson;
+        raise log 'got history % @ [%,%] from %: %', pfcode, to_timestamp(tsBegin), to_timestamp(tsEnd), url || pathHist, histJson;
+
+        -- store scada-history-request
+        statusCode := histJson->>'Code';
+        if statusCode = 0 then
+            if histJson->>'Response' is null then
+                histCnt := -1;
+            else
+                select json_array_length(histJson->'Response') into histCnt;
+            end if;
+        else
+            histCnt := -1;
+        end if;
+        insert into scada.scada_hist_req(codes, dataStartTime, dataEndTime, 
+        reqTime, respTime, retFine, dataCount, respText)
+        values(json_build_array(pfcode), to_timestamp(tsBegin), to_timestamp(tsEnd),
+        tsreq, tsresp, statusCode = 0, histCnt, histJson);
+
+        -- store scada-history one-by-one
+        if statusCode = 0 then
+            for i in 0..(histCnt - 1) loop
+                hist := histJson->'Response'->i;
+                insert into scada.scada_hist(fcode, ftime, fvalue, dtype, fts, ftype)
+                values(hist->>'code', to_timestamp(cast(hist->>'time' as bigint)),
+                    cast(hist->>'value' as float8), fact.dtype,
+                    cast(hist->>'time' as bigint), 'HIST');
+                if mod(i, 100) = 0 then
+                    raise log 'upload history for %: %', hist->>'code', i;
+                    raise notice 'upload history for %: %', hist->>'code', i;
+                end if;
+            end loop;
+            raise log 'upload history totally for %: %', hist->>'code', histCnt;
+            raise notice 'upload history totally for %: %', hist->>'code', histCnt;
+        else 
+            raise log 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
+            raise notice 'fail to fetch history caused by %/%', statusCode, histJson->>'Message';
+        end if;
+        
+        commit;
+end;
 $$;
 

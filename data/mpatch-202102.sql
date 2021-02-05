@@ -1,3 +1,5 @@
+-- <editor-fold desc='meff-optimization'>
+
 alter table bw_data add column
     dtype                VARCHAR(20)          null default 'TOTAL';
 alter table bw_data add column
@@ -84,3 +86,16 @@ alter table bw_zone_meter add column
 comment on column bw_zone_meter.childType is
     'PARENT/CHILD';
 
+-- </editor-fold>
+
+-- <editor-fold desc='scada'>
+alter table scada.scada_stat add column
+meterBrandId         VARCHAR(45)          null;
+alter table scada.scada_stat add column
+   sizeId               INT4                 not null default 0;
+alter table scada.scada_stat add column
+   sizeName             VARCHAR(45)          null;
+alter table scada.scada_stat add column
+   modelSize            VARCHAR(45)          null;
+
+-- </editor-fold>

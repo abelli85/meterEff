@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/3 11:53:50                            */
+/* Created on:     2021/2/5 16:59:05                            */
 /*==============================================================*/
 
 
@@ -288,6 +288,10 @@ create table scada.scada_stat (
    statWork             VARCHAR(16)          null default 'WORK',
    createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
    updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP,
+   meterBrandId         VARCHAR(45)          null,
+   sizeId               INT4                 not null default 0,
+   sizeName             VARCHAR(45)          null,
+   modelSize            VARCHAR(45)          null,
    constraint PK_SCADA_STAT primary key (statAuto)
 );
 

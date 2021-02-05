@@ -16,12 +16,27 @@ select * from scada.bw_data limit 5 offset 100000;
 insert into scada.bw_firm(firmId, firmName, firmCity) values
 ('270107', '盐田港供水公司', '深圳');
 
-insert into scada.bw_meter (meterId, meterCode, userCode, meterName, sizeId, powerType, meterStatus, extId, firmId,
+-- copy meter-list to aliyun-meff.
+insert into scada.bw_meter (meterId, meterCode, userCode, meterName,
+meterBrandId, sizeId, sizeName, modelSize,
+powerType, meterStatus, extId, firmId,
 createBy, createDate, updateBy, updateDate, dtype)
-select fcode, fcode, fcode, fname, 0, 'POWER', statWork, fcode, '270107',
+select fcode, fcode, fname, '',
+meterBrandId, sizeId, sizeName, modelSize,
+'POWER', statWork, fcode, '270107',
 'scada', CURRENT_TIMESTAMP, 'scada', CURRENT_TIMESTAMP, dtype
 from scada.scada_stat
-where statWork = 'WORK';
+where fcode not in (
+select meterCode
+from scada.bw_meter
+)
+and statWork = 'WORK';
+
+update bw_meter set meterName = userCode
+where createBy = 'scada';
+
+update bw_meter set userCode = meterCode
+where createBy = 'scada';
 
 select max(dataId) from scada.bw_data;
 

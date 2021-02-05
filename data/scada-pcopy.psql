@@ -22,10 +22,11 @@ begin
         raise notice 'copy scada to meff-database [%, %] @ %', idx + 1, idx + 5000, now();
 
         insert into scada.bw_data(dataId, extId, sampleTime, forwardDigits, literPulse, dtype, firmId, szid)
-        select idx - maxSzid + maxDataId, fcode, ftime, cast(fvalue as float8), 1000, dtype, '270107', fauto
+        select fauto - maxSzid + maxDataId, fcode, ftime, cast(fvalue as float8), 1000, dtype, '270107', fauto
         from scada.scada_hist
         where fauto between idx + 1 and idx + 5000;
         get DIAGNOSTICS rcnt = ROW_COUNT;
+        commit;
         raise log 'copy scada to meff-database % rows: [%, %] @ %', rcnt, idx + 1, idx + 5000, now();
 
         idx := idx + 5000;
