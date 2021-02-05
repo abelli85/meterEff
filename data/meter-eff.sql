@@ -1,10 +1,12 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/3 18:27:06                            */
+/* Created on:     2021/2/5 13:42:24                            */
 /*==============================================================*/
 
 
 drop table bw_config;
+
+drop index idx_data_ext_dtype;
 
 drop index idx_data_create;
 
@@ -267,6 +269,7 @@ sampleTime
 /* Index: idx_data_szid                                         */
 /*==============================================================*/
 create  index idx_data_szid on bw_data (
+firmId,
 szid
 );
 
@@ -276,6 +279,15 @@ szid
 create  index idx_data_create on bw_data (
 createDate,
 extId,
+sampleTime
+);
+
+/*==============================================================*/
+/* Index: idx_data_ext_dtype                                    */
+/*==============================================================*/
+create  index idx_data_ext_dtype on bw_data (
+extId,
+dtype,
 sampleTime
 );
 

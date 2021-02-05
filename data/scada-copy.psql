@@ -25,8 +25,8 @@ where statWork = 'WORK';
 
 select max(dataId) from scada.bw_data;
 
-insert into scada.bw_data(dataId, extId, sampleTime, forwardDigits, literPulse, firmId, dtype, szid)
-select fauto + 265494564, fcode, ftime, cast(fvalue as float8), 1000, '1', dtype, fauto
+insert into scada.bw_data(dataId, extId, sampleTime, forwardDigits, literPulse, dtype, firmId, szid)
+select fauto + 265494564, fcode, ftime, cast(fvalue as float8), 1000, dtype, '270107', fauto
 from scada.scada_hist
-where fauto > 0
+where fauto between 0 and 1;
 ;

@@ -4,10 +4,27 @@ alter table bw_data add column
     createDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP;
 alter table bw_data add column
     updateDate           TIMESTAMP WITH TIME ZONE null default CURRENT_TIMESTAMP;
+
 -- alter table bw_data alter column dataId type int8;
+
+-- select max(dataId) from bw_data;
+-- create sequence bw_data_dataid_seq8 start with max_dataId_from_data;
+-- alter table bw_data alter column dataId set default null;
+-- alter table bw_data alter column dataId set default nextval('bw_data_dataid_seq8' ::regclass);
+-- drop sequence bw_data_dataid_seq;
 
 comment on column bw_data.dtype is
     'TOTAL/AVG/REAL/DELTA';
+
+-- drop index idx_data_szid;
+-- very slow because of large data. it may cost longer than 1 quarter.
+/*==============================================================*/
+/* Index: idx_data_szid                                         */
+/*==============================================================*/
+create  index idx_data_szid on bw_data (
+                                        firmId,
+                                        szid
+    );
 
 /*==============================================================*/
 /* Index: idx_data_create                                       */
@@ -20,6 +37,17 @@ create  index idx_data_create on bw_data (
                                           sampleTime
     );
 */
+
+-- drop index idx_data_ext_dtype;
+
+/*==============================================================*/
+/* Index: idx_data_ext_dtype                                    */
+/*==============================================================*/
+create  index idx_data_ext_dtype on bw_data (
+                                             extId,
+                                             dtype,
+                                             sampleTime
+    );
 
 alter table bw_dma_meter add column
     childType            VARCHAR(20)          null default 'PARENT';

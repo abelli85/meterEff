@@ -1,0 +1,38 @@
+create or replace procedure pcopyScada()
+language plpgsql
+as
+$$
+    declare scadaFirmId varchar;
+    declare maxSzid int8;
+    declare maxAuto int8;
+    declare maxDataId int8;
+    declare idx int8;
+    declare rcnt int8;
+begin
+    scadaFirmId := '270107';
+    select max(dataId) into maxDataId from scada.bw_data;
+    select max(szid) into maxSzid from scada.bw_data where firmId = scadaFirmId;
+    select max(fauto) into maxAuto from scada.scada_hist;
+    raise notice 'prepare copy scada [%, %] to [% @ %]', maxSzid + 1, maxAuto, maxDataId, now();
+    raise log 'prepare copy scada [%, %] to [% @ %]', maxSzid + 1, maxAuto, maxDataId, now();
+
+    idx := maxSzid;
+    while idx <= maxAuto
+    loop
+        raise notice 'copy scada to meff-database [%, %] @ %', idx + 1, idx + 5000, now();
+
+        insert into scada.bw_data(dataId, extId, sampleTime, forwardDigits, literPulse, dtype, firmId, szid)
+        select idx - maxSzid + maxDataId, fcode, ftime, cast(fvalue as float8), 1000, dtype, '270107', fauto
+        from scada.scada_hist
+        where fauto between idx + 1 and idx + 5000;
+        get DIAGNOSTICS rcnt = ROW_COUNT;
+        raise log 'copy scada to meff-database % rows: [%, %] @ %', rcnt, idx + 1, idx + 5000, now();
+
+        idx := idx + 5000;
+    end loop;
+
+    select max(dataId) into maxDataId from scada.bw_data;
+    raise notice 'copy finished [%, %] to [% @ %]', maxSzid + 1, maxAuto, maxDataId, now();
+    raise log 'copy finished [%, %] to [% @ %]', maxSzid + 1, maxAuto, maxDataId, now();
+end;
+$$;
