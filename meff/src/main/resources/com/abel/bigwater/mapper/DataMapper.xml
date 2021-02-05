@@ -28,6 +28,7 @@
         , q3Sum
         , q4Sum
         , rssi
+        , dtype
         , firmId)
         values
         <foreach collection="dataList" item="data" separator=",">
@@ -54,6 +55,7 @@
             , #{data.q3Sum}
             , #{data.q4Sum}
             , #{data.rssi}
+            , #{data.dtype}
             , #{data.firmId})
         </foreach>
     </insert>
@@ -81,6 +83,8 @@
           , q3sum          = #{q3Sum}
           , q4sum          = #{q4Sum}
           , rssi           = #{rssi}
+          , dtype          = #{dtype}
+          , updateDate     = now()
           , firmId         = #{firmId}
         WHERE extId = #{extId}
           AND sampleTime = #{sampleTime}
@@ -111,6 +115,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         , dm.inOutput
         FROM bw_data r
@@ -202,6 +209,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         FROM bw_data r
         JOIN (VALUES
         <foreach collection="dataList" item="d1" separator=",">
@@ -237,6 +247,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -310,6 +323,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -384,6 +400,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , dm.inOutput
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
@@ -483,6 +502,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -589,6 +611,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -695,6 +720,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -801,6 +829,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -908,6 +939,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
         JOIN (
@@ -1014,6 +1048,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , dm.inOutput
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r
@@ -1113,6 +1150,9 @@
         , r.firmId
         , r.rssi
         , r.baseDigits
+        , r.dtype
+        , r.createDate
+        , r.updateDate
         , dm.inOutput
         , st_astext(m.meterLoc::geometry) AS meterLoc
         FROM bw_data r

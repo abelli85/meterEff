@@ -67,6 +67,7 @@
         , pressureMinLimit
         , powerType
         , meterStatus
+        , dtype
         , adminMobile
         <include refid="meterLocFields"></include>
         , lastCalib
@@ -122,6 +123,7 @@
         , #{pressureMinLimit}
         , #{powerType}
         , #{meterStatus}
+        , #{dtype}
         , #{adminMobile}
         <include refid="meterLocValues"></include>
         , #{lastCalib}
@@ -1061,6 +1063,7 @@
         , m.pressureMinLimit
         , m.powerType
         , m.meterStatus
+        , m.dtype
         , m.adminMobile
         , st_asText(m.meterLoc::geometry) AS meterLoc
         , m.lastCalib
@@ -1244,6 +1247,7 @@
         , m.pressureMinLimit
         , m.powerType
         , m.meterStatus
+        , m.dtype
         , m.adminMobile
         , st_asText(m.meterLoc::geometry) AS meterLoc
         , m.lastCalib
