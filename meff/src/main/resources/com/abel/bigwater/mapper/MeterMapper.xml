@@ -1073,7 +1073,8 @@
         , m.createDate
         , m.updateBy
         , m.updateDate
-        , dm.inOutput
+        , dm.flowOut
+        , dm.childType
         FROM bw_meter m
         LEFT JOIN bw_dma_meter dm on m.meterid = dm.meterid
         LEFT JOIN bw_dma d ON dm.dmaId = d.dmaId
@@ -1257,7 +1258,8 @@
         , m.createDate
         , m.updateBy
         , m.updateDate
-        , zm.inOutput
+        , zm.flowOut
+        , zm.childType
         FROM bw_meter m
         LEFT JOIN bw_zone_meter zm on m.meterId = zm.meterId
         LEFT JOIN bw_zone z on z.zoneId = zm.zoneId

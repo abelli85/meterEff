@@ -13,7 +13,7 @@
   </modules>
 
     <properties>
-        <kotlin.version>1.4.21-2</kotlin.version>
+        <kotlin.version>1.4.30</kotlin.version>
         <kotlinx.version>1.4.2</kotlinx.version>
         <source.level>1.8</source.level>
         <target.level>1.8</target.level>
@@ -34,7 +34,7 @@
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <spring-boot.version>1.5.13.RELEASE</spring-boot.version>
         <fastjson.version>1.2.75</fastjson.version>
-        <joda-time.version>2.10.8</joda-time.version>
+        <joda-time.version>2.10.10</joda-time.version>
         <arquillian.version>1.4.1.Final</arquillian.version>
     </properties>
 

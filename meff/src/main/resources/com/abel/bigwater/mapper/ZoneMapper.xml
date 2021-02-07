@@ -51,7 +51,9 @@
                 AND zoneName LIKE #{zoneName}
             </if>
 
-            AND firmId LIKE #{subFirmId}
+            <if test="firmId != null">
+                AND firmId LIKE #{subFirmId}
+            </if>
         </where>
     </select>
 
@@ -149,7 +151,7 @@
         </set>
         <where>
             zoneId = #{zoneId}
-            AND firmId LIKE #{subFirmId}
+            AND firmId LIKE #{firmId}
         </where>
     </update>
 
@@ -168,7 +170,7 @@
     <delete id="detachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
         DELETE FROM bw_zone_meter AS bzm
         <where>
-            zoneId = #{zoneId}
+            AND zoneId = #{zoneId}
             <if test="meterList != null and meterList.size > 0">
                 AND meterId IN (
                 <foreach collection="meterList" item="meter" separator=",">
@@ -176,7 +178,6 @@
                 </foreach>
                 )
             </if>
-            AND firmId LIKE #{subFirmId}
         </where>
     </delete>
 </mapper>
