@@ -18,12 +18,14 @@ import javax.ws.rs.Produces
 interface ZoneService {
     companion object {
         const val BASE_PATH = "/zone"
+
         const val PATH_LIST_ZONE = "/list"
+        const val PATH_SAVE_ZONE = "/save"
         const val PATH_FETCH_ZONE = "/fetch"
         const val PATH_UPDATE_ZONE = "/update"
         const val PATH_DELETE_ZONE = "/delete"
-        const val PATH_ATTACH_ZONE_METER = "/attachZoneMeter"
-        const val PATH_DETACH_ZONE_METER = "/detachZoneMeter"
+        const val PATH_ATTACH_ZONE_METER = "/saveZoneMeter"
+        const val PATH_DETACH_ZONE_METER = "/deleteZoneMeter"
     }
 
     /**
@@ -34,7 +36,15 @@ interface ZoneService {
     fun listZone(holder: BwHolder<MeterParam>) : BwResult<Zone>
 
     /**
-     * 获取一个分区的详情
+     * 创建分区, 包含其内部的总分表
+     */
+    @POST
+    @Path(PATH_SAVE_ZONE)
+    fun saveZone(holder: BwHolder<Zone>) : BwResult<Zone>
+
+    /**
+     * 获取一个分区的详情, 必填:
+     * @see MeterParam.zoneId
      */
     @POST
     @Path(PATH_FETCH_ZONE)
@@ -59,12 +69,12 @@ interface ZoneService {
      */
     @POST
     @Path(PATH_ATTACH_ZONE_METER)
-    fun attachZoneMeter(holder: BwHolder<Zone>): BwResult<Zone>
+    fun saveZoneMeter(holder: BwHolder<Zone>): BwResult<Zone>
 
     /**
      * 解除关联分区和水表
      */
     @POST
     @Path(PATH_DETACH_ZONE_METER)
-    fun detachZoneMeter(holder: BwHolder<Zone>): BwResult<Zone>
+    fun deleteZoneMeter(holder: BwHolder<Zone>): BwResult<Zone>
 }
