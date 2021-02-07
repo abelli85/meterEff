@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/5 13:42:24                            */
+/* Created on:     2021/2/7 14:45:06                            */
 /*==============================================================*/
 
 
@@ -402,7 +402,7 @@ statDate
 create table bw_dma_meter (
    dmaId                VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
-   inOutput             INT4                 not null,
+   flowOut              INT4                 not null default 0,
    childType            VARCHAR(20)          null default 'PARENT',
    constraint PK_BW_DMA_METER primary key (dmaId, meterId)
 );
@@ -1230,7 +1230,7 @@ firmId
 create table bw_zone_meter (
    zoneId               VARCHAR(45)          not null,
    meterId              VARCHAR(45)          not null,
-   inOutput             INT4                 not null,
+   flowOut              INT4                 not null default 0,
    childType            VARCHAR(20)          null default 'PARENT',
    constraint PK_BW_ZONE_METER primary key (zoneId, meterId)
 );

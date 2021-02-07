@@ -99,3 +99,38 @@ alter table scada.scada_stat add column
    modelSize            VARCHAR(45)          null;
 
 -- </editor-fold>
+
+-- <editor-fold desc='zone-flowOut'>
+drop table bw_dma_meter;
+
+/*==============================================================*/
+/* Table: bw_dma_meter                                          */
+/*==============================================================*/
+create table bw_dma_meter (
+                              dmaId                VARCHAR(45)          not null,
+                              meterId              VARCHAR(45)          not null,
+                              flowOut              INT4                 not null default 0,
+                              childType            VARCHAR(20)          null default 'PARENT',
+                              constraint PK_BW_DMA_METER primary key (dmaId, meterId)
+);
+
+comment on column bw_dma_meter.childType is
+    'PARENT/CHILD';
+
+drop table bw_zone_meter;
+
+/*==============================================================*/
+/* Table: bw_zone_meter                                         */
+/*==============================================================*/
+create table bw_zone_meter (
+   zoneId               VARCHAR(45)          not null,
+   meterId              VARCHAR(45)          not null,
+   flowOut              INT4                 not null default 0,
+   childType            VARCHAR(20)          null default 'PARENT',
+   constraint PK_BW_ZONE_METER primary key (zoneId, meterId)
+);
+
+comment on column bw_zone_meter.childType is
+'PARENT/CHILD';
+
+-- </editor-fold>
