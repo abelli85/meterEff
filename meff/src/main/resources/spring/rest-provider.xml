@@ -107,6 +107,10 @@
                    protocol="rest"
                    validation="true"/>
 
+    <dubbo:service interface="com.abel.bigwater.api.ZoneService" ref="zoneService"
+                   protocol="rest"
+                   validation="true"/>
+
     <bean id="cronConfig" class="com.abel.bigwater.impl.EffTaskConfig">
         <property name="cronDaytime" value="false"/>
     </bean>

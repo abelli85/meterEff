@@ -4,17 +4,22 @@ import com.abel.bigwater.api.EffParam
 import com.abel.bigwater.api.MeterParam
 import com.abel.bigwater.model.BwUser
 import com.abel.bigwater.model.eff.EffPeriodType
+import com.abel.bigwater.model.zone.Zone
+import com.abel.bigwater.model.zone.ZoneType
 import com.alibaba.fastjson.JSON
+import org.apache.dubbo.remoting.http.servlet.ServletManager
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import java.util.*
 
 @RunWith(SpringJUnit4ClassRunner::class)
-@ContextConfiguration(locations = ["classpath:/spring-mybatis.xml"])
+@ContextConfiguration(locations = ["classpath:/spring/rest-provider.xml", "classpath:/spring-mybatis.xml"])
 open class MapperTest {
 
     @Autowired
@@ -28,6 +33,9 @@ open class MapperTest {
 
     @Autowired
     var effMapper: EffMapper? = null
+
+    @Autowired
+    var zoneMapper: ZoneMapper? = null
 
     @Test
     fun testConfig() {
@@ -90,7 +98,45 @@ open class MapperTest {
         effMapper!!.buildEffPointMonth(EffParam())
     }
 
+    @Test
+    fun listZone() {
+        val z1 = Zone().apply {
+            firmId = "1"
+            zoneId = "test"
+            zoneName = "测试分区"
+            zoneType = ZoneType.FAMILY.name
+        }
+
+        zoneMapper!!.listZone(MeterParam().apply {
+            firmId = "%"
+        }).also {
+            lgr.info("list zone: {}", JSON.toJSONString(it, true))
+        }
+
+        try {
+            zoneMapper!!.insertZone(z1)
+            zoneMapper!!.listZone(MeterParam().apply {
+                firmId = z1.firmId
+            }).also {
+                lgr.info("list zone: {}", JSON.toJSONString(it, true))
+            }
+        } finally {
+            lgr.info("delete test zone: {}",
+                    zoneMapper!!.deleteZone(MeterParam().apply {
+                        zoneId = z1.zoneId
+                        firmId = z1.firmId
+                    }))
+        }
+    }
+
     companion object {
         private val lgr = LoggerFactory.getLogger(MapperTest::class.java)
+
+        @BeforeClass
+        @JvmStatic
+        fun addServletContext() {
+            lgr.warn("prepare servlet container...")
+            ServletManager.getInstance().addServletContext(ServletManager.EXTERNAL_SERVER_PORT, MockServletContext())
+        }
     }
 }

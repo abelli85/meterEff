@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace命名空间，作用就是对sql进行分类化管理，即sql隔离
+注意：使用mapper代理方法开发的话，namespace就有特殊重要的作用了,namespace=mapper接口地址
+ -->
+<mapper namespace="com.abel.bigwater.mapper.ZoneMapper">
+    <select id="listZone" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.zone.Zone">
+        SELECT zoneId
+             , zoneName
+             , zoneType
+             , dmaId
+             , level
+             , leafType
+             , memo
+             , bigMeterCount
+             , resiMeterCount
+             , onlineBigMeterCount
+             , onlineResiMeterCount
+             , ST_AsText(zoneLoc) AS zoneLoc
+             , ST_AsText(zoneRegion) AS zoneRegion
+             , firmId
+             , leafable
+             , createBy
+             , createDate
+             , updateBy
+             , updateDate
+        FROM bw_zone AS z
+        <where>
+            <if test="keywords != null">
+                to_tsvector('parser_name', z.zoneName) @@ to_tsquery('parser_name', #{keywords})
+            </if>
+            <if test="pinyin != null">
+                fetchPyzm(tsvector_to_array(to_tsvector('parser_name', z.zoneName)))
+                @> tsvector_to_array(to_tsvector('parser_name', #{pinyin}))
+            </if>
+
+            <choose>
+                <when test="zoneId != null">
+                    AND zoneId LIKE #{zoneId}
+                </when>
+                <when test="zoneIdList != null and zoneIdList.size > 0">
+                    AND zoneId IN
+                    <foreach collection="zoneIdList" item="zid" open="(" separator="," close=")">
+                        #{zid}
+                    </foreach>
+                </when>
+            </choose>
+
+            <if test="zoneName != null">
+                AND zoneName LIKE #{zoneName}
+            </if>
+
+            AND firmId LIKE #{subFirmId}
+        </where>
+    </select>
+
+    <insert id="insertZone" parameterType="com.abel.bigwater.model.zone.Zone">
+        INSERT INTO bw_zone(
+                            zoneid
+                            , zonename
+                            , zonetype
+                            , level
+                            , leaftype
+                            , memo
+                            , bigmetercount
+                            , resimetercount
+                            , onlinebigmetercount
+                            , onlineresimetercount
+                            <include refid="zoneGeomFields"></include>
+                            , firmid
+                            , leafable
+                            , createby
+                            , createdate
+                            , updateby
+                            , updatedate
+        ) VALUES (
+                   #{zoneId}
+                 , #{zoneName}
+                 , #{zoneType}
+                 , #{level}
+                 , #{leafType}
+                 , #{memo}
+                 , #{bigMeterCount}
+                 , #{resiMeterCount}
+                 , #{onlineBigMeterCount}
+                 , #{onlineResiMeterCount}
+                 <include refid="zoneGeomValues"></include>
+                 , #{firmId}
+                 , #{leafable}
+                 , #{createBy}
+                 , Now()
+                 , #{updateBy}
+                 , Now()
+        )
+    </insert>
+
+    <sql id="zoneGeomFields">
+        <if test="zoneLoc != null">
+            , zoneloc
+        </if>
+        <if test="zoneRegion != null">
+            , zoneregion
+        </if>
+    </sql>
+    <sql id="zoneGeomValues">
+        <if test="zoneLoc != null">
+            , ST_GeomFromText(#{zoneLoc})
+        </if>
+        <if test="zoneRegion != null">
+            , ST_GeomFromText(#{zoneRegion})
+        </if>
+    </sql>
+    
+    <delete id="deleteZone" parameterType="com.abel.bigwater.api.MeterParam">
+        DELETE FROM bw_zone AS z
+        <where>
+            zoneId = #{zoneId}
+
+            <if test="zoneName != null">
+                AND zoneName LIKE #{zoneName}
+            </if>
+
+            AND firmId LIKE #{subFirmId}
+        </where>
+    </delete>
+
+    <update id="updateZone" parameterType="com.abel.bigwater.model.zone.Zone">
+        UPDATE bw_zone
+        <set>
+            , zoneName = #{zoneName}
+            , zoneType = #{zoneType}
+            , level = #{level}
+            , leafType = #{leafType}
+            , memo = #{memo}
+            , bigMeterCount = #{bigMeterCount}
+            , resiMeterCount = #{resiMeterCount}
+            , onlineBigMeterCount = #{onlineBigMeterCount}
+            , onlineResiMeterCount = #{onlineResiMeterCount}
+            <if test="zoneLoc != null">
+                , ST_AsText = ST_GeomFromText(#{zoneLoc})
+            </if>
+            <if test="zoneRegion != null">
+                , ST_AsText = ST_GeomFromText(#{zoneRegion})
+            </if>
+            , leafable = #{leafable}
+            , updateBy = #{updateBy}
+            , updateDate = NOW()
+        </set>
+        <where>
+            zoneId = #{zoneId}
+            AND firmId LIKE #{subFirmId}
+        </where>
+    </update>
+
+    <insert id="attachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
+        INSERT INTO bw_zone_meter(zoneid, meterid, flowout, childtype)
+        <foreach collection="meterList" item="meter" separator=",">
+            (
+                #{meter.meterId}
+                , #{zoneId}
+                , #{meter.flowOut}
+                , #{meter.childType}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="detachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
+        DELETE FROM bw_zone_meter AS bzm
+        <where>
+            zoneId = #{zoneId}
+            <if test="meterList != null and meterList.size > 0">
+                AND meterId IN (
+                <foreach collection="meterList" item="meter" separator=",">
+                    #{meter.meterId}
+                </foreach>
+                )
+            </if>
+            AND firmId LIKE #{subFirmId}
+        </where>
+    </delete>
+</mapper>
