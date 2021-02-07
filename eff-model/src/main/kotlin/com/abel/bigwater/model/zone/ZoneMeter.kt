@@ -22,6 +22,15 @@ class ZoneMeter : BwMeter() {
     var flowOut: Int = 0
 
     /**
+     * 总表/分表
+     * @see MeterChildType
+     */
+    var childType: String? = MeterChildType.PARENT.name
+
+    var childTypeObj: MeterChildType? = MeterChildType.PARENT
+        get() = MeterChildType.values().first { it.name == childType } ?: MeterChildType.PARENT
+
+    /**
      * 仅供后端批量更新使用.
      * 下级机构ID, 一般采用 {@see firmId}%, 供后台统计查询.
      */

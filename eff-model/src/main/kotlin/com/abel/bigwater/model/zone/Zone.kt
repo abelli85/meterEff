@@ -28,10 +28,17 @@ class Zone : BwBase() {
      */
     var level: Int = 0
 
+    var zoneType: String? = null
+
     /**
      * 片区类型
      */
     var type: ZoneType = ZoneType.FAMILY
+        get() = ZoneType.values().first { it.name == zoneType } ?: ZoneType.FAMILY
+        set(value) {
+            field = value
+            zoneType = field.name
+        }
 
     var reff: Double = 7.0
 
@@ -74,10 +81,18 @@ class Zone : BwBase() {
     var firmId: String = ""
 
     /**
+     * 包含的水表清单, 按进出水可划分为 进水、出水; 按供需类型可分为 总表、分表.
+     * @see ZoneMeter.flowOut
+     * @see ZoneMeter.childType
+     */
+    var meterList: List<ZoneMeter>? = null
+
+    /**
      * 是否叶子节点，即不再包含下级分区
+     * 0 - 非叶子节点
      */
     @Volatile
-    var leafable: Boolean = false
+    var leafable: Int? = 0
 
     override fun toString(): String {
         return "{id:$zoneId,name:$zoneName}"

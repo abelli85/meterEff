@@ -1,5 +1,6 @@
 package com.abel.bigwater.model
 
+import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.annotation.JSONField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -185,7 +186,7 @@ class BwDma : BwBase() {
     /**
      * 水表列表, 仅在获取单个DMA分区时填充
      */
-    var meterList: List<BwMeter>? = null
+    var meterList: List<ZoneMeter>? = null
 
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
