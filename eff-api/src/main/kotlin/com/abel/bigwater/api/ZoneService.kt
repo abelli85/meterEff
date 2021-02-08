@@ -65,14 +65,20 @@ interface ZoneService {
     fun deleteZone(holder: BwHolder<Zone>): BwResult<Zone>
 
     /**
-     * 关联分区和水表
+     * 关联分区和水表. 要关联的水表应存在, 但不存在不会返回错误, 只是不关联.
+     * 覆盖相同标识的已关联水表, 增加未关联的水表(存在的水表);
+     * 对于已关联其他水表 无改变. 必填:
+     * @see Zone.zoneId
+     * @see Zone.meterList
      */
     @POST
     @Path(PATH_ATTACH_ZONE_METER)
     fun saveZoneMeter(holder: BwHolder<Zone>): BwResult<Zone>
 
     /**
-     * 解除关联分区和水表
+     * 解除关联分区和水表. 必填:
+     * @see Zone.zoneId
+     * @see Zone.meterList
      */
     @POST
     @Path(PATH_DETACH_ZONE_METER)
