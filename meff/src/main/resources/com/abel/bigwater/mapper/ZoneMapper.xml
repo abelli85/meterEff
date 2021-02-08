@@ -155,16 +155,42 @@
         </where>
     </update>
 
+    <select id="listZoneMeterRel" parameterType="com.abel.bigwater.api.MeterParam"
+            resultType="com.abel.bigwater.model.zone.ZoneMeter">
+        SELECT zoneId
+        , meterId
+        , flowOut
+        , childType
+        FROM bw_zone_meter
+        <where>
+            zoneId = #{zoneId}
+            <if test="firmId != null">
+                AND firmId LIKE #{firmId}
+            </if>
+        </where>
+    </select>
+
     <insert id="attachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
         INSERT INTO bw_zone_meter(zoneid, meterid, flowout, childtype)
+        SELECT zm.meterId
+            , zm.zoneId
+            , zm.flowOut
+            , zm.childType
+            FROM (
+                VALUES
         <foreach collection="meterList" item="meter" separator=",">
             (
-                #{meter.meterId}
-                , #{zoneId}
-                , #{meter.flowOut}
-                , #{meter.childType}
+            #{meter.meterId}
+            , #{zoneId}
+            , #{meter.flowOut}
+            , #{meter.childType}
             )
         </foreach>
+        ) AS zm(meterId
+        , zoneId
+        , flowOut
+        , childType)
+        JOIN bw_meter m ON zm.meterId = m.meterId
     </insert>
 
     <delete id="detachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">

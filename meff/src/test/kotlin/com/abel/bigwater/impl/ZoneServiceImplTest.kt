@@ -7,6 +7,7 @@ import com.abel.bigwater.api.UserService
 import com.abel.bigwater.api.ZoneService
 import com.abel.bigwater.mapper.MapperTest
 import com.abel.bigwater.mapper.ZoneMapper
+import com.abel.bigwater.model.zone.MeterChildType
 import com.abel.bigwater.model.zone.Zone
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.abel.bigwater.model.zone.ZoneType
@@ -214,10 +215,86 @@ class ZoneServiceImplTest {
 
     @Test
     fun attachZoneMeter() {
+        val z1 = Zone().apply {
+            zoneId = "test"
+            zoneName = "测试分区"
+            zoneType = ZoneType.FAMILY.name
+        }
+
+        val login = TestHelper.login(us)
+        z1.firmId = login.single!!.firmId!!
+
+        zoneMapper!!.insertZone(z1)
+        try {
+            zs!!.saveZoneMeter(BwHolder(TestHelper.buildLoginRequest(login.single!!), z1.apply {
+                meterList = listOf(ZoneMeter().also {
+                    it.zoneId = z1.zoneId
+                    it.meterId = "test1"
+                    it.flowOut = 0
+                    it.childTypeObj = MeterChildType.PARENT
+                },
+                        ZoneMeter().also {
+                            it.zoneId = z1.zoneId
+                            it.meterId = "test2"
+                            it.flowOut = 0
+                            it.childTypeObj = MeterChildType.PARENT
+                        })
+            })).also {
+                lgr.info("save zone-meter: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            lgr.info("delete test zone: {}, {}",
+                    zoneMapper!!.detachZoneMeter(Zone().apply {
+                        zoneId = z1.zoneId
+                    }),
+                    zoneMapper!!.deleteZone(MeterParam().apply {
+                        zoneId = z1.zoneId
+                        firmId = z1.firmId
+                    }))
+        }
     }
 
     @Test
     fun detachZoneMeter() {
+        val z1 = Zone().apply {
+            zoneId = "test"
+            zoneName = "测试分区"
+            zoneType = ZoneType.FAMILY.name
+        }
+
+        val login = TestHelper.login(us)
+        z1.firmId = login.single!!.firmId!!
+
+        zoneMapper!!.insertZone(z1)
+        try {
+            zs!!.deleteZoneMeter(BwHolder(TestHelper.buildLoginRequest(login.single!!), z1.apply {
+                meterList = listOf(ZoneMeter().also {
+                    it.zoneId = z1.zoneId
+                    it.meterId = "test1"
+                    it.flowOut = 0
+                    it.childTypeObj = MeterChildType.PARENT
+                },
+                        ZoneMeter().also {
+                            it.zoneId = z1.zoneId
+                            it.meterId = "test2"
+                            it.flowOut = 0
+                            it.childTypeObj = MeterChildType.PARENT
+                        })
+            })).also {
+                lgr.info("delete zone-meter: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+        } finally {
+            lgr.info("delete test zone: {}, {}",
+                    zoneMapper!!.detachZoneMeter(Zone().apply {
+                        zoneId = z1.zoneId
+                    }),
+                    zoneMapper!!.deleteZone(MeterParam().apply {
+                        zoneId = z1.zoneId
+                        firmId = z1.firmId
+                    }))
+        }
     }
 
     companion object {

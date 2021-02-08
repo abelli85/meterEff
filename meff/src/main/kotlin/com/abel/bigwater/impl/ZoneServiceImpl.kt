@@ -189,17 +189,109 @@ class ZoneServiceImpl : ZoneService {
     }
 
     /**
-     * 关联分区和水表
+     * 关联分区和水表. 要关联的水表应存在, 但不存在不会返回错误, 只是不关联.
+     * 覆盖相同标识的已关联水表, 增加未关联的水表(存在的水表);
+     * 对于已关联其他水表 无改变. 必填:
+     * @see Zone.zoneId
+     * @see Zone.meterList
      */
     override fun saveZoneMeter(holder: BwHolder<Zone>): BwResult<Zone> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.zoneId.isNullOrBlank()
+                || holder.single?.meterList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to save zone-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = ZoneService.BASE_PATH + ZoneService.PATH_ATTACH_ZONE_METER
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
+            zoneMapper!!.listZone(MeterParam().apply {
+                zoneId = dp.zoneId
+                firmId = dp.firmId
+            }).firstOrNull() ?: return BwResult(2, "分区不存在或不属于本单位: ${dp.zoneId}/${dp.zoneName}")
+
+            // detach firstly
+            var mlist = dp.meterList!!
+            while (mlist.isNotEmpty()) {
+                zoneMapper!!.detachZoneMeter(Zone().apply {
+                    zoneId = dp.zoneId
+                    meterList = mlist.take(1000)
+                })
+
+                mlist = mlist.drop(1000)
+            }
+
+            // attach then
+            var rcnt = 0
+            mlist = dp.meterList!!
+            while (mlist.isNotEmpty()) {
+                rcnt += zoneMapper!!.attachZoneMeter(Zone().apply {
+                    zoneId = dp.zoneId
+                    meterList = mlist.take(200)
+                })
+
+                mlist = mlist.drop(200)
+            }
+            return BwResult(0, "关联分区水表 ${dp.zoneId}/${dp.zoneName}: $rcnt/${dp.meterList?.size}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 解除关联分区和水表
+     * 解除关联分区和水表. 必填:
+     * @see Zone.zoneId
+     * @see Zone.meterList
      */
     override fun deleteZoneMeter(holder: BwHolder<Zone>): BwResult<Zone> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.zoneId.isNullOrBlank()
+                || holder.single?.meterList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to save zone-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = ZoneService.BASE_PATH + ZoneService.PATH_ATTACH_ZONE_METER
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
+            zoneMapper!!.listZone(MeterParam().apply {
+                zoneId = dp.zoneId
+                firmId = dp.firmId
+            }).firstOrNull() ?: return BwResult(2, "分区不存在或不属于本单位: ${dp.zoneId}/${dp.zoneName}")
+
+            var rcnt = 0
+
+            // detach firstly
+            var mlist = dp.meterList!!
+            while (mlist.isNotEmpty()) {
+                rcnt += zoneMapper!!.detachZoneMeter(Zone().apply {
+                    zoneId = dp.zoneId
+                    meterList = mlist.take(1000)
+                })
+
+                mlist = mlist.drop(1000)
+            }
+            return BwResult(0, "解除关联分区水表 ${dp.zoneId}/${dp.zoneName}: $rcnt/${dp.meterList?.size}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     companion object {
