@@ -76,7 +76,7 @@ class ZoneServiceImpl : ZoneService {
             zoneMapper!!.insertZone(dp)
 
             var mlist = dp.meterList.orEmpty()
-            while(mlist.isNotEmpty()) {
+            while (mlist.isNotEmpty()) {
                 val zp = MeterParam().apply {
                     zoneId = dp.zoneId
                     meterList = mlist.take(200)
@@ -96,6 +96,7 @@ class ZoneServiceImpl : ZoneService {
     /**
      * 获取一个分区的详情, 必填:
      * @see MeterParam.zoneId
+     * @return 分区及包含的水表
      */
     override fun fetchZone(holder: BwHolder<MeterParam>): BwResult<Zone> {
         if (holder.lr?.sessionId.isNullOrBlank()
@@ -104,7 +105,7 @@ class ZoneServiceImpl : ZoneService {
             return BwResult(2, ERR_PARAM)
         }
 
-        lgr.info("${holder.lr?.userId} try to list zone: ${JSON.toJSONString(holder.single)}")
+        lgr.info("${holder.lr?.userId} try to fetch zone: ${JSON.toJSONString(holder.single)}")
         val dp = holder.single!!
 
         val rightName = ZoneService.BASE_PATH + ZoneService.PATH_LIST_ZONE
@@ -229,7 +230,7 @@ class ZoneServiceImpl : ZoneService {
             // attach then
             var rcnt = 0
             var mlist = dp.meterList.orEmpty()
-            while(mlist.isNotEmpty()) {
+            while (mlist.isNotEmpty()) {
                 val zp = MeterParam().apply {
                     zoneId = dp.zoneId
                     meterList = mlist.take(200)
@@ -250,12 +251,11 @@ class ZoneServiceImpl : ZoneService {
     /**
      * 解除关联分区和水表. 必填:
      * @see Zone.zoneId
-     * @see Zone.meterList
+     * @see Zone.meterList - 选填, 为空时解除关联的所有水表
      */
     override fun deleteZoneMeter(holder: BwHolder<Zone>): BwResult<Zone> {
         if (holder.lr?.sessionId.isNullOrBlank()
-                || holder.single?.zoneId.isNullOrBlank()
-                || holder.single?.meterList.isNullOrEmpty()) {
+                || holder.single?.zoneId.isNullOrBlank()) {
             return BwResult(2, ERR_PARAM)
         }
 
@@ -278,14 +278,20 @@ class ZoneServiceImpl : ZoneService {
             var rcnt = 0
 
             // detach firstly
-            var mlist = dp.meterList!!.map { it.meterId.orEmpty() }
-            while (mlist.isNotEmpty()) {
-                rcnt += zoneMapper!!.detachZoneMeter(MeterParam().apply {
+            if (dp.meterList.isNullOrEmpty()) {
+                rcnt = zoneMapper!!.detachZoneMeter(MeterParam().apply {
                     zoneId = dp.zoneId
-                    meterIdList = mlist.take(1000)
                 })
+            } else {
+                var mlist = dp.meterList!!.map { it.meterId.orEmpty() }
+                while (mlist.isNotEmpty()) {
+                    rcnt += zoneMapper!!.detachZoneMeter(MeterParam().apply {
+                        zoneId = dp.zoneId
+                        meterIdList = mlist.take(1000)
+                    })
 
-                mlist = mlist.drop(1000)
+                    mlist = mlist.drop(1000)
+                }
             }
             return BwResult(0, "解除关联分区水表 ${dp.zoneId}/${dp.zoneName}: $rcnt/${dp.meterList?.size}")
         } catch (ex: Exception) {

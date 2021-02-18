@@ -1,10 +1,12 @@
 package com.abel.bigwater.impl
 
+import com.abel.bigwater.Helper
 import com.abel.bigwater.api.*
+import com.abel.bigwater.api.MeterService.Companion.BASE_PATH
+import com.abel.bigwater.api.MeterService.Companion.PATH_FETCH_DMA
 import com.abel.bigwater.mapper.EffMapper
 import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.*
-import com.abel.bigwater.model.eff.VcMeterVerify
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
@@ -69,7 +71,7 @@ open class MeterServiceImpl : MeterService {
             }
 
             // check duplicate meterId
-            meterMapper!!.selectMeterDma(MeterParam().apply {
+            meterMapper!!.selectMeter(MeterParam().apply {
                 meterIdList = list.map { it.meterId!! }
             }).also {
                 if (it.isNotEmpty()) {
@@ -257,7 +259,7 @@ open class MeterServiceImpl : MeterService {
                     it.firmId = login.single!!.firmId
                 }
 
-                val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+                val meter = meterMapper!!.selectMeter(MeterParam().apply {
                     meterId = it.meterId
                     firmId = it.firmId
                 }).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
@@ -311,7 +313,7 @@ open class MeterServiceImpl : MeterService {
                     it.firmId = login.single!!.firmId
                 }
 
-                val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+                val meter = meterMapper!!.selectMeter(MeterParam().apply {
                     meterId = it.meterId
                     firmId = it.firmId
                 }).firstOrNull() ?: return BwResult(3, "水表不存在: ${it.meterId}")
@@ -434,7 +436,7 @@ open class MeterServiceImpl : MeterService {
                     if (dp.dmaId.isNullOrBlank() && dp.dmaName.isNullOrBlank() && dp.dmaIdList.isNullOrEmpty())
                         meterMapper!!.selectMeterZone(dp)
                     else
-                        meterMapper!!.selectMeterDma(dp)
+                        meterMapper!!.selectMeter(dp)
             ).apply {
                 error = "水表数量： ${list?.size}"
             }
@@ -486,7 +488,7 @@ open class MeterServiceImpl : MeterService {
             val meter = if (dp.dmaId.isNullOrBlank() && dp.dmaName.isNullOrBlank() && dp.dmaIdList.isNullOrEmpty())
                 meterMapper!!.selectMeterZone(dp).firstOrNull()
             else
-                meterMapper!!.selectMeterDma(dp).firstOrNull() ?: return BwResult(3, "水表不存在: ${dp.meterId}")
+                meterMapper!!.selectMeter(dp).firstOrNull() ?: return BwResult(3, "水表不存在: ${dp.meterId}")
 
             meter!!.verifyList = meterMapper!!.listMeterVerify(dp)
             meter.pointList = meterMapper!!.listVerifyPoint(dp)
@@ -523,14 +525,7 @@ open class MeterServiceImpl : MeterService {
                 return BwResult(login.code, login.error!!)
             }
 
-            dp.also {
-                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
-                    it.firmId = login.single!!.firmId
-                }
-                if (!it.firmId!!.endsWith("%")) {
-                    it.firmId = it.firmId + "%"
-                }
-            }
+            dp.refineFirmId(login.single!!)
 
             return BwResult(meterMapper!!.selectDma(dp)).apply {
                 error = "DMA数量： ${list?.size}"
@@ -554,7 +549,10 @@ open class MeterServiceImpl : MeterService {
     }
 
     /**
-     * 创建DMA
+     * 创建DMA, 一次创建多个或一个
+     * @see BwHolder.list - 一次创建多个
+     * @see BwHolder.single - 一次创建一个
+     * @see BwDma.meterList - 同时关联水表
      */
     override fun insertDma(holder: BwHolder<BwDma>): BwResult<BwDma> {
         if (holder.lr?.sessionId.isNullOrBlank() || (
@@ -582,17 +580,22 @@ open class MeterServiceImpl : MeterService {
                 return BwResult(login.code, login.error!!)
             }
 
+            var rcnt = 0
             list.forEach {
                 // 只能更新 所在机构及分公司
-                if (!it.firmId.orEmpty().startsWith(login.single!!.firmId!!)) {
-                    it.firmId = login.single!!.firmId
-                }
+                it.refineFirmId(login.single!!)
 
                 meterMapper!!.insertDma(it)
+                if (!it.meterList.isNullOrEmpty()) {
+                    rcnt += meterMapper!!.linkMeterDma(MeterParam().apply {
+                        dmaId = it.dmaId
+                        meterList = it.meterList
+                    })
+                }
             }
 
             return BwResult(list).apply {
-                error = "增加DMA： ${list.size}"
+                error = "增加DMA： ${list.size} / $rcnt"
             }
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
@@ -601,10 +604,85 @@ open class MeterServiceImpl : MeterService {
     }
 
     /**
-     * 修改DMA
+     * 获取一个DMA的详情, 必填:
+     * @see MeterParam.dmaId
+     * @return DMA及包含的水表
+     */
+    override fun fetchDma(holder: BwHolder<MeterParam>): BwResult<BwDma> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.dmaId.isNullOrBlank()
+                || holder.single!!.dmaId.equals("%")) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to fetch dma: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = BASE_PATH + PATH_FETCH_DMA
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.refineFirmId(login.single!!)
+            val z = meterMapper!!.selectDma(dp).firstOrNull()?.also {
+                it.meterList = meterMapper!!.listDmaMeter(dp)
+                return BwResult(it)
+            }
+            return BwResult(0, "DMA未找到: ${dp.dmaId}")
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
+    }
+
+    /**
+     * 修改DMA, 一次修改多个或一个, 不修改关联水表
+     * @see BwHolder.list - 一次修改多个
+     * @see BwHolder.single - 一次修改一个
      */
     override fun updateDma(holder: BwHolder<BwDma>): BwResult<BwDma> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank() || (
+                        holder.single?.dmaId.isNullOrBlank()
+                                && holder.list.isNullOrEmpty())) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        val list = if (holder.single?.dmaId.isNullOrBlank())
+            holder.list!!
+        else
+            holder.list.orEmpty().plus(holder.single!!)
+        list.forEach {
+            if (it.dmaId.isNullOrBlank() || it.dmaName.isNullOrBlank()) {
+                return BwResult(2, "DMA-ID/名称不能为空: ${it.dmaId}")
+            }
+        }
+
+        lgr.info("${holder.lr?.userId} try to update DMA: ${JSON.toJSONString(holder.single)}")
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_UPDATE_DMA
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var rcnt = 0
+            list.forEach {
+                // 只能更新 所在机构及分公司
+                it.refineFirmId(login.single!!)
+
+                rcnt += meterMapper!!.updateDma(it)
+            }
+
+            return BwResult(list).apply {
+                error = "更新DMA： $rcnt / ${list.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
@@ -617,10 +695,36 @@ open class MeterServiceImpl : MeterService {
     }
 
     /**
-     * 删除DMA
+     * 删除DMA, 填充:
+     * @see MeterParam.dmaId
      */
     override fun deleteDma(holder: BwHolder<MeterParam>): BwResult<BwDma> {
-        TODO("Not yet implemented")
+        if (holder.lr?.sessionId.isNullOrBlank() ||
+                holder.single?.dmaId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to delete DMA: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_DELETE_DMA
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            var rcnt = meterMapper!!.deleteDma(dp)
+
+            return BwResult(BwDma().apply {
+                dmaId = dp.dmaId
+            }).apply {
+                error = "删除DMA： ${dp.dmaId}/ $rcnt"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
@@ -640,19 +744,110 @@ open class MeterServiceImpl : MeterService {
     }
 
     /**
-     * 关联DMA和大表
-     * holder#single#dmaId - meterIdList
+     * 关联DMA和水表. 要关联的水表应存在, 但不存在不会返回错误, 只是不关联.
+     * 覆盖相同标识的已关联水表, 增加未关联的水表(存在的水表);
+     * 对于已关联其他水表 无改变. 必填:
+     * @see MeterParam.dmaId
+     * @see MeterParam.meterList
      */
-    override fun linkMeterDma(holder: BwHolder<MeterParam>): BwResult<String> {
-        TODO("Not yet implemented")
+    override fun linkMeterDma(holder: BwHolder<MeterParam>): BwResult<BwDma> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.dmaId.isNullOrBlank()
+                || holder.single?.meterList.isNullOrEmpty()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to save dma-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_LINK_DMA_METER
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
+            val dma = meterMapper!!.selectDma(MeterParam().apply {
+                zoneId = dp.zoneId
+                firmId = dp.firmId
+            }).firstOrNull() ?: return BwResult(2, "DMA不存在或不属于本单位: ${dp.zoneId}/${dp.zoneName}")
+
+            // attach then
+            var rcnt = 0
+            var mlist = dp.meterList.orEmpty()
+            while (mlist.isNotEmpty()) {
+                val zp = MeterParam().apply {
+                    dmaId = dp.dmaId
+                    meterList = mlist.take(200)
+                }
+                rcnt += meterMapper!!.rebindDmaMeter(zp)
+                rcnt += meterMapper!!.linkMeterDma(zp)
+
+                mlist = mlist.drop(200)
+            }
+
+            return BwResult(dma).apply {
+                error = "关联DMA水表 ${dp.dmaId}/${dp.dmaName}: $rcnt/${dp.meterList?.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     /**
-     * 分离DMA和大表
-     * holder#single#dmaId - meterIdList
+     * 解除关联DMA和水表. 必填:
+     * @see MeterParam.dmaId
+     * @see MeterParam.meterIdList - 选填, 为空时解除关联的所有水表
      */
-    override fun detachMeterDma(holder: BwHolder<MeterParam>): BwResult<String> {
-        TODO("Not yet implemented")
+    override fun detachMeterDma(holder: BwHolder<MeterParam>): BwResult<BwDma> {
+        if (holder.lr?.sessionId.isNullOrBlank()
+                || holder.single?.dmaId.isNullOrBlank()) {
+            return BwResult(2, ERR_PARAM)
+        }
+
+        lgr.info("${holder.lr?.userId} try to detach dma-meter: ${JSON.toJSONString(holder.single)}")
+        val dp = holder.single!!
+
+        val rightName = MeterService.BASE_PATH + MeterService.PATH_DETACH_DMA_METER
+        try {
+            val login = loginManager!!.verifySession(holder.lr!!, rightName, rightName, JSON.toJSONString(holder.single));
+            if (login.code != 0) {
+                return BwResult(login.code, login.error!!)
+            }
+
+            dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
+            val dma = meterMapper!!.selectDma(MeterParam().apply {
+                dmaId = dp.dmaId
+                firmId = dp.firmId
+            }).firstOrNull() ?: return BwResult(2, "DMA不存在或不属于本单位: ${dp.zoneId}/${dp.zoneName}")
+
+            var rcnt = 0
+
+            // detach firstly
+            if (dp.meterIdList.isNullOrEmpty()) {
+                rcnt = meterMapper!!.detachMeterDma(MeterParam().apply {
+                    dmaId = dp.dmaId
+                })
+            } else {
+                var mlist = dp.meterIdList!!
+                while (mlist.isNotEmpty()) {
+                    rcnt += meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = dp.dmaId
+                        meterIdList = mlist.take(1000)
+                    })
+
+                    mlist = mlist.drop(1000)
+                }
+            }
+            return BwResult(dma).apply {
+                error = "解除关联DMA水表 ${dp.zoneId}/${dp.zoneName}: $rcnt/${dp.meterList?.size}"
+            }
+        } catch (ex: Exception) {
+            lgr.error(ex.message, ex);
+            return BwResult(1, "内部错误: ${ex.message}")
+        }
     }
 
     companion object {

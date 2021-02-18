@@ -53,9 +53,14 @@ interface MeterMapper {
      * @param map
      * @return
      */
-    fun selectMeterDma(mp: MeterParam): List<ZoneMeter>
+    fun selectMeter(mp: MeterParam): List<ZoneMeter>
 
     fun selectMeterZone(mp: MeterParam): List<ZoneMeter>
+
+    /**
+     * 列出DMA关联的水表
+     */
+    fun listDmaMeter(mp: MeterParam): List<ZoneMeter>
 
     fun listMeterVerify(mp: MeterParam): List<VcMeterVerify>
 
@@ -99,6 +104,8 @@ interface MeterMapper {
 
     fun deleteDma(mp: MeterParam): Int
 
+    fun rebindDmaMeter(mp: MeterParam): Int
+
     /**
      * <pre>
      * <parameterMap type="map" id="linkMeterDmaMap">
@@ -107,9 +114,9 @@ interface MeterMapper {
     </parameterMap> *
     </pre> *
      */
-    fun linkMeterDma(dma: BwDma): Int
+    fun linkMeterDma(mp: MeterParam): Int
 
-    fun detachMeterDma(dma: BwDma): Int
+    fun detachMeterDma(mp: MeterParam): Int
 
     fun statMeterSize(dp: MeterParam): List<MeterSizeStat>
 

@@ -86,7 +86,7 @@ open class EffTaskBean {
             effMapper!!.createEffTask(this)
         }
 
-        meterMapper!!.selectMeterDma(MeterParam().apply {
+        meterMapper!!.selectMeter(MeterParam().apply {
             firmId = firm.firmId
         }).sortedBy { it.powerType }.forEach {
             if (!fillPointList(it)) {

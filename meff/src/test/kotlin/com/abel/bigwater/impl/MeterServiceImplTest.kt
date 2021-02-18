@@ -9,6 +9,7 @@ import com.abel.bigwater.mapper.MeterMapper
 import com.abel.bigwater.model.BwDma
 import com.abel.bigwater.model.eff.VcMeterVerify
 import com.abel.bigwater.model.eff.VcMeterVerifyPoint
+import com.abel.bigwater.model.zone.MeterChildType
 import com.abel.bigwater.model.zone.ZoneMeter
 import com.alibaba.fastjson.JSON
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -25,9 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockServletContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.fail
+import kotlin.test.*
 
 @ContextConfiguration(locations = ["classpath:/spring/rest-provider.xml", "classpath:/spring-mybatis.xml"])
 @RunWith(SpringJUnit4ClassRunner::class)
@@ -399,7 +398,7 @@ class MeterServiceImplTest {
 
     @Test
     fun insertMeterJson() {
-        val json = """{"lr":{"userId":"abel","timestamp":"13:43:24","clientHash":"d31d71d44bf59f751bed1ffeb19b6c79","devId":"junit","sessionId":"e235c43d-7393-436b-8a58-8be23971a08b"},"param1":null,"param2":null,"single":{"zoneId":"123","flowOut":0,"meterId":"05600","userCode":"123","meterCode":"123123123","meterName":"123","meterOrder":null,"extId":null,"location":"123","installDate":"2020-08-20T00:00:00","meterPulse":null,"q1":null,"q2":null,"q3":null,"q4":null,"q1r":null,"q2r":null,"q3r":null,"q4r":null,"sizeId":"123","sizeName":"123","modelSize":"312","typeId":null,"userType":null,"waterPrice":null,"serviceArea":null,"servicePopulation":null,"contactNumber":null,"chargable":0,"inOutput":null,"dmaId":null,"firmId":"2705","meterBrandId":"123","steelNo":"123","remoteBrandId":"213","rtuId":"23","rtuCode":null,"rtuAddr":null,"rtuInstallDate":null,"rtuInstallPerson":null,"rtuContact":null,"commCard":null,"remoteModel":null,"remoteMemo":null,"commIsp":null,"pressureRange":null,"pressureMaxLimit":null,"pressureMinLimit":null,"powerType":0,"meterStatus":0,"adminMobile":null,"meterLoc":"213","lastCalib":null,"memo":"123","createBy":null,"createDate":null,"updateBy":null,"updateDate":null},"list":null}"""
+        val json = """{"lr":{"userId":"abel","timestamp":"13:43:24","clientHash":"d31d71d44bf59f751bed1ffeb19b6c79","devId":"junit","sessionId":"e235c43d-7393-436b-8a58-8be23971a08b"},"param1":null,"param2":null,"single":{"zoneId":"123","flowOut":0,"meterId":"05600","userCode":"123","meterCode":"123123123","meterName":"123","meterOrder":null,"extId":null,"location":"123","installDate":"2020-08-20T00:00:00","meterPulse":null,"q1":null,"q2":null,"q3":null,"q4":null,"q1r":null,"q2r":null,"q3r":null,"q4r":null,"sizeId":"123","sizeName":"123","modelSize":"312","typeId":null,"userType":null,"waterPrice":null,"serviceArea":null,"servicePopulation":null,"contactNumber":null,"chargable":0,"dmaId":null,"firmId":"2705","meterBrandId":"123","steelNo":"123","remoteBrandId":"213","rtuId":"23","rtuCode":null,"rtuAddr":null,"rtuInstallDate":null,"rtuInstallPerson":null,"rtuContact":null,"commCard":null,"remoteModel":null,"remoteMemo":null,"commIsp":null,"pressureRange":null,"pressureMaxLimit":null,"pressureMinLimit":null,"powerType":0,"meterStatus":0,"adminMobile":null,"meterLoc":"213","lastCalib":null,"memo":"123","createBy":null,"createDate":null,"updateBy":null,"updateDate":null},"list":null}"""
         val h = ObjectMapper().readValue(json, HolderMeter::class.java)
 
         meterService!!.insertMeter(h).also { r1 ->
@@ -429,11 +428,327 @@ class MeterServiceImplTest {
                 assertEquals(0, it.code)
             }
         } finally {
-            val cnt = meterMapper!!.deleteDma(MeterParam().apply {
+            lgr.info("cleared dma: {}/{}, {}",
+                    meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                    }),
+                    meterMapper!!.deleteDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                        firmId = "%"
+                    }),
+                    d.dmaId)
+        }
+
+    }
+
+    @Test
+    fun testInsertDma() {
+        val d = BwDma().apply {
+            dmaId = "test-dma01"
+            dmaName = "测试DMA01"
+            meterList = listOf(
+                    ZoneMeter().also {
+                        it.meterId = "test1"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().also {
+                        it.meterId = "test2"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().apply {
+                        meterId = "223290"
+                        meterName = "下沙六坊4号"
+                        meterCode = "113540354301"
+                    },
+                    ZoneMeter().apply {
+                        meterId = "60323"
+                        meterName = "深圳市鲲田物业管理有限公司"
+                        meterCode = "111106000601"
+                    })
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), d)
+
+            meterService!!.insertDma(holder).also {
+                lgr.info("insert dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
                 dmaId = d.dmaId
-                firmId = "%"
-            })
-            lgr.info("cleared dma: {}, {}", cnt, d.dmaId)
+            })).also {
+                lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+                assertEquals(2, it.single!!.meterList?.size)
+            }
+        } finally {
+            lgr.info("cleared dma: {}/{}, {}",
+                    meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                    }),
+                    meterMapper!!.deleteDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                        firmId = "%"
+                    }),
+                    d.dmaId)
+        }
+    }
+
+    @Test
+    fun testFetchDma() {
+        val login = TestHelper.login(loginService).single ?: fail("fail to login")
+        meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+            dmaId = "test-dma-01"
+        })).also {
+            lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+            assertEquals(0, it.code)
+            assertNull(it.single, "should dma not exist")
+        }
+    }
+
+    @Test
+    fun testUpdateDma() {
+        val d = BwDma().apply {
+            dmaId = "test-dma01"
+            dmaName = "测试DMA01"
+            meterList = listOf(
+                    ZoneMeter().also {
+                        it.meterId = "test1"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().also {
+                        it.meterId = "test2"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().apply {
+                        meterId = "223290"
+                        meterName = "下沙六坊4号"
+                        meterCode = "113540354301"
+                    },
+                    ZoneMeter().apply {
+                        meterId = "60323"
+                        meterName = "深圳市鲲田物业管理有限公司"
+                        meterCode = "111106000601"
+                    })
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), d)
+
+            meterService!!.insertDma(holder).also {
+                lgr.info("insert dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(2, it.single!!.meterList?.size)
+            }
+
+            meterService!!.updateDma(BwHolder(TestHelper.buildLoginRequest(login), d.apply {
+                dmaName = "~!@#$%^&*"
+            })).also {
+                lgr.info("update dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(2, it.single!!.meterList?.size)
+            }
+        } finally {
+            lgr.info("cleared dma: {}/{}, {}",
+                    meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                    }),
+                    meterMapper!!.deleteDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                        firmId = "%"
+                    }),
+                    d.dmaId)
+        }
+    }
+
+    @Test
+    fun testLinkDmaMeter() {
+        val m1 = ZoneMeter().apply {
+            meterId = "223290"
+            meterName = "下沙六坊4号"
+            meterCode = "113540354301"
+        }
+        val m2 = ZoneMeter().apply {
+            meterId = "329008"
+            meterName = "史亚振"
+            meterCode = "168340647301"
+            childTypeObj = MeterChildType.CHILD
+        }
+        val d = BwDma().apply {
+            dmaId = "test-dma01"
+            dmaName = "测试DMA01"
+            meterList = listOf(
+                    ZoneMeter().also {
+                        it.meterId = "test1"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().also {
+                        it.meterId = "test2"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    m1,
+                    ZoneMeter().apply {
+                        meterId = "60323"
+                        meterName = "深圳市鲲田物业管理有限公司"
+                        meterCode = "111106000601"
+                    })
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), d)
+
+            meterService!!.insertDma(holder).also {
+                lgr.info("insert dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(2, it.single!!.meterList?.size)
+            }
+
+            m1.apply {
+                flowOut = 1
+            }
+            meterService!!.linkMeterDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+                meterList = d.meterList?.plus(m2)
+            })).also {
+                lgr.info("link dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma after link: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(3, it.single!!.meterList?.size)
+                assertEquals(1, it.single!!.meterList?.first { m -> m.meterId == m1.meterId }?.flowOut)
+                assertEquals(MeterChildType.CHILD, it.single!!.meterList?.first { m -> m.meterId == m2.meterId }?.childTypeObj)
+            }
+        } finally {
+            lgr.info("cleared dma: {}/{}, {}",
+                    meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                    }),
+                    meterMapper!!.deleteDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                        firmId = "%"
+                    }),
+                    d.dmaId)
+        }
+    }
+
+    @Test
+    fun testDetachDmaMeter() {
+        val m1 = ZoneMeter().apply {
+            meterId = "223290"
+            meterName = "下沙六坊4号"
+            meterCode = "113540354301"
+        }
+        val m2 = ZoneMeter().apply {
+            meterId = "329008"
+            meterName = "史亚振"
+            meterCode = "168340647301"
+            childTypeObj = MeterChildType.CHILD
+        }
+        val d = BwDma().apply {
+            dmaId = "test-dma01"
+            dmaName = "测试DMA01"
+            meterList = listOf(
+                    ZoneMeter().also {
+                        it.meterId = "test1"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    ZoneMeter().also {
+                        it.meterId = "test2"
+                        it.flowOut = 0
+                        it.childTypeObj = MeterChildType.PARENT
+                    },
+                    m1,
+                    ZoneMeter().apply {
+                        meterId = "60323"
+                        meterName = "深圳市鲲田物业管理有限公司"
+                        meterCode = "111106000601"
+                    })
+        }
+
+        try {
+            val login = TestHelper.login(loginService).single ?: fail("fail to login")
+            val holder = BwHolder(TestHelper.buildLoginRequest(login), d)
+
+            meterService!!.insertDma(holder).also {
+                lgr.info("insert dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(2, it.single!!.meterList?.size)
+            }
+
+            meterService!!.detachMeterDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("link dma: {}", JSON.toJSONString(it, true))
+                assertEquals(0, it.code)
+            }
+
+            meterService!!.fetchDma(BwHolder(TestHelper.buildLoginRequest(login), MeterParam().apply {
+                dmaId = d.dmaId
+            })).also {
+                lgr.info("fetch dma after link: {}", JSON.toJSONString(it, true))
+                assertEquals(d.dmaName, it.single?.dmaName)
+                assertEquals(0, it.code)
+                assertEquals(0, it.single!!.meterList?.size)
+            }
+        } finally {
+            lgr.info("cleared dma: {}/{}, {}",
+                    meterMapper!!.detachMeterDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                    }),
+                    meterMapper!!.deleteDma(MeterParam().apply {
+                        dmaId = d.dmaId
+                        firmId = "%"
+                    }),
+                    d.dmaId)
         }
 
     }

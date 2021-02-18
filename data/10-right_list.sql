@@ -212,6 +212,7 @@ INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/list', '列举水表'
 
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/listDma', '列举DMA');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/insertDma', '创建DMA');
+INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/fetchDma', 'DMA详情');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/updateDma', '修改DMA');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/updateDmaLoc', '修改DMA坐标及边界');
 INSERT INTO bw_right(rightName, rightDesc) VALUES ('/meter/listDmaLoc', '查询漏损地图');
@@ -503,6 +504,7 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/
 -- dma
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/listDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/insertDma');
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/fetchDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/updateDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/updateDmaLoc');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('ADMINISTRATOR', '/meter/listDmaLoc');
@@ -734,6 +736,7 @@ INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/lis
 -- dma
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/listDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/insertDma');
+INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/fetchDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/updateDma');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/updateDmaLoc');
 INSERT INTO bw_role_right(roleName, rightName) VALUES ('POWER_USER', '/meter/listDmaLoc');

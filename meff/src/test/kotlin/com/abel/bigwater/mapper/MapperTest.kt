@@ -81,7 +81,7 @@ open class MapperTest {
             keywords = "福州|中国|花园"
             firmId = "76%"
         }
-        val lst = meterMapper!!.selectMeterDma(mp)
+        val lst = meterMapper!!.selectMeter(mp)
         lgr.info("${mp.keywords} matched list (${lst.size}): {}", JSON.toJSONString(lst, true))
     }
 

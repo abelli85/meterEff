@@ -742,7 +742,7 @@ class EffServiceImpl : EffService {
             val effList = arrayListOf<EffMeter>()
 
             var cnt = 0
-            val mlist = meterMapper!!.selectMeterDma(MeterParam().apply {
+            val mlist = meterMapper!!.selectMeter(MeterParam().apply {
                 meterIdList = midList
                 meterCode = param.meterCode
             })
@@ -834,7 +834,7 @@ class EffServiceImpl : EffService {
             val effList = arrayListOf<EffMeter>()
 
             var cnt = 0
-            meterMapper!!.selectMeterDma(MeterParam().apply {
+            meterMapper!!.selectMeter(MeterParam().apply {
                 meterIdList = midList
             }).forEach {
                 // 月度效率

@@ -9,7 +9,6 @@ import org.apache.dubbo.remoting.http.servlet.ServletManager
 import org.joda.time.LocalDate
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -43,7 +42,7 @@ class EffTaskBeanTest {
 
     @Test
     fun effMeter() {
-        val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+        val meter = meterMapper!!.selectMeter(MeterParam().apply {
             meterCode = "110111801101"
         }).firstOrNull() ?: fail("选择的水表不存在: 101B")
 
@@ -74,7 +73,7 @@ class EffTaskBeanTest {
         val mp = MeterParam().apply {
             meterCode = "113540524101"
         }
-        val meter = meterMapper!!.selectMeterDma(mp).firstOrNull() ?: fail("选择的水表不存在: ${mp.meterCode}")
+        val meter = meterMapper!!.selectMeter(mp).firstOrNull() ?: fail("选择的水表不存在: ${mp.meterCode}")
 
         if (!bean!!.fillPointList(meter)) fail("水表${mp.meterCode}缺少检定点")
 
@@ -100,7 +99,7 @@ class EffTaskBeanTest {
      */
     @Test
     fun learnWeek() {
-        val meter = meterMapper!!.selectMeterDma(MeterParam().apply {
+        val meter = meterMapper!!.selectMeter(MeterParam().apply {
             meterId = "164"
         }).firstOrNull() ?: fail("选择的水表不存在: 101")
 
