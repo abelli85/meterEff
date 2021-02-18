@@ -186,9 +186,6 @@ open class BwMeter : BwBase() {
             if (value < 1.toChar()) field = '0'
         }
 
-    /** 0: IN; 1: OUT. Default to 0.  */
-    var inOutput: Int = 0
-
     /**
      * DMA标示
      * the dmaId to set

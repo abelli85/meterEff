@@ -203,6 +203,23 @@ class BwDma : BwBase() {
         return dmaId == (other as BwDma?)?.dmaId
     }
 
+    /**
+     * 超级用户, firmId不变;
+     * 否则使用login.firmId或者其子公司的firmId.
+     * e.g., ('23', '1') = '23';
+     * ('2301', '23') = '2301';
+     * ('2401', '23') = '23';
+     * @param login firm-id needs to be refined
+     */
+    fun refineFirmId(login: BwUserLogin) {
+        // 超级用户
+        if (login.firmId == TOP_FIRM_ID) {
+        } else if (firmId?.startsWith(login.firmId!!) != true) {
+            // 必须为本司或子公司
+            firmId = login.firmId
+        }
+    }
+
     companion object {
         /**
          *

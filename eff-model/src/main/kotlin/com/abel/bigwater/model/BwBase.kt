@@ -35,4 +35,7 @@ abstract class BwBase : Serializable {
     @JSONField(format = JsonHelper.FULL_DATE_FORMAT)
     var updateDate: Date? = null
 
+    companion object {
+        const val TOP_FIRM_ID = "1"
+    }
 }

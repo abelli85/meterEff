@@ -28,6 +28,7 @@ interface MeterService {
         const val PATH_LIST_DMA = "/listDma"
         const val PATH_LIST_DMA_LOC = "/listDmaLoc"
         const val PATH_INSERT_DMA = "/insertDma"
+        const val PATH_FETCH_DMA = "/fetchDma"
         const val PATH_UPDATE_DMA = "/updateDma"
         const val PATH_UPDATE_DMA_LOC = "/updateDmaLoc"
         const val PATH_DELETE_DMA = "/deleteDma"
@@ -163,17 +164,32 @@ interface MeterService {
      */
     @POST
     @Path(PATH_LIST_DMA_LOC)
+    @Deprecated("DMA包含坐标和边界")
     fun listDmaLoc(holder: BwHolder<LocParam>): BwResult<BwDmaLoc>
 
     /**
-     * 创建DMA
+     * 创建DMA, 一次创建多个或一个
+     * @see BwHolder.list - 一次创建多个
+     * @see BwHolder.single - 一次创建一个
+     * @see BwDma.meterList - 同时关联水表
      */
     @POST
     @Path(PATH_INSERT_DMA)
     fun insertDma(holder: BwHolder<BwDma>): BwResult<BwDma>
 
     /**
-     * 修改DMA
+     * 获取一个DMA的详情, 必填:
+     * @see MeterParam.dmaId
+     * @return DMA及包含的水表
+     */
+    @POST
+    @Path(PATH_FETCH_DMA)
+    fun fetchDma(holder: BwHolder<MeterParam>): BwResult<BwDma>
+
+    /**
+     * 修改DMA, 一次修改多个或一个, 不修改关联水表
+     * @see BwHolder.list - 一次修改多个
+     * @see BwHolder.single - 一次修改一个
      */
     @POST
     @Path(PATH_UPDATE_DMA)
@@ -186,6 +202,7 @@ interface MeterService {
      */
     @POST
     @Path(PATH_UPDATE_DMA_LOC)
+    @Deprecated("修改DMA时填充坐标和边界即可")
     fun updateDmaLoc(holder: BwHolder<BwDmaLoc>): BwResult<BwDmaLoc>
 
     /**
@@ -212,18 +229,22 @@ interface MeterService {
     fun attachDmaUser(holder: BwHolder<BwUser>): BwResult<String>
 
     /**
-     * 关联DMA和大表
-     * holder#single#dmaId - meterIdList
+     * 关联DMA和水表. 要关联的水表应存在, 但不存在不会返回错误, 只是不关联.
+     * 覆盖相同标识的已关联水表, 增加未关联的水表(存在的水表);
+     * 对于已关联其他水表 无改变. 必填:
+     * @see MeterParam.dmaId
+     * @see MeterParam.meterList
      */
     @POST
     @Path(PATH_LINK_DMA_METER)
-    fun linkMeterDma(holder: BwHolder<MeterParam>): BwResult<String>
+    fun linkMeterDma(holder: BwHolder<MeterParam>): BwResult<BwDma>
 
     /**
-     * 分离DMA和大表
-     * holder#single#dmaId - meterIdList
+     * 解除关联DMA和水表. 必填:
+     * @see MeterParam.dmaId
+     * @see MeterParam.meterIdList - 选填, 为空时解除关联的所有水表
      */
     @POST
     @Path(PATH_DETACH_DMA_METER)
-    fun detachMeterDma(holder: BwHolder<MeterParam>): BwResult<String>
+    fun detachMeterDma(holder: BwHolder<MeterParam>): BwResult<BwDma>
 }

@@ -45,6 +45,7 @@ interface ZoneService {
     /**
      * 获取一个分区的详情, 必填:
      * @see MeterParam.zoneId
+     * @return 分区及包含的水表
      */
     @POST
     @Path(PATH_FETCH_ZONE)
@@ -78,7 +79,7 @@ interface ZoneService {
     /**
      * 解除关联分区和水表. 必填:
      * @see Zone.zoneId
-     * @see Zone.meterList
+     * @see Zone.meterList - 选填, 为空时解除关联的所有水表
      */
     @POST
     @Path(PATH_DETACH_ZONE_METER)

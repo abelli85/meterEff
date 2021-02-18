@@ -28,6 +28,10 @@ class ZoneMeter : BwMeter() {
     var childType: String? = MeterChildType.PARENT.name
 
     var childTypeObj: MeterChildType? = MeterChildType.PARENT
+        set(value) {
+            field = value
+            childType = field?.name
+        }
         get() = MeterChildType.values().first { it.name == childType } ?: MeterChildType.PARENT
 
     /**
