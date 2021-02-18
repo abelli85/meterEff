@@ -170,10 +170,35 @@
         </where>
     </select>
 
-    <insert id="attachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
+    <update id="rebindZoneMeter" parameterType="com.abel.bigwater.api.MeterParam">
+        UPDATE bw_zone_meter AS bzm
+        SET flowOut = ml.flowOut
+        , childType = ml.childType
+        FROM (VALUES
+                <foreach collection="meterList" separator="," item="m1">
+                    (
+                        #{m1.zoneId}
+                        , #{m1.meterId}
+                        , #{m1.flowOut}
+                        , #{m1.childType}
+                    )
+                </foreach>
+                          ) AS ml (
+        zoneId
+        , meterId
+        , flowOut
+        , childType
+        )
+        <where>
+            bzm.zoneId = ml.zoneId
+            AND bzm.meterId = ml.meterId
+        </where>
+    </update>
+
+    <insert id="attachZoneMeter" parameterType="com.abel.bigwater.api.MeterParam">
         INSERT INTO bw_zone_meter(zoneid, meterid, flowout, childtype)
-        SELECT zm.meterId
-            , zm.zoneId
+        SELECT zm.zoneId
+            , zm.meterId
             , zm.flowOut
             , zm.childType
             FROM (
@@ -191,21 +216,35 @@
         , flowOut
         , childType)
         JOIN bw_meter m ON zm.meterId = m.meterId
+        <where>
+            zm.meterId NOT IN (
+            SELECT meterId
+            FROM bw_zone_meter bzm
+            WHERE zoneId = #{zoneId}
+            )
+        </where>
     </insert>
 
-    <delete id="detachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
+    <delete id="detachZoneMeter" parameterType="com.abel.bigwater.api.MeterParam">
         DELETE FROM bw_zone_meter AS bzm
         USING bw_zone AS bz
         <where>
             bzm.zoneId = bz.zoneId
             <if test="firmId != null">
-                AND bz.firmId = #{firmId}
+                AND bz.firmId LIKE #{subFirmId}
             </if>
             AND bzm.zoneId = #{zoneId}
-            <if test="meterList != null and meterList.size > 0">
+            <if test="meterIdList != null and meterIdList.size > 0">
                 AND bzm.meterId IN (
-                <foreach collection="meterList" item="meter" separator=",">
-                    #{meter.meterId}
+                <foreach collection="meterIdList" item="mid" separator=",">
+                    #{mid}
+                </foreach>
+                )
+            </if>
+            <if test="excludeMeterIdList != null and excludeMeterIdList.size > 0">
+                AND bzm.meterId NOT IN (
+                <foreach collection="excludeMeterIdList" item="mid" separator=",">
+                    #{mid}
                 </foreach>
                 )
             </if>

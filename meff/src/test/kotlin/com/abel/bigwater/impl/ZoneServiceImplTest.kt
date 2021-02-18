@@ -88,6 +88,11 @@ class ZoneServiceImplTest {
                         meterId = "meter2"
                         meterName = "水表2"
                         meterCode = "meter-code-2"
+                    },
+                    ZoneMeter().apply {
+                        meterId = "223290"
+                        meterName = "下沙六坊4号"
+                        meterCode = "113540354301"
                     }
             )
         }
@@ -103,7 +108,7 @@ class ZoneServiceImplTest {
             }
         } finally {
             lgr.info("delete test zone: {}/{}",
-                    zoneMapper!!.detachZoneMeter(Zone().apply {
+                    zoneMapper!!.detachZoneMeter(MeterParam().apply {
                         zoneId = z1.zoneId
                     }),
                     zoneMapper!!.deleteZone(MeterParam().apply {
@@ -227,17 +232,28 @@ class ZoneServiceImplTest {
         zoneMapper!!.insertZone(z1)
         try {
             zs!!.saveZoneMeter(BwHolder(TestHelper.buildLoginRequest(login.single!!), z1.apply {
-                meterList = listOf(ZoneMeter().also {
-                    it.zoneId = z1.zoneId
-                    it.meterId = "test1"
-                    it.flowOut = 0
-                    it.childTypeObj = MeterChildType.PARENT
-                },
+                meterList = listOf(
+                        ZoneMeter().also {
+                            it.zoneId = z1.zoneId
+                            it.meterId = "test1"
+                            it.flowOut = 0
+                            it.childTypeObj = MeterChildType.PARENT
+                        },
                         ZoneMeter().also {
                             it.zoneId = z1.zoneId
                             it.meterId = "test2"
                             it.flowOut = 0
                             it.childTypeObj = MeterChildType.PARENT
+                        },
+                        ZoneMeter().apply {
+                            meterId = "223290"
+                            meterName = "下沙六坊4号"
+                            meterCode = "113540354301"
+                        },
+                        ZoneMeter().apply {
+                            meterId = "60323"
+                            meterName = "深圳市鲲田物业管理有限公司"
+                            meterCode = "111106000601"
                         })
             })).also {
                 lgr.info("save zone-meter: {}", JSON.toJSONString(it, true))
@@ -245,7 +261,7 @@ class ZoneServiceImplTest {
             }
         } finally {
             lgr.info("delete test zone: {}, {}",
-                    zoneMapper!!.detachZoneMeter(Zone().apply {
+                    zoneMapper!!.detachZoneMeter(MeterParam().apply {
                         zoneId = z1.zoneId
                     }),
                     zoneMapper!!.deleteZone(MeterParam().apply {
@@ -269,17 +285,23 @@ class ZoneServiceImplTest {
         zoneMapper!!.insertZone(z1)
         try {
             zs!!.deleteZoneMeter(BwHolder(TestHelper.buildLoginRequest(login.single!!), z1.apply {
-                meterList = listOf(ZoneMeter().also {
-                    it.zoneId = z1.zoneId
-                    it.meterId = "test1"
-                    it.flowOut = 0
-                    it.childTypeObj = MeterChildType.PARENT
-                },
+                meterList = listOf(
+                        ZoneMeter().also {
+                            it.zoneId = z1.zoneId
+                            it.meterId = "test1"
+                            it.flowOut = 0
+                            it.childTypeObj = MeterChildType.PARENT
+                        },
                         ZoneMeter().also {
                             it.zoneId = z1.zoneId
                             it.meterId = "test2"
                             it.flowOut = 0
                             it.childTypeObj = MeterChildType.PARENT
+                        },
+                        ZoneMeter().apply {
+                            meterId = "223290"
+                            meterName = "下沙六坊4号"
+                            meterCode = "113540354301"
                         })
             })).also {
                 lgr.info("delete zone-meter: {}", JSON.toJSONString(it, true))
@@ -287,7 +309,7 @@ class ZoneServiceImplTest {
             }
         } finally {
             lgr.info("delete test zone: {}, {}",
-                    zoneMapper!!.detachZoneMeter(Zone().apply {
+                    zoneMapper!!.detachZoneMeter(MeterParam().apply {
                         zoneId = z1.zoneId
                     }),
                     zoneMapper!!.deleteZone(MeterParam().apply {

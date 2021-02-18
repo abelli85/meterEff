@@ -20,7 +20,12 @@ interface ZoneMapper {
      */
     fun listZoneMeterRel(mp: MeterParam): List<ZoneMeter>
 
-    fun attachZoneMeter(z: Zone): Int
+    /**
+     * rebind the zone-meter with same zoneId & meterId.
+     */
+    fun rebindZoneMeter(zp: MeterParam): Int
 
-    fun detachZoneMeter(z: Zone): Int
+    fun attachZoneMeter(zp: MeterParam): Int
+
+    fun detachZoneMeter(zp: MeterParam): Int
 }

@@ -72,15 +72,19 @@ class ZoneServiceImpl : ZoneService {
                 return BwResult(login.code, login.error!!)
             }
 
-            val mlist = meterMapper!!.selectMeterZone(MeterParam().apply {
-                zoneId = dp.zoneId
-                meterIdList = dp.meterList?.map { it.meterId!! }
-                firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!)
-            })
-
             dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
             zoneMapper!!.insertZone(dp)
-            zoneMapper!!.attachZoneMeter(dp)
+
+            var mlist = dp.meterList.orEmpty()
+            while(mlist.isNotEmpty()) {
+                val zp = MeterParam().apply {
+                    zoneId = dp.zoneId
+                    meterList = mlist.take(200)
+                }
+                zoneMapper!!.attachZoneMeter(zp)
+
+                mlist = mlist.drop(200)
+            }
 
             return BwResult(dp)
         } catch (ex: Exception) {
@@ -142,8 +146,12 @@ class ZoneServiceImpl : ZoneService {
 
             dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
             val rcnt = zoneMapper!!.updateZone(dp)
+            if (rcnt == 0) {
+                return BwResult(2, "分区不存在: ${dp.zoneId}/${dp.zoneName}")
+            }
+
             return BwResult(dp).apply {
-                error = "修改分区: $rcnt"
+                error = "修改分区: ${dp.zoneId}/${dp.zoneName}"
             }
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
@@ -170,7 +178,7 @@ class ZoneServiceImpl : ZoneService {
             }
 
             dp.firmId = Helper.refineFirmId(dp.firmId, login.single!!.firmId!!, false)!!
-            zoneMapper!!.detachZoneMeter(Zone().apply {
+            zoneMapper!!.detachZoneMeter(MeterParam().apply {
                 zoneId = dp.zoneId
                 firmId = dp.firmId
             })
@@ -218,28 +226,20 @@ class ZoneServiceImpl : ZoneService {
                 firmId = dp.firmId
             }).firstOrNull() ?: return BwResult(2, "分区不存在或不属于本单位: ${dp.zoneId}/${dp.zoneName}")
 
-            // detach firstly
-            var mlist = dp.meterList!!
-            while (mlist.isNotEmpty()) {
-                zoneMapper!!.detachZoneMeter(Zone().apply {
-                    zoneId = dp.zoneId
-                    meterList = mlist.take(1000)
-                })
-
-                mlist = mlist.drop(1000)
-            }
-
             // attach then
             var rcnt = 0
-            mlist = dp.meterList!!
-            while (mlist.isNotEmpty()) {
-                rcnt += zoneMapper!!.attachZoneMeter(Zone().apply {
+            var mlist = dp.meterList.orEmpty()
+            while(mlist.isNotEmpty()) {
+                val zp = MeterParam().apply {
                     zoneId = dp.zoneId
                     meterList = mlist.take(200)
-                })
+                }
+                rcnt += zoneMapper!!.rebindZoneMeter(zp)
+                rcnt += zoneMapper!!.attachZoneMeter(zp)
 
                 mlist = mlist.drop(200)
             }
+
             return BwResult(0, "关联分区水表 ${dp.zoneId}/${dp.zoneName}: $rcnt/${dp.meterList?.size}")
         } catch (ex: Exception) {
             lgr.error(ex.message, ex);
@@ -278,11 +278,11 @@ class ZoneServiceImpl : ZoneService {
             var rcnt = 0
 
             // detach firstly
-            var mlist = dp.meterList!!
+            var mlist = dp.meterList!!.map { it.meterId.orEmpty() }
             while (mlist.isNotEmpty()) {
-                rcnt += zoneMapper!!.detachZoneMeter(Zone().apply {
+                rcnt += zoneMapper!!.detachZoneMeter(MeterParam().apply {
                     zoneId = dp.zoneId
-                    meterList = mlist.take(1000)
+                    meterIdList = mlist.take(1000)
                 })
 
                 mlist = mlist.drop(1000)
