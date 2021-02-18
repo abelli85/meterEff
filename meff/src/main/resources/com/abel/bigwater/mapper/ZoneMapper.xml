@@ -195,10 +195,15 @@
 
     <delete id="detachZoneMeter" parameterType="com.abel.bigwater.model.zone.Zone">
         DELETE FROM bw_zone_meter AS bzm
+        USING bw_zone AS bz
         <where>
-            AND zoneId = #{zoneId}
+            bzm.zoneId = bz.zoneId
+            <if test="firmId != null">
+                AND bz.firmId = #{firmId}
+            </if>
+            AND bzm.zoneId = #{zoneId}
             <if test="meterList != null and meterList.size > 0">
-                AND meterId IN (
+                AND bzm.meterId IN (
                 <foreach collection="meterList" item="meter" separator=",">
                     #{meter.meterId}
                 </foreach>

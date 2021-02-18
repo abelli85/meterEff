@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      PostgreSQL 9.x                               */
-/* Created on:     2021/2/7 14:45:06                            */
+/* Created on:     2021/2/10 10:39:47                           */
 /*==============================================================*/
 
 
@@ -793,7 +793,7 @@ comment on column bw_meter.dtype is
 /*==============================================================*/
 /* Index: idx_meter_code                                        */
 /*==============================================================*/
-create  index idx_meter_code on bw_meter (
+create unique index idx_meter_code on bw_meter (
 firmId,
 meterCode
 );

@@ -133,4 +133,13 @@ create table bw_zone_meter (
 comment on column bw_zone_meter.childType is
 'PARENT/CHILD';
 
+drop index idx_meter_code;
+
+/*==============================================================*/
+/* Index: idx_meter_code                                        */
+/*==============================================================*/
+create unique index idx_meter_code on bw_meter (
+firmId,
+meterCode
+);
 -- </editor-fold>
