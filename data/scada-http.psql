@@ -242,13 +242,17 @@ begin
         end if;
 
         -- fetch history
-        call fetchHistPeriod(accessToken, fact.fcode, fact.fname, fact.dtype,
-        extract(epoch from lastDataTime)::int + 1, extract(epoch from now())::int + 10);
+        begin
+            call fetchHistPeriod(accessToken, fact.fcode, fact.fname, fact.dtype,
+            extract(epoch from lastDataTime)::int + 1, extract(epoch from now())::int + 10);
+        end;
 
         commit;
 
         -- fetch realtime one by one
-        call fetchRealtime(accessToken, fact.fcode, fact.fname, fact.dtype);
+        begin
+            call fetchRealtime(accessToken, fact.fcode, fact.fname, fact.dtype);
+        end;
 
         commit;
     end loop;
